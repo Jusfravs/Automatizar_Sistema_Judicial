@@ -1,0 +1,17 @@
+{
+    "filtros_activos": {
+        "sucursal": "LOS RIOS",
+        "oficina": "TSACHILAS",
+        "estado_judicial": "ACTIVO",
+        "inicio_desde_juicio": "23331-2022-04261"
+    },
+    "rutas": {
+        "archivo_csv": "data/reporte_trabajo.csv",
+        "archivo_origen": "data/REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx",
+        "archivo_excel_final": "data/REPORTE_PROCESADO_FINAL.xlsx",
+        "hoja_lectura": "migrado"
+    },
+    "navegacion": {
+        "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros"
+    }
+}
