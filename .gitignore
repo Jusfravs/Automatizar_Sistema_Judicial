@@ -1,0 +1,25 @@
+# Entornos virtuales y temporales
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Archivos de datos y reportes generados
+data/*.csv
+data/*.xlsx
+!data/REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx
+estado_casos.db
+temp_htmls/
+*.html
+
+# Logs y capturas temporales de diagnóstico
+*.log
+network_capture*.json
+diagnostico_*.html
+diagnostico_portal.py
+capturar_network.py
+explorar_api.py
+
+# VS Code / IDE
+.vscode/
+.idea/

@@ -1,6 +1,9 @@
 # src/gestor_cola.py
 import sqlite3
 import pandas as pd
+from src.logger_config import obtener_logger
+
+logger = obtener_logger("GestorCola")
 
 
 class GestorCola:
@@ -52,7 +55,7 @@ class GestorCola:
                 registros
             )
             conn.commit()
-            print(f"[+] Cola poblada/actualizada. Total de causas procesadas en inserción: {len(registros)}")
+            logger.info(f"Cola poblada/actualizada. Total de causas procesadas en inserción: {len(registros)}")
 
     def obtener_siguiente(self):
         """
@@ -100,3 +103,25 @@ class GestorCola:
             cursor.execute("SELECT estado, COUNT(*) FROM juicios GROUP BY estado")
             rows = cursor.fetchall()
             return dict(rows)
+
+    def reiniciar_errores(self, max_reintentos=3):
+        """
+        Cambia el estado de 'ERROR' a 'PENDIENTE' e incrementa en 1 la columna 'reintentos'
+        para todos los registros con reintentos < max_reintentos.
+        Retorna la cantidad de filas modificadas.
+        """
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE juicios
+                SET estado = 'PENDIENTE', reintentos = reintentos + 1
+                WHERE estado = 'ERROR' AND reintentos < ?
+                """,
+                (max_reintentos,)
+            )
+            conn.commit()
+            filas_modificadas = cursor.rowcount
+            if filas_modificadas > 0:
+                logger.info(f"Reiniciados {filas_modificadas} registros de 'ERROR' a 'PENDIENTE'.")
+            return filas_modificadas

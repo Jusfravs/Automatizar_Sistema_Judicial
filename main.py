@@ -5,9 +5,9 @@ from src.gestor_casos import GestorCasos
 from src.motor_busqueda_web import BotJudicial
 
 def main():
-    print("=" * 60)
-    print("🤖 RPA JUDICATURA - SISTEMA ASISTIDO DE CONSULTA MASIVA")
-    print("=" * 60)
+    print("============================================================")
+    print("[RPA JUDICATURA] - SISTEMA ASISTIDO DE CONSULTA MASIVA")
+    print("============================================================")
 
     repo = GestorCasos("config.json")
     casos = repo.obtener_casos_pendientes()
@@ -74,11 +74,10 @@ def main():
     finally:
         bot.cerrar_navegador()
 
-    print("=" * 60)
-    print(f"✅ PROCESO COMPLETADO. {exitosos} de {total} causas procesadas con éxito.")
+    print("[OK] PROCESO COMPLETADO. {} de {} causas procesadas con éxito.".format(exitosos, total))
     
     if casos_fallidos:
-        print(f"⚠️ Hubo {len(casos_fallidos)} causas con errores: {casos_fallidos}")
+        print(f"[!] Hubo {len(casos_fallidos)} causas con errores: {casos_fallidos}")
     print("=" * 60)
 
 if __name__ == "__main__":

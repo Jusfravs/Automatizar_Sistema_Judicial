@@ -113,4 +113,4 @@ class GestorCasos:
         """EXPORT: Genera el Excel .xlsx consolidado final."""
         print(f"[*] Exportando informe final a: {self.ruta_final}")
         self.df.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
-        print(f"[✅] ¡Archivo Excel final generado exitosamente!")
+        print("[OK] ¡Archivo Excel final generado exitosamente!")

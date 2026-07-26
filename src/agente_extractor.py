@@ -2,6 +2,9 @@
 import os
 import re
 from bs4 import BeautifulSoup
+from src.logger_config import obtener_logger
+
+logger = obtener_logger("AgenteExtractor")
 
 
 class AgenteExtractor:
@@ -57,7 +60,7 @@ class AgenteExtractor:
         }
 
         if not os.path.exists(ruta_html):
-            print(f"[ERROR AGENTE EXTRACTOR] No existe el archivo: {ruta_html}")
+            logger.error(f"No existe el archivo: {ruta_html}")
             return resultado
 
         try:
@@ -160,5 +163,5 @@ class AgenteExtractor:
             return resultado
 
         except Exception as e:
-            print(f"[ERROR AGENTE EXTRACTOR] Error al procesar {ruta_html}: {e}")
+            logger.error(f"Error al procesar {ruta_html}: {e}")
             return resultado
