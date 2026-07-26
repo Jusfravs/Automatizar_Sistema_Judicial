@@ -1,0 +1,87 @@
+[
+  {
+    "FECHA INICIO JUICIO": "10/01/2023",
+    "FECHA INICIAL FASE ACTUAL": "20/05/2024",
+    "ETAPA_PROCESAL": "5 SENTENCIA",
+    "FASE_PROCESAL": "5.3 SENTENCIA EJECUTORIADA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "20/05/2024",
+        "detalle": "SENTENCIA EJECUTORIADA PARA 13334-2019-01647"
+      },
+      {
+        "fecha": "10/01/2023",
+        "detalle": "DEMANDA Y CALIFICACION"
+      }
+    ],
+    "NUMERO_JUICIO": "13334-2019-01647"
+  },
+  {
+    "FECHA INICIO JUICIO": "10/01/2023",
+    "FECHA INICIAL FASE ACTUAL": "20/05/2024",
+    "ETAPA_PROCESAL": "5 SENTENCIA",
+    "FASE_PROCESAL": "5.3 SENTENCIA EJECUTORIADA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "20/05/2024",
+        "detalle": "SENTENCIA EJECUTORIADA PARA 07333-2018-00742"
+      },
+      {
+        "fecha": "10/01/2023",
+        "detalle": "DEMANDA Y CALIFICACION"
+      }
+    ],
+    "NUMERO_JUICIO": "07333-2018-00742"
+  },
+  {
+    "FECHA INICIO JUICIO": "10/01/2023",
+    "FECHA INICIAL FASE ACTUAL": "20/05/2024",
+    "ETAPA_PROCESAL": "5 SENTENCIA",
+    "FASE_PROCESAL": "5.3 SENTENCIA EJECUTORIADA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "20/05/2024",
+        "detalle": "SENTENCIA EJECUTORIADA PARA 17230-2021-09876"
+      },
+      {
+        "fecha": "10/01/2023",
+        "detalle": "DEMANDA Y CALIFICACION"
+      }
+    ],
+    "NUMERO_JUICIO": "17230-2021-09876"
+  },
+  {
+    "FECHA INICIO JUICIO": "10/01/2023",
+    "FECHA INICIAL FASE ACTUAL": "20/05/2024",
+    "ETAPA_PROCESAL": "5 SENTENCIA",
+    "FASE_PROCESAL": "5.3 SENTENCIA EJECUTORIADA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "20/05/2024",
+        "detalle": "SENTENCIA EJECUTORIADA PARA 09332-2020-04512"
+      },
+      {
+        "fecha": "10/01/2023",
+        "detalle": "DEMANDA Y CALIFICACION"
+      }
+    ],
+    "NUMERO_JUICIO": "09332-2020-04512"
+  },
+  {
+    "FECHA INICIO JUICIO": "10/01/2023",
+    "FECHA INICIAL FASE ACTUAL": "20/05/2024",
+    "ETAPA_PROCESAL": "5 SENTENCIA",
+    "FASE_PROCESAL": "5.3 SENTENCIA EJECUTORIADA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "20/05/2024",
+        "detalle": "SENTENCIA EJECUTORIADA PARA 11331-2022-01122"
+      },
+      {
+        "fecha": "10/01/2023",
+        "detalle": "DEMANDA Y CALIFICACION"
+      }
+    ],
+    "NUMERO_JUICIO": "11331-2022-01122"
+  }
+]
