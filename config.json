@@ -13,5 +13,8 @@
     },
     "navegacion": {
         "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros"
+    },
+    "sistema": {
+        "intervalo_autoguardado": 5
     }
 }
