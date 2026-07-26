@@ -83,38 +83,63 @@ class BotJudicial:
 
     def procesar_flujo_judicatura(self, numero_juicio):
         """
-        Modo Asistido: Llenado de número de causa y espera dinámica de vista de documentos.
+        Modo Híbrido Asistido (Observación Pasiva + Extracción Automática):
+        1. Bucle infinito controlado (while True).
+        2. Llenado asistido del número de causa en la caja de búsqueda.
+        3. Espera Pasiva Indefinida (timeout=0, state='visible') a que el usuario navegue a 'Información del proceso'.
+        4. Ejecución de Lectura Automática (extraer_detalles_juicio).
+        5. Prevención de Doble Lectura: Espera Pasiva Indefinida (timeout=0, state='hidden') a que el usuario cierre la carpeta.
         """
         print(f"\n[-] Iniciando causa: {numero_juicio}")
-        try:
-            input_causa = self.page.locator("input[placeholder*='códigoDependencia-Año-Secuencial']").first
-            
-            if not input_causa.is_visible():
-                if "busqueda" not in self.page.url.lower():
-                    self.page.goto(self.url_portal, wait_until="domcontentloaded")
-                else:
-                    self.regresar_al_buscador()
+        selector_vista_final = "text=/Información del proceso|Actuaciones Judiciales|Exportar PDF/i"
 
-            input_causa.wait_for(state="visible", timeout=10000)
-            input_causa.fill("")
-            input_causa.fill(str(numero_juicio).strip())
-            
-            print(f"[!] Causa '{numero_juicio}' lista en el buscador.")
-            print("[!] Por favor, resuelve Captcha / dale a BUSCAR y entra al expediente...")
-            print("[*] Aguardando llegada a la pantalla 'Información del proceso'...")
-            
-            self.page.wait_for_selector(
-                "text=/Información del proceso|Actuaciones Judiciales/i", 
-                timeout=300000
-            )
-            print("[+] ¡Llegada a 'Información del proceso' detectada! Retomando lectura automática...")
-            return True
+        while True:
+            try:
+                # 1. Inyección asistida de la causa en la caja de búsqueda
+                try:
+                    input_causa = self.page.locator("input[placeholder*='códigoDependencia-Año-Secuencial']").first
+                    if not input_causa.is_visible():
+                        self.regresar_al_buscador()
 
-        except Exception as e:
-            print(f"[ERROR] Timeout o fallo al esperar la vista del juicio {numero_juicio}: {e}")
-            return False
+                    if input_causa.is_visible():
+                        input_causa.fill("")
+                        input_causa.fill(str(numero_juicio).strip())
+                        print(f"[!] Causa '{numero_juicio}' lista en el buscador.")
+                        print("[!] Por favor, resuelve Captcha / busca y navega a la carpeta del expediente...")
+                except Exception as e_fill:
+                    print(f"[!] Aviso al preparar la caja de búsqueda: {e_fill}")
+
+                # 2. Espera Pasiva Indefinida (timeout=0) hasta que el usuario llegue a la pantalla final
+                print("[*] Observación pasiva activa: Aguardando llegada a la pantalla 'Información del proceso' (timeout=0)...")
+                self.page.wait_for_selector(selector_vista_final, state="visible", timeout=0)
+                print("[+] ¡Pantalla 'Información del proceso' detectada! Retomando lectura automática...")
+
+                # 3. Ejecución de Lectura Automática
+                self.datos_extraidos = self._ejecutar_extraccion_detalles()
+
+                # 4. Prevención de Doble Lectura: Espera Pasiva Indefinida (state='hidden', timeout=0)
+                print("[*] Aguardando a que el operador presione 'Regresar' o cierre la carpeta (state: hidden, timeout=0)...")
+                self.page.wait_for_selector(selector_vista_final, state="hidden", timeout=0)
+                print("[+] Carpeta cerrada por el operador. Avanzando a la siguiente causa...")
+
+                return True
+
+            except Exception as e:
+                print(f"[!] Excepción en bucle de observación pasiva: {e}. Reintentando ciclo...")
+                self.page.wait_for_timeout(1000)
+                continue
 
     def extraer_detalles_juicio(self):
+        """
+        Devuelve los datos procesados en la vista actual.
+        """
+        if getattr(self, 'datos_extraidos', None) is not None:
+            res = self.datos_extraidos
+            self.datos_extraidos = None
+            return res
+        return self._ejecutar_extraccion_detalles()
+
+    def _ejecutar_extraccion_detalles(self):
         """
         Extrae la fecha de inicio y la actuación procesal correspondiente.
         """

@@ -1,7 +1,9 @@
 # src/gestor_casos.py
 import os
+import sys
 import json
 import pandas as pd
+from pandas.errors import EmptyDataError
 
 class GestorCasos:
     """
@@ -19,7 +21,38 @@ class GestorCasos:
         self.filtros = self.config.get('filtros_activos', {})
 
         self._inicializar_csv()
-        self.df = pd.read_csv(self.ruta_csv, low_memory=False)
+
+        try:
+            self.df = pd.read_csv(self.ruta_csv, low_memory=False)
+            if self.df.empty:
+                raise EmptyDataError("El archivo CSV está completamente vacío.")
+        except EmptyDataError:
+            print("[ERROR CRÍTICO] El archivo CSV de base de datos está vacío o corrupto. Por favor, restaura el archivo desde el Excel original.")
+            print("[*] Intentando autoreparar e inicializar nuevamente el CSV desde el Excel...")
+            if os.path.exists(self.ruta_csv):
+                try:
+                    os.remove(self.ruta_csv)
+                except Exception:
+                    pass
+            self._inicializar_csv()
+            try:
+                self.df = pd.read_csv(self.ruta_csv, low_memory=False)
+            except Exception:
+                print("[ERROR CRÍTICO] No se pudo restaurar la base de datos CSV. Verifique el archivo Excel de origen.")
+                sys.exit(1)
+        except FileNotFoundError:
+            print(f"[ERROR CRÍTICO] No se encontró el archivo CSV en '{self.ruta_csv}'.")
+            print("[*] Intentando crear la base de datos CSV desde el Excel original...")
+            self._inicializar_csv()
+            try:
+                self.df = pd.read_csv(self.ruta_csv, low_memory=False)
+            except Exception:
+                print(f"[ERROR CRÍTICO] No se pudo crear la base de datos CSV en '{self.ruta_csv}'.")
+                sys.exit(1)
+        except Exception as e:
+            print(f"[ERROR CRÍTICO] Error inesperado al cargar la base de datos CSV: {e}")
+            sys.exit(1)
+
         self.df.columns = [str(c).strip() for c in self.df.columns]
 
     def _inicializar_csv(self):
