@@ -49,7 +49,7 @@ def main():
                     
                     if repo.actualizar_caso(numero_juicio, datos):
                         exitosos += 1
-                        print(f"[+] Juicio {numero_juicio} guardado exitosamente.")
+                        print(f"[+] Juicio {numero_juicio} guardado.")
                     else:
                         print(f"[-] Error al guardar los datos del juicio {numero_juicio} en el repositorio.")
                         casos_fallidos.append(numero_juicio)
