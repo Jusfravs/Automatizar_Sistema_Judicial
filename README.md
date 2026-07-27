@@ -4,7 +4,7 @@ Sistema automatizado de consulta, extracción y procesamiento masivo de informac
 
 ---
 
-## 🏛️ Arquitectura del Sistema Multi-Agente
+## Arquitectura del Sistema Multi-Agente
 
 El proyecto utiliza una arquitectura desacoplada orientada a eventos y persistencia de estados para procesamiento masivo resiliente:
 
@@ -47,14 +47,14 @@ El proyecto utiliza una arquitectura desacoplada orientada a eventos y persisten
 
 1. **Gestor de Cola (`src/gestor_cola.py`)**: Administra la base de datos local SQLite (`estado_casos.db`). Garantiza la transaccionalidad atómica y gestiona la cola de estados (`PENDIENTE`, `EN_PROCESO`, `COMPLETADO`, `ERROR`).
 2. **Agente Explorador (`src/agente_explorador.py` / `src/motor_busqueda_web.py`)**: Módulo RPA con Playwright encargado de interactuar con el portal Angular del e-SATJE, realizar la búsqueda por causa y descargar las actuaciones procesales.
-3. **Agente Extractor (`src/agente_extractor.py`)**: Motor de procesamiento en segundo plano que parsea el HTML local mediante `BeautifulSoup` (parser `lxml`) para clasificar actuaciones en el Árbol Procesal Judicial.
+3. **Agente Extractor (`src/agente_extractor.py`)**: Motor de procesamiento en segundo plano que parsea el HTML local mediante `BeautifulSoup` (parser `lxml`) para clasificar actuaciones en el Árbol Procesal Judicial con similitud semántica de 6 fases.
 4. **Gestor de Estado y Reporte (`src/gestor_estado.py` / `src/gestor_casos.py`)**: Normaliza y consolida los resultados exportando a CSV (`data/reporte_trabajo.csv`) y Excel (`data/REPORTE_PROCESADO_FINAL.xlsx`).
 5. **Orquestador (`src/orquestador.py` / `main.py`)**: Punto de entrada principal que integra el ciclo completo y gestiona reintentos preventivos.
 6. **Auditoría y Limpieza (`src/auditor.py`, `src/limpieza.py`)**: Módulos de aseguramiento de calidad del lote y purga de temporales.
 
 ---
 
-## 🛠️ Requisitos Previos e Instalación
+## Requisitos Previos e Instalación
 
 ### Requisitos del Sistema
 * Python 3.10 o superior
@@ -87,7 +87,7 @@ El proyecto utiliza una arquitectura desacoplada orientada a eventos y persisten
 
 ---
 
-## 🚀 Instrucciones de Ejecución
+## Instrucciones de Ejecución
 
 ### 1. Ejecución Principal / Orquestador en Producción
 
@@ -122,7 +122,7 @@ python -m src.limpieza
 
 ---
 
-## 📊 Registros y Auditoría
+## Registros y Auditoría
 
 * **Log de Producción**: `ejecucion_produccion.log`
 * **Base de Estado**: `estado_casos.db`

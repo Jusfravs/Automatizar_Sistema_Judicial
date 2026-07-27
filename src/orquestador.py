@@ -6,14 +6,11 @@ import random
 import time
 import pandas as pd
 
-# Asegurar importación de módulos locales
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from src.gestor_cola import GestorCola  # noqa: E402
-from src.agente_explorador import AgenteExplorador  # noqa: E402
-from src.agente_extractor import AgenteExtractor  # noqa: E402
-from src.gestor_estado import GestorEstado  # noqa: E402
-from src.logger_config import obtener_logger  # noqa: E402
+from src.gestor_cola import GestorCola
+from src.agente_explorador import AgenteExplorador
+from src.agente_extractor import AgenteExtractor
+from src.gestor_estado import GestorEstado
+from src.logger_config import obtener_logger
 
 logger = obtener_logger("Orquestador")
 
@@ -142,18 +139,7 @@ class Orquestador:
             logger.info("Orquestación completada.")
 
 
-def cargar_datos_iniciales(ruta_origen):
-    """Función de conveniencia para poblar la cola desde un script exterior."""
-    gestor = GestorCola()
-    if ruta_origen.endswith(".csv"):
-        df = pd.read_csv(ruta_origen, low_memory=False)
-    else:
-        df = pd.read_excel(ruta_origen)
-    gestor.poblar_cola(df)
-
-
 if __name__ == "__main__":
-    import sys
     logger.info("=== MOTOR ORQUESTADOR MULTI-AGENTE (E-SATJE) ===")
 
     ruta_fuente = "data/reporte_trabajo.csv"

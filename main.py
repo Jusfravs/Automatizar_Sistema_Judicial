@@ -1,5 +1,4 @@
 import json
-import logging  # Útil para trackear errores sin ensuciar la consola principal
 import sys
 from src.gestor_casos import GestorCasos
 from src.motor_busqueda_web import BotJudicial
