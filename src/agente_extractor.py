@@ -282,7 +282,9 @@ class AgenteExtractor:
     def _extraer_actuaciones_profundas(self, soup):
         """Extrae filas de tabla y contenedores estructurados de actuaciones."""
         actuaciones = []
-        filas = soup.find_all(["tr", "mat-row", "div"])
+        filas = soup.find_all(["tr", "mat-row"])
+        # Incluir divs con roles tabulares específicos
+        filas += soup.find_all("div", attrs={"role": ["row", "listitem", "gridcell"]})
 
         for fila in filas:
             cols = fila.find_all(["td", "th", "div", "span"])
@@ -334,7 +336,7 @@ class AgenteExtractor:
 
     def _extraer_fecha_inicio(self, soup, actuaciones):
         """Obtiene la fecha de inicio del expediente."""
-        for elem in soup.find_all(text=re.compile(r"Fecha de ingreso|Fecha ingreso|Fecha presentación|Fecha inicio", re.IGNORECASE)):
+        for elem in soup.find_all(string=re.compile(r"Fecha de ingreso|Fecha ingreso|Fecha presentación|Fecha inicio", re.IGNORECASE)):
             parent_text = elem.parent.get_text(strip=True) if elem.parent else str(elem)
             m = re.search(r'\d{2}/\d{2}/\d{4}', parent_text)
             if m:

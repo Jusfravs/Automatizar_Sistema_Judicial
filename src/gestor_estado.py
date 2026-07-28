@@ -67,7 +67,7 @@ class GestorEstado:
                 os.makedirs(dir_salida, exist_ok=True)
 
             # Exportar a CSV UTF-8 sin índice
-            df.to_csv(ruta_salida_csv, index=False, encoding="utf-8")
+            df.to_csv(ruta_salida_csv, index=False, encoding="utf-8-sig")
             logger.info(f"Reporte final generado exitosamente en CSV: {ruta_salida_csv} ({len(df)} registros)")
 
             return df

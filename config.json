@@ -16,5 +16,8 @@
     },
     "sistema": {
         "intervalo_autoguardado": 5
+    },
+    "auditoria": {
+        "total_esperado": 4017
     }
 }

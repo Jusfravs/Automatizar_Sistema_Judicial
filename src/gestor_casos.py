@@ -2,6 +2,7 @@
 import os
 import sys
 import json
+import shutil
 import pandas as pd
 from pandas.errors import EmptyDataError
 
@@ -53,18 +54,38 @@ class GestorCasos:
             print(f"[ERROR CRÍTICO] Error inesperado al cargar la base de datos CSV: {e}")
             sys.exit(1)
 
-        self.df.columns = [str(c).strip() for c in self.df.columns]
+        # Normalizar cabeceras (limpia espacios y fuerza mayúsculas)
+        self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
+
+        if 'SUCURSAL' not in self.df.columns and os.path.exists(self.ruta_excel):
+            print("[*] Advertencia: 'SUCURSAL' no encontrada en CSV. Regenerando CSV desde Excel con cabeceras correctas...")
+            if os.path.exists(self.ruta_csv):
+                try:
+                    os.remove(self.ruta_csv)
+                except Exception:
+                    pass
+            self._inicializar_csv()
+            self.df = pd.read_csv(self.ruta_csv, low_memory=False)
+            self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
 
     def _inicializar_csv(self):
         """CREATE: Genera el CSV de trabajo desde el Excel original si no existe."""
         if not os.path.exists(self.ruta_csv) and os.path.exists(self.ruta_excel):
             print("[*] Inicializando base de datos CSV desde Excel...")
-            df_excel = pd.read_excel(self.ruta_excel, sheet_name=self.hoja, header=1)
+            df_excel = pd.read_excel(self.ruta_excel, sheet_name=self.hoja, header=0)
+            df_excel.columns = df_excel.columns.astype(str).str.strip().str.upper()
             df_excel.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
 
     def obtener_casos_pendientes(self):
         """READ: Obtiene la lista de números de juicio que cumplen con los filtros."""
-        col_estado = 'ESTADO.1' if 'ESTADO.1' in self.df.columns else 'ESTADO'
+        print("Columnas disponibles:", self.df.columns.tolist())
+        if 'ESTADO' in self.df.columns:
+            col_estado = 'ESTADO'
+        elif 'ESTADO.1' in self.df.columns:
+            col_estado = 'ESTADO.1'
+            print("[*] Advertencia: se usara la columna de respaldo 'ESTADO.1'.")
+        else:
+            raise KeyError("No se encontro una columna 'ESTADO' ni 'ESTADO.1' en el CSV.")
         
         suc = str(self.filtros.get('sucursal', '')).strip().upper()
         ofi = str(self.filtros.get('oficina', '')).strip().upper()
@@ -91,7 +112,11 @@ class GestorCasos:
 
     def actualizar_caso(self, numero_juicio, datos):
         """UPDATE: Inyecta en la fila correspondiente los datos extraídos."""
-        mask = self.df['NUMERO_JUICIO'].astype(str).str.strip() == str(numero_juicio).strip()
+        numero_juicio_normalizado = str(numero_juicio).strip().upper()
+        mask = (
+            self.df['NUMERO_JUICIO'].astype(str).str.strip().str.upper()
+            == numero_juicio_normalizado
+        )
         if mask.any():
             idx = self.df[mask].index[0]
             for col, val in datos.items():
@@ -104,6 +129,15 @@ class GestorCasos:
 
     def guardar(self):
         """SAVE: Persiste los cambios en la base CSV de trabajo."""
+        if os.path.isfile(self.ruta_csv):
+            ruta_backup = f"{self.ruta_csv}.bak"
+            try:
+                shutil.copy2(self.ruta_csv, ruta_backup)
+                print(f"[*] Respaldo del CSV creado en: {ruta_backup}")
+            except OSError as e:
+                print(f"[ERROR] No se pudo crear respaldo del CSV: {e}")
+                return
+
         try:
             self.df.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
         except Exception as e:

@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import random
+import tempfile
 import time
 import pandas as pd
 
@@ -17,9 +18,11 @@ logger = obtener_logger("Orquestador")
 
 class Orquestador:
     """
-    Motor de Orquestación Principal Multi-Agente.
-    Coordina la cola de tareas SQLite (GestorCola), la descarga web Playwright (AgenteExplorador),
-    el análisis de datos HTML offline (AgenteExtractor) y la compilación tabular (GestorEstado).
+    Motor de Orquestación Principal Multi-Agente con Arquitectura de Ejecución Dual.
+    Coordina:
+    - Ruta Principal: Intercepción de Red API -> Limpieza Pandas -> Persistencia SQLite.
+    - Ruta de Respaldo: Sincronización DOM con Freno Explícito -> BeautifulSoup4 + lxml.
+    Garantiza la integridad transaccional de los 4,017 registros en SQLite.
     """
     def __init__(self, ruta_db="estado_casos.db", dir_temp="temp_htmls", ruta_json="datos_extraidos.json", modo_visible=False):
         self.ruta_json = ruta_json
@@ -30,8 +33,7 @@ class Orquestador:
 
     def cargar_datos_iniciales(self, ruta_origen):
         """
-        Lee el archivo fuente (CSV o Excel) con los 4,017 registros de causas
-        e inyecta los datos en la base de datos SQLite mediante GestorCola.
+        Lee el archivo fuente con los 4,017 registros e inyecta la cola en SQLite de forma atómica.
         """
         logger.info(f"Cargando datos iniciales desde: {ruta_origen}")
         if not os.path.exists(ruta_origen):
@@ -62,22 +64,47 @@ class Orquestador:
             try:
                 with open(self.ruta_json, "r", encoding="utf-8") as f:
                     resultados = json.load(f)
-            except Exception:
+                if not isinstance(resultados, list):
+                    raise ValueError("El archivo de resultados debe contener una lista JSON.")
+            except Exception as error:
+                logger.warning(
+                    "No se pudo leer el JSON de resultados '%s'; se iniciará uno nuevo: %s",
+                    self.ruta_json,
+                    error,
+                )
                 resultados = []
 
         resultados.append(registro_datos)
 
-        with open(self.ruta_json, "w", encoding="utf-8") as f:
-            json.dump(resultados, f, ensure_ascii=False, indent=2)
+        directorio_salida = os.path.dirname(os.path.abspath(self.ruta_json))
+        os.makedirs(directorio_salida, exist_ok=True)
+        descriptor, ruta_temporal = tempfile.mkstemp(
+            dir=directorio_salida,
+            prefix=f".{os.path.basename(self.ruta_json)}.",
+            suffix=".tmp",
+        )
+
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as archivo_temporal:
+                json.dump(resultados, archivo_temporal, ensure_ascii=False, indent=2)
+                archivo_temporal.flush()
+                os.fsync(archivo_temporal.fileno())
+
+            os.replace(ruta_temporal, self.ruta_json)
+        except Exception:
+            if os.path.exists(ruta_temporal):
+                os.unlink(ruta_temporal)
+            raise
 
     def iniciar_procesamiento(self, limite_lote=None, max_reintentos=3):
         """
-        Motor de ejecución central: consume causas pendientes de la cola,
-        descarga el HTML vía AgenteExplorador, analiza datos vía AgenteExtractor,
-        gestiona reintentos automáticos de errores y compila el reporte tabular final.
+        Motor de ejecución central con procesamiento dual:
+        - Intercepción API (Ruta Principal + Pandas)
+        - Sincronización DOM (Ruta Respaldo + BeautifulSoup4)
         """
         logger.info("Iniciando motor de ejecución multi-agente en producción...")
         procesados_lote = 0
+        fallos_por_causa = {}
 
         try:
             while True:
@@ -85,10 +112,9 @@ class Orquestador:
                     logger.info(f"Límite de lote alcanzado ({limite_lote} registros). Deteniendo orquestación.")
                     break
 
-                # 1. Obtener siguiente causa pendiente
+                # 1. Obtener siguiente causa pendiente desde la cola SQLite
                 numero_causa = self.gestor_cola.obtener_siguiente()
                 if not numero_causa:
-                    # Mecanismo de reintentos automáticos para registros con estado 'ERROR'
                     filas_reiniciadas = self.gestor_cola.reiniciar_errores(max_reintentos=max_reintentos)
                     if filas_reiniciadas > 0:
                         logger.info(f"[REINTENTO] Reiniciando ciclo para {filas_reiniciadas} causa(s) fallida(s)...")
@@ -99,30 +125,53 @@ class Orquestador:
 
                 logger.info(f"Procesando causa #{procesados_lote + 1}: {numero_causa}")
 
-                # 2. Descargar HTML pasivo vía AgenteExplorador
+                # 2. Descargar y ejecutar orquestación dual vía AgenteExplorador
                 ruta_html = self.agente_explorador.descargar_html_juicio(numero_causa)
 
-                # 3. Validar resultado de descarga
                 if not ruta_html or not os.path.exists(ruta_html):
+                    intentos_fallidos = fallos_por_causa.get(numero_causa, 0) + 1
+                    fallos_por_causa[numero_causa] = intentos_fallidos
                     logger.warning(f"Fallo en la descarga de la causa {numero_causa}. Registrando 'ERROR'.")
                     self.gestor_cola.actualizar_estado(numero_causa, "ERROR")
-                    time.sleep(random.uniform(2.0, 4.0))
+                    retraso_minimo = 2 ** intentos_fallidos
+                    retraso = random.uniform(retraso_minimo, retraso_minimo * 2)
+                    logger.warning(
+                        "Intento fallido %s para la causa %s; reintento tras backoff de %.2fs.",
+                        intentos_fallidos,
+                        numero_causa,
+                        retraso,
+                    )
+                    time.sleep(retraso)
                     continue
 
-                # 4. Procesar HTML offline vía AgenteExtractor
-                datos_extraidos = self.agente_extractor.procesar_archivo_html(ruta_html)
-                datos_extraidos["NUMERO_JUICIO"] = numero_causa
+                # 3. RUTA PRINCIPAL: Procesamiento Vectorizado Pandas desde API JSON Interceptada
+                df_api = self.agente_explorador.procesar_datos_api_con_pandas()
+                datos_extraidos = None
 
-                # 5. Guardar resultado en JSON local
+                if df_api is not None and not df_api.empty:
+                    logger.info(f"[🚀 RUTA PRINCIPAL API] Bypass BS4 exitoso para causa {numero_causa}.")
+                    datos_extraidos = {
+                        "NUMERO_JUICIO": numero_causa,
+                        "ORIGEN_DATA": "API_FETCH",
+                        "RAW_API_RECORDS": df_api.to_dict(orient="records")
+                    }
+                else:
+                    # 4. RUTA RESPALDO: Procesamiento HTML offline con BeautifulSoup4 + lxml
+                    logger.info(f"[* RUTA RESPALDO DOM] Procesando HTML offline con BeautifulSoup4 para causa {numero_causa}...")
+                    datos_extraidos = self.agente_extractor.procesar_archivo_html(ruta_html)
+                    datos_extraidos["NUMERO_JUICIO"] = numero_causa
+                    datos_extraidos["ORIGEN_DATA"] = "DOM_BS4"
+
+                # 5. Persistencia local en JSON
                 self.guardar_resultado_json(datos_extraidos)
 
-                # 6. Marcar causa como PROCESADO en SQLite
+                # 6. Actualización Transaccional en la cola SQLite
                 self.gestor_cola.actualizar_estado(numero_causa, "PROCESADO", ruta_html=ruta_html)
-                logger.info(f"[OK] Causa {numero_causa} procesada y guardada con éxito.")
+                fallos_por_causa.pop(numero_causa, None)
+                logger.info(f"[OK] Causa {numero_causa} guardada transaccionalmente en SQLite ({datos_extraidos['ORIGEN_DATA']}).")
 
                 procesados_lote += 1
 
-                # 7. Retraso obligatorio entre 2 y 4 segundos contra estrangulamiento de red
                 retraso = random.uniform(2.0, 4.0)
                 logger.info(f"Esperando {retraso:.2f}s para evitar rate-limiting...")
                 time.sleep(retraso)
@@ -133,7 +182,7 @@ class Orquestador:
             self.agente_explorador.cerrar()
             logger.info("Agente Explorador cerrado.")
 
-            # 8. Compilación del reporte final con GestorEstado
+            # 7. Compilación del reporte final con GestorEstado
             logger.info("Generando reporte tabular final...")
             self.gestor_estado.generar_reporte_final(self.ruta_json, "data/reporte_trabajo_final.csv")
             logger.info("Orquestación completada.")
@@ -144,16 +193,15 @@ if __name__ == "__main__":
 
     ruta_fuente = "data/reporte_trabajo.csv"
     if not os.path.exists(ruta_fuente):
-        if os.path.exists("REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx"):
-            ruta_fuente = "REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx"
+        ruta_excel_fuente = os.path.join("data", "REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx")
+        if os.path.exists(ruta_excel_fuente):
+            ruta_fuente = ruta_excel_fuente
 
     orquestador = Orquestador(modo_visible=False)
 
-    # Cargar datos en SQLite si la cola está vacía
     stats = orquestador.gestor_cola.obtener_estadisticas()
     if not stats or stats.get("PENDIENTE", 0) == 0:
         orquestador.cargar_datos_iniciales(ruta_fuente)
 
-    # Iniciar procesamiento
     limite = int(sys.argv[1]) if len(sys.argv) > 1 else None
     orquestador.iniciar_procesamiento(limite_lote=limite)

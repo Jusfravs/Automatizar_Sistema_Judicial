@@ -1,5 +1,7 @@
 # src/agente_explorador.py
+import json
 import os
+import pandas as pd
 from playwright.sync_api import sync_playwright
 from src.logger_config import obtener_logger
 
@@ -8,23 +10,74 @@ logger = obtener_logger("AgenteExplorador")
 
 class AgenteExplorador:
     """
-    Agente Explorador RPA aislante de Playwright.
-    Navega por el portal e-SATJE, alcanza la vista de actuaciones y guarda el HTML crudo en disco.
+    Agente Explorador RPA desacoplado con 3 Fases de Sincronización Angular:
+    1. Fase de Interacción Inicial: Espera simple de input, inyección de causa y clic en BUSCAR.
+    2. Fase de Resultados: Espera de la grilla/tabla de resultados y clic en la carpeta del expediente.
+    3. Fase de Extracción (El Freno Real): Espera estricta wait_for_selector('text="Actor/Ofendido:"')
+       únicamente POST-CLIC de carpeta cuando la vista de detalle está abierta e hidratada al 100%.
     """
     def __init__(self, url_portal="https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros", dir_temp="temp_htmls", modo_visible=False):
         self.url_portal = url_portal
         self.dir_temp = dir_temp
         os.makedirs(self.dir_temp, exist_ok=True)
+        self.paquetes_json_api = []
+        
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch(headless=not modo_visible)
         self.page = self.browser.new_page()
+        
+        # Listener de Intercepción de Red (API Fetching)
+        self.page.on("response", self._interceptar_respuesta_api)
+        
         logger.info(f"Agente Explorador iniciado en {self.url_portal} (Headless: {not modo_visible}, Dir HTML: {self.dir_temp})")
-        self.page.goto(self.url_portal, timeout=60000)
+        self.page.goto(self.url_portal, timeout=60000, wait_until="domcontentloaded")
+
+    def _interceptar_respuesta_api(self, response):
+        """Captura respuestas JSON puros de la API de la Judicatura."""
+        try:
+            url = response.url.lower()
+            if any(kw in url for kw in ["/api/", "expel", "proceso", "causa", "actuaciones", "catalogo"]):
+                if not any(ext in url for ext in [".js", ".css", ".png", ".ico", ".woff", ".svg"]):
+                    if response.status in [200, 201]:
+                        ct = response.headers.get("content-type", "")
+                        if "json" in ct:
+                            data = response.json()
+                            self.paquetes_json_api.append({
+                                "url": response.url,
+                                "data": data
+                            })
+                            logger.info(f"[API FETCH] Capturado JSON desde: {response.url}")
+        except Exception as e:
+            logger.warning(f"Respuesta no-JSON ignorada: {e}")
+
+    def procesar_datos_api_con_pandas(self):
+        """Limpia vectorialmente los paquetes JSON interceptados usando Pandas."""
+        if not self.paquetes_json_api:
+            return None
+        
+        try:
+            registros = []
+            for paquete in self.paquetes_json_api:
+                data = paquete.get("data")
+                if isinstance(data, dict):
+                    registros.append(data)
+                elif isinstance(data, list):
+                    registros.extend([d for d in data if isinstance(d, dict)])
+            
+            if not registros:
+                return None
+
+            df = pd.json_normalize(registros)
+            logger.info(f"[PANDAS CLEANUP] DataFrame compilado con {len(df)} registros desde API JSON.")
+            return df
+        except Exception as e:
+            logger.warning(f"Aviso al procesar JSON API con Pandas: {e}")
+            return None
 
     def regresar_al_buscador(self):
-        """Navega de retorno al buscador conservando la sesión."""
+        """Regresa al buscador utilizando esperas explícitas condicionales."""
         try:
-            input_busqueda = self.page.locator("input[placeholder*='códigoDependencia-Año-Secuencial']").first
+            input_busqueda = self.page.locator("input[placeholder*='códigoDependencia-Año-Secuencial'], input[formcontrolname='numeroJuicio']").first
             if input_busqueda.is_visible():
                 return True
 
@@ -36,13 +89,13 @@ class AgenteExplorador:
                     break
                 if btn_filtros.is_visible():
                     btn_filtros.click()
-                    self.page.wait_for_timeout(600)
+                    self.page.wait_for_selector("input[placeholder*='códigoDependencia-Año-Secuencial']", state="visible", timeout=3000)
                 elif btn_regresar.is_visible():
                     btn_regresar.click()
-                    self.page.wait_for_timeout(600)
+                    self.page.wait_for_selector("input[placeholder*='códigoDependencia-Año-Secuencial']", state="visible", timeout=3000)
                 else:
                     self.page.go_back()
-                    self.page.wait_for_timeout(600)
+                    self.page.wait_for_load_state("domcontentloaded")
             return True
         except Exception as e:
             logger.warning(f"Error al regresar al buscador: {e}")
@@ -51,83 +104,85 @@ class AgenteExplorador:
 
     def descargar_html_juicio(self, numero_causa):
         """
-        Navega hasta la vista de actuaciones para una causa y guarda el HTML crudo en temp_htmls/{numero_causa}.html.
-        Retorna la ruta del archivo generado o None en caso de falla.
+        Navega y extrae la causa siguiendo las 3 Fases de Sincronización Angular:
+        - FASE 1: Interacción Inicial (Sin frenos profundos) -> Inyección + Clic BUSCAR.
+        - FASE 2: Resultados -> Esperar grilla de resultados + Clic en la carpeta.
+        - FASE 3: Extracción (El Freno Real) -> wait_for_selector('text="Actor/Ofendido:"') POST-CLIC.
         """
         causa_str = str(numero_causa).strip()
-        ruta_archivo = os.path.join(self.dir_temp, f"{causa_str}.html")
-        logger.info(f"Iniciando descarga HTML para causa: {causa_str}")
+        ruta_html = os.path.join(self.dir_temp, f"{causa_str}.html")
+        ruta_json = os.path.join(self.dir_temp, f"{causa_str}.json")
+        self.paquetes_json_api.clear()
+        
+        logger.info(f"Iniciando flujo de 3 fases Angular para causa: {causa_str}")
 
         try:
-            # 1. Asegurar presencia en el buscador e inyectar el número de causa
-            input_causa = self.page.locator("input[placeholder*='códigoDependencia-Año-Secuencial']").first
+            # --- FASE 1: INTERACCIÓN INICIAL (SIN FRENOS PROFUNDOS) ---
+            selector_input_busqueda = "input[placeholder*='códigoDependencia-Año-Secuencial'], input[formcontrolname='numeroJuicio']"
+            input_causa = self.page.locator(selector_input_busqueda).first
+            
             if not input_causa.is_visible():
                 if "busqueda" not in self.page.url.lower():
                     self.page.goto(self.url_portal, wait_until="domcontentloaded")
                 else:
                     self.regresar_al_buscador()
 
-            input_causa.wait_for(state="visible", timeout=10000)
+            # Espera simple para visibilidad de la caja de texto
+            self.page.wait_for_selector(selector_input_busqueda, state="visible", timeout=10000)
             input_causa.click()
             input_causa.fill("")
             input_causa.press_sequentially(causa_str, delay=15)
             input_causa.dispatch_event("input")
             input_causa.dispatch_event("change")
-            logger.info(f"Causa '{causa_str}' ingresada en el buscador.")
+            logger.info(f"[FASE 1] Causa '{causa_str}' ingresada. Enviando búsqueda...")
 
-            # 2. Clic en el botón BUSCAR o presionar Enter
+            # Clic en el botón BUSCAR o tecla Enter (sin frenos de detalle todavía)
+            btn_buscar = self.page.locator("button:has-text('BUSCAR'), button:has-text('Buscar'), button[type='submit']").first
             try:
-                btn_buscar = self.page.locator("button:has-text('BUSCAR'), button:has-text('Buscar'), button[type='submit'], .mat-mdc-button:has-text('BUSCAR')").first
-                if btn_buscar.is_visible(timeout=2000) and btn_buscar.is_enabled(timeout=2000):
+                btn_buscar.wait_for(state="visible", timeout=2000)
+                if btn_buscar.is_enabled():
                     btn_buscar.click()
-                    logger.info("Clic en botón BUSCAR realizado.")
                 else:
                     input_causa.press("Enter")
-                    logger.info("Envío por tecla Enter realizado.")
-            except Exception as e_buscar:
-                logger.warning(f"Aviso en botón BUSCAR, enviando Enter: {e_buscar}")
+            except Exception:
                 input_causa.press("Enter")
 
-            # 3. Esperar tabla de resultados o carpeta
-            try:
-                self.page.locator("table, mat-table, .fa-folder, .fa-folder-open, .mat-mdc-table, button:has(.fa-folder)").first.wait_for(state="visible", timeout=8000)
-                selector_carpeta = (
-                    "table tr td i.fa-folder, table tr td i.fa-folder-open, "
-                    "table tr td a, table tr td button, .fa-folder, .fa-folder-open, "
-                    "i[title*='Detalle'], a[title*='Detalle'], button:has(.fa-folder)"
-                )
-                carpeta_paso1 = self.page.locator(selector_carpeta).first
-                if carpeta_paso1.is_visible(timeout=4000):
-                    carpeta_paso1.click(force=True)
-                    logger.info("Clic en carpeta de la tabla de resultados.")
-            except Exception as e_p1:
-                logger.warning(f"Aviso al buscar carpeta de resultados: {e_p1}")
+            # --- FASE 2: RESULTADOS (ESPERA DE LA GRILLA Y CLIC EN CARPETA) ---
+            logger.info("[FASE 2] Aguardando renderizado de la grilla de resultados/tabla...")
+            selector_grilla_resultados = "table, [role='grid'], i.fa-folder, i.fa-folder-open, button:has(.fa-folder)"
+            self.page.wait_for_selector(selector_grilla_resultados, state="visible", timeout=10000)
 
-            # 4. Esperar pantalla de 'Datos generales' e ingresar a la carpeta de la dependencia
-            try:
-                self.page.locator(".fa-folder, .fa-folder-open, button:has(.fa-folder), a:has(.fa-folder), td:last-child button, td:last-child a, td:last-child i").first.wait_for(state="visible", timeout=8000)
-                carpetas_dep = self.page.locator("i.fa-folder, i.fa-folder-open, .fa-folder, button:has(.fa-folder), a:has(.fa-folder), td:last-child button, td:last-child a, td:last-child i")
-                if carpetas_dep.count() > 0:
-                    carpetas_dep.first.click(force=True)
-                    logger.info("Clic en carpeta de la dependencia jurisdiccional.")
-            except Exception as e_p2:
-                logger.warning(f"Aviso al buscar carpeta de dependencia: {e_p2}")
+            # Localizar y hacer clic en la carpeta del expediente
+            selector_carpeta_relativo = "xpath=//table//tr//td//a | //table//tr//td//button | //i[contains(@class, 'fa-folder')] | //button[contains(@class, 'mat-mdc-button')]"
+            carpeta = self.page.locator(selector_carpeta_relativo).first
+            if carpeta.is_visible(timeout=5000):
+                carpeta.click(force=True)
+                logger.info("[FASE 2] Clic en la carpeta del expediente realizado.")
 
-            # 5. Esperar confirmación de la pantalla final 'Información del proceso'
-            logger.info("Aguardando confirmación de la vista de actuaciones...")
-            self.page.locator("table, mat-table, .mat-mdc-table, tr").first.wait_for(state="visible", timeout=20000)
-            self.page.wait_for_timeout(1500)
+            # --- FASE 3: EXTRACCIÓN (EL FRENO REAL POST-CLIC DE CARPETA) ---
+            logger.info("[FASE 3 - EL FRENO REAL] Aguardando hidratación completa del expediente en Angular...")
+            selector_freno_estricto = "text=/Actor\\/Ofendido:|Información del proceso|Actuaciones Judiciales|Exportar PDF/i"
+            
+            # BLOQUEO EXPLÍCITO OBLIGATORIO POST-CLIC DE CARPETA
+            self.page.wait_for_selector(selector_freno_estricto, state="visible", timeout=15000)
+            logger.info("[FRENO REAL SUPERADO] DOM 100% hidratado con los datos de la Judicatura.")
 
-            # 6. Extraer HTML crudo completo y guardar en temp_htmls/{numero_causa}.html
+            # Guardar JSON interceptado de API si existió
+            if self.paquetes_json_api:
+                with open(ruta_json, "w", encoding="utf-8") as f:
+                    json.dump(self.paquetes_json_api, f, ensure_ascii=False, indent=2)
+                logger.info(f"[API JSON] Guardados {len(self.paquetes_json_api)} paquetes en: {ruta_json}")
+
+            # Captura de HTML seguro para BeautifulSoup4
             contenido_html = self.page.content()
-            with open(ruta_archivo, "w", encoding="utf-8") as f:
+            with open(ruta_html, "w", encoding="utf-8") as f:
                 f.write(contenido_html)
 
-            logger.info(f"HTML extraído exitosamente en: {ruta_archivo} (Tamaño: {len(contenido_html)} caracteres)")
-            return ruta_archivo
+            logger.info(f"[EXTRACCIÓN COMPLETADA] HTML capturado en: {ruta_html} ({len(contenido_html)} bytes)")
+            return ruta_html
 
         except Exception as e:
-            logger.error(f"Fallo al extraer HTML de la causa {causa_str}: {e}")
+            logger.error(f"Fallo en secuencia de 3 fases para causa {causa_str}: {e}")
             return None
 
     def cerrar(self):

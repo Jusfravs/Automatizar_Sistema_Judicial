@@ -1,4 +1,5 @@
 # src/auditor.py
+import json
 import os
 import sys
 import pandas as pd
@@ -7,7 +8,49 @@ from src.logger_config import obtener_logger
 logger = obtener_logger("Auditor")
 
 RUTA_CSV_FINAL = os.path.join("data", "reporte_trabajo.csv")
-TOTAL_ESPERADO = 4017
+RUTA_CONFIG = "config.json"
+
+
+def cargar_total_esperado(ruta_config=RUTA_CONFIG):
+    """Load the expected record total from the project configuration."""
+    try:
+        with open(ruta_config, "r", encoding="utf-8") as archivo_config:
+            config = json.load(archivo_config)
+
+        if not isinstance(config, dict):
+            raise TypeError("The configuration root must be an object.")
+
+        auditoria = config.get("auditoria", {})
+        sistema = config.get("sistema", {})
+        if not isinstance(auditoria, dict) or not isinstance(sistema, dict):
+            raise TypeError("Configuration sections must be objects.")
+
+        valores_configurados = (
+            auditoria.get("total_esperado"),
+            sistema.get("total_esperado"),
+            config.get("total_esperado"),
+        )
+        total_esperado = next(
+            (valor for valor in valores_configurados if valor is not None),
+            None,
+        )
+        if total_esperado is None:
+            logger.warning(
+                "Missing 'total_esperado' in %s; count validation will be skipped.",
+                ruta_config,
+            )
+            return None
+
+        total_esperado = int(total_esperado)
+        if total_esperado < 0:
+            raise ValueError("The expected total cannot be negative.")
+        return total_esperado
+    except (OSError, json.JSONDecodeError, TypeError, ValueError, AttributeError) as e:
+        logger.warning("Could not read 'total_esperado' from %s: %s", ruta_config, e)
+        return None
+
+
+TOTAL_ESPERADO = cargar_total_esperado()
 
 def auditar_csv(ruta_csv=RUTA_CSV_FINAL, total_esperado=TOTAL_ESPERADO):
     """
@@ -28,10 +71,15 @@ def auditar_csv(ruta_csv=RUTA_CSV_FINAL, total_esperado=TOTAL_ESPERADO):
         df.columns = [str(c).strip() for c in df.columns]
         
         total_filas = len(df)
-        print(f"[*] Filas procesadas en CSV: {total_filas} / Registros esperados: {total_esperado}")
+        if total_esperado is None:
+            print(f"[*] Filas procesadas en CSV: {total_filas} / Registros esperados: no configurado")
+        else:
+            print(f"[*] Filas procesadas en CSV: {total_filas} / Registros esperados: {total_esperado}")
         logger.info(f"Total registros leídos: {total_filas}")
 
-        if total_filas < total_esperado:
+        if total_esperado is None:
+            print("[ADVERTENCIA] No se valido el conteo porque falta 'total_esperado' en config.json.")
+        elif total_filas < total_esperado:
             print(f"[ALERTA] El número de filas ({total_filas}) es inferior a los {total_esperado} registros esperados.")
             logger.warning(f"Filas incompletas: {total_filas}/{total_esperado}")
         elif total_filas == total_esperado:
@@ -59,7 +107,8 @@ def auditar_csv(ruta_csv=RUTA_CSV_FINAL, total_esperado=TOTAL_ESPERADO):
             print("[*] Resumen de columnas de datos procesados:")
             for cf in cols_fechas:
                 completos = df[cf].notnull().sum()
-                print(f"  - {cf}: {completos} registros procesados ({round(completos/total_filas*100, 1)}%)")
+                porcentaje = round(completos / total_filas * 100, 1) if total_filas else 0.0
+                print(f"  - {cf}: {completos} registros procesados ({porcentaje}%)")
 
         print("=" * 60)
         print("[OK] Auditoría completada.")
