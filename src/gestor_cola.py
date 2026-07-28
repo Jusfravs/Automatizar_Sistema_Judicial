@@ -1,4 +1,5 @@
 # src/gestor_cola.py
+import json
 import sqlite3
 from contextlib import contextmanager
 import pandas as pd
@@ -32,7 +33,7 @@ class GestorCola:
             conn.close()
 
     def _inicializar_tabla(self):
-        """Crea la tabla juicios si no existe."""
+        """Crea las tablas de reserva, resultados y auditoría si no existen."""
         with self._connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -41,6 +42,26 @@ class GestorCola:
                     estado TEXT DEFAULT 'PENDIENTE',
                     ruta_html TEXT NULL,
                     reintentos INTEGER DEFAULT 0
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS resultados_expediente (
+                    numero_causa TEXT PRIMARY KEY,
+                    origen TEXT NOT NULL,
+                    datos_json TEXT NOT NULL,
+                    ruta_html TEXT NULL,
+                    actualizado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (numero_causa) REFERENCES juicios(numero_causa)
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS eventos_extraccion (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    numero_causa TEXT NOT NULL,
+                    origen TEXT NOT NULL,
+                    detalle TEXT NOT NULL,
+                    creado_en TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (numero_causa) REFERENCES juicios(numero_causa)
                 )
             """)
             conn.commit()
@@ -119,6 +140,51 @@ class GestorCola:
                     "UPDATE juicios SET estado = ? WHERE numero_causa = ?",
                     (nuevo_estado, causa_str)
                 )
+            conn.commit()
+
+    def registrar_resultado_transaccional(self, numero_causa, resultado, origen, ruta_html=None):
+        """
+        Persiste el resultado del expediente y marca la reserva como PROCESADO
+        en una única transacción SQLite.
+        """
+        causa_str = str(numero_causa).strip()
+        datos_json = json.dumps(resultado, ensure_ascii=False)
+
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("BEGIN IMMEDIATE")
+            cursor.execute(
+                """
+                INSERT INTO resultados_expediente (numero_causa, origen, datos_json, ruta_html)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(numero_causa) DO UPDATE SET
+                    origen = excluded.origen,
+                    datos_json = excluded.datos_json,
+                    ruta_html = excluded.ruta_html,
+                    actualizado_en = CURRENT_TIMESTAMP
+                """,
+                (causa_str, origen, datos_json, ruta_html),
+            )
+            cursor.execute(
+                "UPDATE juicios SET estado = 'PROCESADO', ruta_html = ? WHERE numero_causa = ?",
+                (ruta_html, causa_str),
+            )
+            if cursor.rowcount != 1:
+                raise LookupError(f"No existe una reserva para la causa '{causa_str}'.")
+            conn.commit()
+
+    def registrar_error_extraccion(self, numero_causa, origen, detalle):
+        """Registra fallos de captura sin cancelar la ruta de respaldo DOM."""
+        causa_str = str(numero_causa).strip()
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO eventos_extraccion (numero_causa, origen, detalle)
+                VALUES (?, ?, ?)
+                """,
+                (causa_str, origen, str(detalle)),
+            )
             conn.commit()
 
     def obtener_estadisticas(self):

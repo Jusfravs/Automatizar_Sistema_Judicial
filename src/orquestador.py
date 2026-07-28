@@ -24,10 +24,21 @@ class Orquestador:
     - Ruta de Respaldo: Sincronización DOM con Freno Explícito -> BeautifulSoup4 + lxml.
     Garantiza la integridad transaccional de los 4,017 registros en SQLite.
     """
-    def __init__(self, ruta_db="estado_casos.db", dir_temp="temp_htmls", ruta_json="datos_extraidos.json", modo_visible=False):
+    def __init__(
+        self,
+        ruta_db="estado_casos.db",
+        dir_temp="temp_htmls",
+        ruta_json="datos_extraidos.json",
+        modo_visible=False,
+        patrones_api=None,
+    ):
         self.ruta_json = ruta_json
         self.gestor_cola = GestorCola(ruta_db=ruta_db)
-        self.agente_explorador = AgenteExplorador(dir_temp=dir_temp, modo_visible=modo_visible)
+        self.agente_explorador = AgenteExplorador(
+            dir_temp=dir_temp,
+            modo_visible=modo_visible,
+            patrones_api=patrones_api,
+        )
         self.agente_extractor = AgenteExtractor()
         self.gestor_estado = GestorEstado()
 
@@ -125,13 +136,30 @@ class Orquestador:
 
                 logger.info(f"Procesando causa #{procesados_lote + 1}: {numero_causa}")
 
-                # 2. Descargar y ejecutar orquestación dual vía AgenteExplorador
+                # 2. La ruta primaria intenta capturar XHR/fetch; sólo devuelve HTML al usar el respaldo DOM.
                 ruta_html = self.agente_explorador.descargar_html_juicio(numero_causa)
+                df_api = self.agente_explorador.procesar_datos_api_con_pandas()
+                datos_extraidos = None
 
-                if not ruta_html or not os.path.exists(ruta_html):
+                if df_api is not None and not df_api.empty:
+                    payload_api = self.agente_explorador.obtener_payload_api()
+                    logger.info("[RUTA PRIMARIA XHR] DataFrame recibido para causa %s (%s registros).", numero_causa, len(df_api))
+                    datos_extraidos = {
+                        "NUMERO_JUICIO": numero_causa,
+                        "ORIGEN_DATA": "API_XHR",
+                        "RAW_API": payload_api,
+                        "COLUMNAS_API": df_api.columns.tolist(),
+                    }
+                    origen_resultado = "API_XHR"
+                else:
+                    error_api = self.agente_explorador.obtener_error_api() or "No se recibió un payload XHR/fetch utilizable."
+                    self.gestor_cola.registrar_error_extraccion(numero_causa, "API_XHR", error_api)
+                    logger.warning("[RUTA PRIMARIA FALLIDA] Causa %s: %s", numero_causa, error_api)
+
+                if datos_extraidos is None and (not ruta_html or not os.path.exists(ruta_html)):
                     intentos_fallidos = fallos_por_causa.get(numero_causa, 0) + 1
                     fallos_por_causa[numero_causa] = intentos_fallidos
-                    logger.warning(f"Fallo en la descarga de la causa {numero_causa}. Registrando 'ERROR'.")
+                    logger.warning(f"Fallaron la ruta XHR y el respaldo DOM para la causa {numero_causa}. Registrando 'ERROR'.")
                     self.gestor_cola.actualizar_estado(numero_causa, "ERROR")
                     retraso_minimo = 2 ** intentos_fallidos
                     retraso = random.uniform(retraso_minimo, retraso_minimo * 2)
@@ -144,31 +172,26 @@ class Orquestador:
                     time.sleep(retraso)
                     continue
 
-                # 3. RUTA PRINCIPAL: Procesamiento Vectorizado Pandas desde API JSON Interceptada
-                df_api = self.agente_explorador.procesar_datos_api_con_pandas()
-                datos_extraidos = None
-
-                if df_api is not None and not df_api.empty:
-                    logger.info(f"[🚀 RUTA PRINCIPAL API] Bypass BS4 exitoso para causa {numero_causa}.")
-                    datos_extraidos = {
-                        "NUMERO_JUICIO": numero_causa,
-                        "ORIGEN_DATA": "API_FETCH",
-                        "RAW_API_RECORDS": df_api.to_dict(orient="records")
-                    }
-                else:
-                    # 4. RUTA RESPALDO: Procesamiento HTML offline con BeautifulSoup4 + lxml
+                if datos_extraidos is None:
+                    # 3. RUTA RESPALDO: Procesamiento HTML offline con BeautifulSoup4 + lxml
                     logger.info(f"[* RUTA RESPALDO DOM] Procesando HTML offline con BeautifulSoup4 para causa {numero_causa}...")
                     datos_extraidos = self.agente_extractor.procesar_archivo_html(ruta_html)
                     datos_extraidos["NUMERO_JUICIO"] = numero_causa
                     datos_extraidos["ORIGEN_DATA"] = "DOM_BS4"
+                    origen_resultado = "DOM_BS4"
 
-                # 5. Persistencia local en JSON
+                # 4. Resultado y reserva de cola se confirman juntos en SQLite.
+                self.gestor_cola.registrar_resultado_transaccional(
+                    numero_causa,
+                    datos_extraidos,
+                    origen_resultado,
+                    ruta_html=ruta_html,
+                )
+
+                # 5. Persistencia local atómica para la generación posterior de reportes.
                 self.guardar_resultado_json(datos_extraidos)
-
-                # 6. Actualización Transaccional en la cola SQLite
-                self.gestor_cola.actualizar_estado(numero_causa, "PROCESADO", ruta_html=ruta_html)
                 fallos_por_causa.pop(numero_causa, None)
-                logger.info(f"[OK] Causa {numero_causa} guardada transaccionalmente en SQLite ({datos_extraidos['ORIGEN_DATA']}).")
+                logger.info(f"[OK] Causa {numero_causa} guardada transaccionalmente en SQLite ({origen_resultado}).")
 
                 procesados_lote += 1
 
