@@ -21,9 +21,9 @@ class GestorEstado:
         aplana la estructura usando pd.json_normalize, limpia nulos
         y exporta la tabla final a CSV (y Excel opcional) en UTF-8.
         """
-        logger.info(f"Compilando reporte final desde: {ruta_json}")
+        logger.info("Compilando reporte final desde: %s", ruta_json)
         if not os.path.exists(ruta_json):
-            logger.error(f"No existe el archivo de resultados: {ruta_json}")
+            logger.error("No existe el archivo de resultados: %s", ruta_json)
             return None
 
         try:
@@ -68,10 +68,10 @@ class GestorEstado:
 
             # Exportar a CSV UTF-8 sin índice
             df.to_csv(ruta_salida_csv, index=False, encoding="utf-8-sig")
-            logger.info(f"Reporte final generado exitosamente en CSV: {ruta_salida_csv} ({len(df)} registros)")
+            logger.info("Reporte final generado exitosamente en CSV: %s (%s registros)", ruta_salida_csv, len(df))
 
             return df
 
         except Exception as e:
-            logger.error(f"Fallo al generar reporte final: {e}")
+            logger.error("Fallo al generar reporte final: %s", e)
             return None

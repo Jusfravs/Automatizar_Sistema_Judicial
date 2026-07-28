@@ -22,12 +22,30 @@ class GestorCola:
 
     @contextmanager
     def _connection(self):
-        """Manage a SQLite connection and close it explicitly."""
+        """Gestiona una conexión SQLite con rollback automático ante excepciones."""
         conn = self._get_connection()
         try:
             yield conn
         except Exception:
             conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    @contextmanager
+    def _exclusive_transaction(self):
+        """
+        Abre una conexión en modo autocommit (isolation_level=None) y emite
+        BEGIN IMMEDIATE manualmente para garantizar exclusividad sin conflicto
+        con el context manager de _connection.
+        """
+        conn = sqlite3.connect(self.ruta_db, timeout=30.0, isolation_level=None)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            yield conn
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
             raise
         finally:
             conn.close()
@@ -89,7 +107,7 @@ class GestorCola:
                 registros
             )
             conn.commit()
-            logger.info(f"Cola poblada/actualizada. Total de causas procesadas en inserción: {len(registros)}")
+            logger.info("Cola poblada/actualizada. Total de causas procesadas en inserción: %s", len(registros))
 
     def obtener_siguiente(self):
         """
@@ -97,16 +115,14 @@ class GestorCola:
         Obtiene la primera causa con estado 'PENDIENTE' y actualiza su estado a 'EN_PROCESO'.
         Retorna el numero_causa o None si no hay causas pendientes.
         """
-        with self._connection() as conn:
+        with self._exclusive_transaction() as conn:
             cursor = conn.cursor()
-            cursor.execute("BEGIN IMMEDIATE")
             cursor.execute(
                 "SELECT numero_causa FROM juicios "
                 "WHERE estado = 'PENDIENTE' ORDER BY rowid LIMIT 1"
             )
             row = cursor.fetchone()
             if not row:
-                conn.commit()
                 return None
 
             numero_causa = row[0]
@@ -116,11 +132,9 @@ class GestorCola:
                 (numero_causa,)
             )
             if cursor.rowcount != 1:
-                conn.rollback()
-                logger.warning("Could not atomically claim cause '%s'.", numero_causa)
-                return None
+                logger.warning("No se pudo reservar atómicamente la causa '%s'.", numero_causa)
+                raise RuntimeError(f"Fallo en la reserva atómica de '{numero_causa}'.")
 
-            conn.commit()
             return numero_causa
 
     def actualizar_estado(self, numero_causa, nuevo_estado, ruta_html=None):
@@ -145,14 +159,13 @@ class GestorCola:
     def registrar_resultado_transaccional(self, numero_causa, resultado, origen, ruta_html=None):
         """
         Persiste el resultado del expediente y marca la reserva como PROCESADO
-        en una única transacción SQLite.
+        en una única transacción SQLite con BEGIN IMMEDIATE.
         """
         causa_str = str(numero_causa).strip()
         datos_json = json.dumps(resultado, ensure_ascii=False)
 
-        with self._connection() as conn:
+        with self._exclusive_transaction() as conn:
             cursor = conn.cursor()
-            cursor.execute("BEGIN IMMEDIATE")
             cursor.execute(
                 """
                 INSERT INTO resultados_expediente (numero_causa, origen, datos_json, ruta_html)
@@ -170,8 +183,7 @@ class GestorCola:
                 (ruta_html, causa_str),
             )
             if cursor.rowcount != 1:
-                raise LookupError(f"No existe una reserva para la causa '{causa_str}'.")
-            conn.commit()
+                raise LookupError("No existe una reserva para la causa '%s'." % causa_str)
 
     def registrar_error_extraccion(self, numero_causa, origen, detalle):
         """Registra fallos de captura sin cancelar la ruta de respaldo DOM."""
@@ -214,5 +226,5 @@ class GestorCola:
             conn.commit()
             filas_modificadas = cursor.rowcount
             if filas_modificadas > 0:
-                logger.info(f"Reiniciados {filas_modificadas} registros de 'ERROR' a 'PENDIENTE'.")
+                logger.info("Reiniciados %s registros de 'ERROR' a 'PENDIENTE'.", filas_modificadas)
             return filas_modificadas

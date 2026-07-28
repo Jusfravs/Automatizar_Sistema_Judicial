@@ -56,14 +56,12 @@ def auditar_csv(ruta_csv=RUTA_CSV_FINAL, total_esperado=TOTAL_ESPERADO):
     """
     Carga el archivo CSV final y ejecuta validaciones de conteo e integridad de columnas críticas.
     """
-    print("=" * 60)
-    print("[AUDITOR] - VALIDACIÓN DE INTEGRIDAD DEL LOTE PROCESADO")
-    print("=" * 60)
-    
+    logger.info("=" * 60)
+    logger.info("[AUDITOR] - VALIDACIÓN DE INTEGRIDAD DEL LOTE PROCESADO")
+    logger.info("=" * 60)
+
     if not os.path.exists(ruta_csv):
-        mensaje_err = f"El archivo CSV final no existe en la ruta: {ruta_csv}"
-        print(f"[ERROR] {mensaje_err}")
-        logger.error(mensaje_err)
+        logger.error("El archivo CSV final no existe en la ruta: %s", ruta_csv)
         return False
 
     try:
@@ -72,18 +70,16 @@ def auditar_csv(ruta_csv=RUTA_CSV_FINAL, total_esperado=TOTAL_ESPERADO):
         
         total_filas = len(df)
         if total_esperado is None:
-            print(f"[*] Filas procesadas en CSV: {total_filas} / Registros esperados: no configurado")
+            logger.info("Filas procesadas en CSV: %s / Registros esperados: no configurado", total_filas)
         else:
-            print(f"[*] Filas procesadas en CSV: {total_filas} / Registros esperados: {total_esperado}")
-        logger.info(f"Total registros leídos: {total_filas}")
+            logger.info("Filas procesadas en CSV: %s / Registros esperados: %s", total_filas, total_esperado)
 
         if total_esperado is None:
-            print("[ADVERTENCIA] No se valido el conteo porque falta 'total_esperado' en config.json.")
+            logger.warning("No se validó el conteo porque falta 'total_esperado' en config.json.")
         elif total_filas < total_esperado:
-            print(f"[ALERTA] El número de filas ({total_filas}) es inferior a los {total_esperado} registros esperados.")
-            logger.warning(f"Filas incompletas: {total_filas}/{total_esperado}")
+            logger.warning("Filas incompletas: %s/%s", total_filas, total_esperado)
         elif total_filas == total_esperado:
-            print(f"[OK] Coincidencia exacta con los {total_esperado} registros esperados.")
+            logger.info("[OK] Coincidencia exacta con los %s registros esperados.", total_esperado)
 
         # Identificación de columna de causa
         col_causa = None
@@ -94,31 +90,27 @@ def auditar_csv(ruta_csv=RUTA_CSV_FINAL, total_esperado=TOTAL_ESPERADO):
 
         if col_causa:
             nulos_causa = df[col_causa].isnull().sum()
-            print(f"[*] Campo '{col_causa}': {total_filas - nulos_causa} válidos | {nulos_causa} nulos.")
+            logger.info("Campo '%s': %s válidos | %s nulos.", col_causa, total_filas - nulos_causa, nulos_causa)
             if nulos_causa > 0:
-                print(f"[ALERTA CRÍTICA] Existen {nulos_causa} registros con número de causa nulo/vacío.")
-                logger.warning(f"Valores nulos detectados en '{col_causa}': {nulos_causa}")
+                logger.warning("[ALERTA CRÍTICA] Valores nulos detectados en '%s': %s", col_causa, nulos_causa)
         else:
-            print("[ALERTA] No se encontró una columna explícita de número de causa/juicio en el CSV.")
+            logger.warning("No se encontró una columna explícita de número de causa/juicio en el CSV.")
 
         # Verificación de fechas o campos extraídos
         cols_fechas = [c for c in df.columns if 'FECHA' in c.upper() or 'ETAPA' in c.upper()]
         if cols_fechas:
-            print("[*] Resumen de columnas de datos procesados:")
+            logger.info("Resumen de columnas de datos procesados:")
             for cf in cols_fechas:
                 completos = df[cf].notnull().sum()
                 porcentaje = round(completos / total_filas * 100, 1) if total_filas else 0.0
-                print(f"  - {cf}: {completos} registros procesados ({porcentaje}%)")
+                logger.info("  %s: %s registros procesados (%.1f%%)", cf, completos, porcentaje)
 
-        print("=" * 60)
-        print("[OK] Auditoría completada.")
-        print("=" * 60)
+        logger.info("=" * 60)
+        logger.info("[OK] Auditoría completada.")
         return True
 
     except Exception as e:
-        mensaje_exc = f"Excepción durante la auditoría del CSV: {e}"
-        print(f"[ERROR] {mensaje_exc}")
-        logger.error(mensaje_exc)
+        logger.error("Excepción durante la auditoría del CSV: %s", e)
         return False
 
 if __name__ == "__main__":

@@ -120,7 +120,7 @@ class Orquestador:
         try:
             while True:
                 if limite_lote is not None and procesados_lote >= limite_lote:
-                    logger.info(f"Límite de lote alcanzado ({limite_lote} registros). Deteniendo orquestación.")
+                    logger.info("Límite de lote alcanzado (%s registros). Deteniendo orquestación.", limite_lote)
                     break
 
                 # 1. Obtener siguiente causa pendiente desde la cola SQLite
@@ -134,12 +134,13 @@ class Orquestador:
                         logger.info("No hay causas pendientes ni errores pendientes de reintento. Procesamiento finalizado.")
                         break
 
-                logger.info(f"Procesando causa #{procesados_lote + 1}: {numero_causa}")
+                logger.info("Procesando causa #%s: %s", procesados_lote + 1, numero_causa)
 
                 # 2. La ruta primaria intenta capturar XHR/fetch; sólo devuelve HTML al usar el respaldo DOM.
                 ruta_html = self.agente_explorador.descargar_html_juicio(numero_causa)
                 df_api = self.agente_explorador.procesar_datos_api_con_pandas()
                 datos_extraidos = None
+                origen_resultado = None  # Se asigna explícitamente en cada ruta
 
                 if df_api is not None and not df_api.empty:
                     payload_api = self.agente_explorador.obtener_payload_api()
@@ -159,7 +160,10 @@ class Orquestador:
                 if datos_extraidos is None and (not ruta_html or not os.path.exists(ruta_html)):
                     intentos_fallidos = fallos_por_causa.get(numero_causa, 0) + 1
                     fallos_por_causa[numero_causa] = intentos_fallidos
-                    logger.warning(f"Fallaron la ruta XHR y el respaldo DOM para la causa {numero_causa}. Registrando 'ERROR'.")
+                    logger.warning(
+                        "Fallaron la ruta XHR y el respaldo DOM para la causa %s. Registrando 'ERROR'.",
+                        numero_causa,
+                    )
                     self.gestor_cola.actualizar_estado(numero_causa, "ERROR")
                     retraso_minimo = 2 ** intentos_fallidos
                     retraso = random.uniform(retraso_minimo, retraso_minimo * 2)
@@ -174,7 +178,7 @@ class Orquestador:
 
                 if datos_extraidos is None:
                     # 3. RUTA RESPALDO: Procesamiento HTML offline con BeautifulSoup4 + lxml
-                    logger.info(f"[* RUTA RESPALDO DOM] Procesando HTML offline con BeautifulSoup4 para causa {numero_causa}...")
+                    logger.info("[RUTA RESPALDO DOM] Procesando HTML offline con BeautifulSoup4 para causa %s...", numero_causa)
                     datos_extraidos = self.agente_extractor.procesar_archivo_html(ruta_html)
                     datos_extraidos["NUMERO_JUICIO"] = numero_causa
                     datos_extraidos["ORIGEN_DATA"] = "DOM_BS4"
@@ -191,12 +195,12 @@ class Orquestador:
                 # 5. Persistencia local atómica para la generación posterior de reportes.
                 self.guardar_resultado_json(datos_extraidos)
                 fallos_por_causa.pop(numero_causa, None)
-                logger.info(f"[OK] Causa {numero_causa} guardada transaccionalmente en SQLite ({origen_resultado}).")
+                logger.info("[OK] Causa %s guardada transaccionalmente en SQLite (%s).", numero_causa, origen_resultado)
 
                 procesados_lote += 1
 
                 retraso = random.uniform(2.0, 4.0)
-                logger.info(f"Esperando {retraso:.2f}s para evitar rate-limiting...")
+                logger.info("Esperando %.2fs para evitar rate-limiting...", retraso)
                 time.sleep(retraso)
 
         except KeyboardInterrupt:

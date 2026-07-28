@@ -5,6 +5,9 @@ import json
 import shutil
 import pandas as pd
 from pandas.errors import EmptyDataError
+from src.logger_config import obtener_logger
+
+logger = obtener_logger("GestorCasos")
 
 class GestorCasos:
     """
@@ -28,8 +31,10 @@ class GestorCasos:
             if self.df.empty:
                 raise EmptyDataError("El archivo CSV está completamente vacío.")
         except EmptyDataError:
-            print("[ERROR CRÍTICO] El archivo CSV de base de datos está vacío o corrupto. Por favor, restaura el archivo desde el Excel original.")
-            print("[*] Intentando autoreparar e inicializar nuevamente el CSV desde el Excel...")
+            logger.critical(
+                "El archivo CSV está vacío o corrupto. "
+                "Intentando autoreparar desde el Excel original..."
+            )
             if os.path.exists(self.ruta_csv):
                 try:
                     os.remove(self.ruta_csv)
@@ -39,26 +44,25 @@ class GestorCasos:
             try:
                 self.df = pd.read_csv(self.ruta_csv, low_memory=False)
             except Exception:
-                print("[ERROR CRÍTICO] No se pudo restaurar la base de datos CSV. Verifique el archivo Excel de origen.")
+                logger.critical("No se pudo restaurar la base de datos CSV. Verifique el Excel de origen.")
                 sys.exit(1)
         except FileNotFoundError:
-            print(f"[ERROR CRÍTICO] No se encontró el archivo CSV en '{self.ruta_csv}'.")
-            print("[*] Intentando crear la base de datos CSV desde el Excel original...")
+            logger.critical("No se encontró el CSV en '%s'. Creando desde Excel...", self.ruta_csv)
             self._inicializar_csv()
             try:
                 self.df = pd.read_csv(self.ruta_csv, low_memory=False)
             except Exception:
-                print(f"[ERROR CRÍTICO] No se pudo crear la base de datos CSV en '{self.ruta_csv}'.")
+                logger.critical("No se pudo crear la base de datos CSV en '%s'.", self.ruta_csv)
                 sys.exit(1)
         except Exception as e:
-            print(f"[ERROR CRÍTICO] Error inesperado al cargar la base de datos CSV: {e}")
+            logger.critical("Error inesperado al cargar la base de datos CSV: %s", e)
             sys.exit(1)
 
         # Normalizar cabeceras (limpia espacios y fuerza mayúsculas)
         self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
 
         if 'SUCURSAL' not in self.df.columns and os.path.exists(self.ruta_excel):
-            print("[*] Advertencia: 'SUCURSAL' no encontrada en CSV. Regenerando CSV desde Excel con cabeceras correctas...")
+            logger.warning("'SUCURSAL' no encontrada en CSV. Regenerando CSV desde Excel...")
             if os.path.exists(self.ruta_csv):
                 try:
                     os.remove(self.ruta_csv)
@@ -71,19 +75,27 @@ class GestorCasos:
     def _inicializar_csv(self):
         """CREATE: Genera el CSV de trabajo desde el Excel original si no existe."""
         if not os.path.exists(self.ruta_csv) and os.path.exists(self.ruta_excel):
-            print("[*] Inicializando base de datos CSV desde Excel...")
+            logger.info("Inicializando base de datos CSV desde Excel...")
             df_excel = pd.read_excel(self.ruta_excel, sheet_name=self.hoja, header=0)
             df_excel.columns = df_excel.columns.astype(str).str.strip().str.upper()
             df_excel.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
 
     def obtener_casos_pendientes(self):
         """READ: Obtiene la lista de números de juicio que cumplen con los filtros."""
-        print("Columnas disponibles:", self.df.columns.tolist())
-        if 'ESTADO' in self.df.columns:
+        logger.debug("Columnas disponibles: %s", self.df.columns.tolist())
+        columna_configurada = str(self.filtros.get('columna_estado_judicial', '')).strip().upper()
+        if columna_configurada:
+            if columna_configurada not in self.df.columns:
+                raise KeyError(
+                    f"La columna configurada para estado judicial '{columna_configurada}' no existe en el CSV."
+                )
+            col_estado = columna_configurada
+            logger.info("Usando columna configurada para estado judicial: '%s'.", col_estado)
+        elif 'ESTADO' in self.df.columns:
             col_estado = 'ESTADO'
         elif 'ESTADO.1' in self.df.columns:
             col_estado = 'ESTADO.1'
-            print("[*] Advertencia: se usara la columna de respaldo 'ESTADO.1'.")
+            logger.warning("Se usará la columna de respaldo 'ESTADO.1'.")
         else:
             raise KeyError("No se encontro una columna 'ESTADO' ni 'ESTADO.1' en el CSV.")
         
@@ -105,7 +117,7 @@ class GestorCasos:
             inicio_limpio = str(inicio).replace("-", "").strip()
             idx = next((i for i, c in enumerate(casos) if str(c).replace("-", "").strip() == inicio_limpio), None)
             if idx is not None:
-                print(f"[*] Reanudando desde causa '{inicio}' (Caso #{idx + 1} de {len(casos)}).")
+                logger.info("Reanudando desde causa '%s' (Caso #%s de %s).", inicio, idx + 1, len(casos))
                 casos = casos[idx:]
 
         return casos
@@ -128,23 +140,25 @@ class GestorCasos:
         return False
 
     def guardar(self):
-        """SAVE: Persiste los cambios en la base CSV de trabajo."""
+        """SAVE: Persiste los cambios en la base CSV de trabajo. Retorna True en éxito."""
         if os.path.isfile(self.ruta_csv):
             ruta_backup = f"{self.ruta_csv}.bak"
             try:
                 shutil.copy2(self.ruta_csv, ruta_backup)
-                print(f"[*] Respaldo del CSV creado en: {ruta_backup}")
+                logger.debug("Respaldo del CSV creado en: %s", ruta_backup)
             except OSError as e:
-                print(f"[ERROR] No se pudo crear respaldo del CSV: {e}")
-                return
+                logger.error("No se pudo crear respaldo del CSV: %s", e)
+                return False
 
         try:
             self.df.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
+            return True
         except Exception as e:
-            print(f"[ERROR] No se pudo guardar CSV: {e}")
+            logger.error("No se pudo guardar CSV: %s", e)
+            return False
 
     def exportar_excel(self):
         """EXPORT: Genera el Excel .xlsx consolidado final."""
-        print(f"[*] Exportando informe final a: {self.ruta_final}")
+        logger.info("Exportando informe final a: %s", self.ruta_final)
         self.df.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
-        print("[OK] ¡Archivo Excel final generado exitosamente!")
+        logger.info("¡Archivo Excel final generado exitosamente!")

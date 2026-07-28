@@ -3,6 +3,7 @@
         "sucursal": "LOS RIOS",
         "oficina": "TSACHILAS",
         "estado_judicial": "ACTIVO",
+        "columna_estado_judicial": "ESTADO.1",
         "inicio_desde_juicio": "23331-2022-04261"
     },
     "rutas": {
