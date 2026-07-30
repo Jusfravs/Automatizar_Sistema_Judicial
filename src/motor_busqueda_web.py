@@ -1,8 +1,13 @@
 # src/motor_busqueda_web.py
+import os
 import re
 import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 from src.agente_extractor import AgenteExtractor, NavegadorArbolContenido
+from src.logger_config import obtener_logger
+
+logger = obtener_logger("BotJudicial")
+
 
 class BotJudicial:
     """
@@ -31,8 +36,30 @@ class BotJudicial:
         # Ruta Principal: Listener de intercepción de red (API Fetching)
         self.page.on("response", self._interceptar_respuesta_api)
         
-        print(f"[*] Navegador iniciado en {self.url_portal}")
+        logger.info("Navegador iniciado en %s", self.url_portal)
         self.page.goto(self.url_portal, timeout=60000, wait_until="domcontentloaded")
+        self.page.wait_for_load_state("networkidle", timeout=30000)
+
+    def _verificar_sesion_activa(self):
+        """
+        Verifica si la sesión del portal sigue activa.
+        Si detecta expiración, vuelve a navegar al portal.
+        """
+        try:
+            contenido = self.page.inner_text("body", timeout=5000)
+            indicadores_expiracion = [
+                "sesión expirada", "session expired", "iniciar sesión",
+                "vuelva a ingresar", "token expirado", "no autorizado",
+            ]
+            for indicador in indicadores_expiracion:
+                if indicador.lower() in contenido.lower():
+                    logger.warning("[!] Sesión expirada detectada. Reiniciando navegación...")
+                    self.page.goto(self.url_portal, timeout=60000, wait_until="domcontentloaded")
+                    self.page.wait_for_load_state("networkidle", timeout=30000)
+                    return False
+        except Exception:
+            pass
+        return True
 
     def _interceptar_respuesta_api(self, response):
         """
@@ -50,7 +77,7 @@ class BotJudicial:
                                 "url": response.url,
                                 "data": data
                             })
-                            print(f"[RUTA PRINCIPAL API] Capturado JSON desde: {response.url}")
+                            logger.debug("[RUTA PRINCIPAL API] Capturado JSON desde: %s", response.url)
         except Exception:
             pass
 
@@ -91,7 +118,7 @@ class BotJudicial:
         2. Aplica freno de ejecución estricto: wait_for_selector('text="Actor/Ofendido:"', state='visible').
         3. Procesa Ruta Principal (API + Pandas) o Ruta Respaldo (BeautifulSoup4 + DOM).
         """
-        print(f"\n[-] Iniciando causa: {numero_juicio}")
+        logger.info("Iniciando causa: %s", numero_juicio)
         self.paquetes_api_interceptados.clear()
         
         selector_freno_estricto = "text=/Actor\\/Ofendido:|Información del proceso|Actuaciones Judiciales|Exportar PDF/i"
@@ -100,6 +127,9 @@ class BotJudicial:
 
         while intentos < max_reintentos:
             try:
+                # 0. Verificar sesión activa antes de cada intento
+                self._verificar_sesion_activa()
+
                 # 1. Preparar entrada en caja de búsqueda (Nivel 0)
                 try:
                     input_causa = self.page.locator("input[placeholder*='códigoDependencia-Año-Secuencial']").first
@@ -109,13 +139,13 @@ class BotJudicial:
                     if input_causa.is_visible():
                         input_causa.fill("")
                         input_causa.fill(str(numero_juicio).strip())
-                        print(f"[!] Causa '{numero_juicio}' lista en el buscador.")
-                        print("[!] Por favor, resuelve Captcha / busca y navega a la carpeta del expediente...")
+                        logger.info("Causa '%s' lista en el buscador.", numero_juicio)
+                        logger.info("Por favor, resuelve Captcha / busca y navega a la carpeta del expediente...")
                 except Exception as e_fill:
-                    print(f"[!] Aviso al preparar la caja de búsqueda: {e_fill}")
+                    logger.warning("Aviso al preparar la caja de búsqueda: %s", e_fill)
 
                 # 2. RUTA RESPALDO: Freno de Ejecución Estricto (wait_for_selector)
-                print("[*] FRENO DE EJECUCIÓN: Aguardando inyección completa en Angular (text='Actor/Ofendido:')...")
+                logger.info("FRENO DE EJECUCIÓN: Aguardando inyección completa en Angular...")
                 self.page.wait_for_selector(selector_freno_estricto, state="visible", timeout=300000)
                 self.nav_arbol.bajar_nivel("Expediente abierto -> Profundizando en contenido")
 
@@ -123,7 +153,7 @@ class BotJudicial:
                 self.datos_extraidos = self._ejecutar_extraccion_detalles()
 
                 # 4. Esperar a que el usuario cierre el expediente (retorno en árbol)
-                print("[*] Aguardando a que el operador cierre el expediente (state: hidden)...")
+                logger.info("Aguardando a que el operador cierre el expediente (state: hidden)...")
                 self.page.wait_for_selector(selector_freno_estricto, state="hidden", timeout=300000)
                 self.nav_arbol.subir_nivel("Expediente cerrado -> Retornando al nivel superior")
 
@@ -131,15 +161,15 @@ class BotJudicial:
 
             except PlaywrightTimeoutError:
                 intentos += 1
-                print(f"[!] Timeout alcanzado (intento {intentos}/{max_reintentos}). El selector no apareció en 5 minutos.")
+                logger.warning("Timeout alcanzado (intento %s/%s). El selector no apareció en 5 minutos.", intentos, max_reintentos)
                 if intentos >= max_reintentos:
-                    print(f"[ERROR] Máximo de reintentos alcanzado para causa {numero_juicio}. Abortando.")
+                    logger.error("Máximo de reintentos alcanzado para causa %s. Abortando.", numero_juicio)
                     return False
             except Exception as e:
                 intentos += 1
-                print(f"[!] Excepción en bucle de observación pasiva (intento {intentos}/{max_reintentos}): {e}")
+                logger.warning("Excepción en bucle de observación pasiva (intento %s/%s): %s", intentos, max_reintentos, e)
                 if intentos >= max_reintentos:
-                    print(f"[ERROR] Máximo de reintentos alcanzado para causa {numero_juicio}. Abortando.")
+                    logger.error("Máximo de reintentos alcanzado para causa %s. Abortando.", numero_juicio)
                     return False
                 try:
                     self.page.wait_for_selector("body", state="visible", timeout=5000)
@@ -171,7 +201,7 @@ class BotJudicial:
 
         # --- RUTA PRINCIPAL: INTERCEPCIÓN API (BYPASS BEAUTIFULSOUP4 + PANDAS) ---
         if self.paquetes_api_interceptados:
-            print(f"[🚀 RUTA PRINCIPAL API] Procesando {len(self.paquetes_api_interceptados)} respuesta(s) JSON con Pandas...")
+            logger.info("[RUTA PRINCIPAL API] Procesando %s respuesta(s) JSON con Pandas...", len(self.paquetes_api_interceptados))
             try:
                 registros = []
                 for p in self.paquetes_api_interceptados:
@@ -204,104 +234,22 @@ class BotJudicial:
                                             datos["FECHA INICIAL FASE ACTUAL"] = str(f_act)
                                             datos["ETAPA_PROCESAL"] = etapa
                                             datos["FASE_PROCESAL"] = fase
-                                            print(f"[+] Match en Ruta Principal API (Score {score}): '{fase}' en fecha {f_act}")
+                                            logger.info("Match en Ruta Principal API (Score %s): '%s' en fecha %s", score, fase, f_act)
                                             return datos
             except Exception as e_pandas:
-                print(f"[!] Conmutando a Ruta de Respaldo por aviso en Pandas: {e_pandas}")
+                logger.warning("Conmutando a Ruta de Respaldo por aviso en Pandas: %s", e_pandas)
 
-        # --- RUTA RESPALDO: SINCRONIZACIÓN DOM (BEAUTIFULSOUP4 + LXML) ---
-        print("[* RUTA RESPALDO DOM] Procesando HTML renderizado post-sincronización con BeautifulSoup4...")
+        # --- RUTA RESPALDO: SINCRONIZACIÓN DOM (AGENTE EXTRACTOR) ---
+        logger.info("[RUTA RESPALDO DOM] Procesando HTML renderizado post-sincronización con AgenteExtractor...")
         try:
-            # 1. Extraer Fecha de Inicio General
-            try:
-                elems_fecha = self.page.locator("text=/Fecha de ingreso|Fecha ingreso|Fecha presentación|Fecha inicio/i").all()
-                for ef in elems_fecha:
-                    txt = ef.inner_text().strip()
-                    m = re.search(r'\d{2}/\d{2}/\d{4}', txt)
-                    if m:
-                        datos["FECHA INICIO JUICIO"] = m.group(0)
-                        break
-                    try:
-                        parent_txt = ef.locator("xpath=..").inner_text().strip()
-                        m_p = re.search(r'\d{2}/\d{2}/\d{4}', parent_txt)
-                        if m_p:
-                            datos["FECHA INICIO JUICIO"] = m_p.group(0)
-                            break
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-
-            actuaciones_validas = []
-
-            # 2. Extracción de actuaciones en DOM (Selectores relativos XPath)
-            filas = self.page.locator("xpath=//table//tr | //div[@role='row']").all()
-            for fila in filas:
-                try:
-                    cols = fila.locator("xpath=.//td | .//th | .//div").all()
-                    if len(cols) >= 2:
-                        txt_col0 = cols[0].inner_text().strip()
-                        txt_col1 = cols[1].inner_text().strip()
-                    else:
-                        txt_row = fila.inner_text().strip()
-                        parts = [p.strip() for p in txt_row.split("\n") if p.strip()]
-                        if len(parts) >= 2:
-                            txt_col0, txt_col1 = parts[0], parts[1]
-                        else:
-                            continue
-
-                    m_f = re.search(r'\d{2}/\d{2}/\d{4}', txt_col0)
-                    if not m_f:
-                        m_f = re.search(r'\d{2}/\d{2}/\d{4}', txt_col0 + " " + txt_col1)
-
-                    if m_f:
-                        fecha_act = m_f.group(0)
-                        detalle_act = txt_col1.upper()
-                        if "BUSQUEDA" not in detalle_act:
-                            actuaciones_validas.append((fecha_act, detalle_act))
-                except Exception:
-                    continue
-
-            # Fallback en texto plano
-            if not actuaciones_validas:
-                texto_pagina = self.page.inner_text("body")
-                lineas = [l.strip() for l in texto_pagina.split("\n") if l.strip()]
-                for idx, line in enumerate(lineas):
-                    m_f = re.search(r'(\d{2}/\d{2}/\d{4})', line)
-                    if m_f:
-                        fecha_act = m_f.group(1)
-                        linea_limpia = re.sub(r'\d{2}/\d{2}/\d{4}(\s+\d{2}:\d{2})?', '', line).strip()
-                        if len(linea_limpia) > 3:
-                            detalle_act = linea_limpia.upper()
-                        elif (idx + 1) < len(lineas):
-                            detalle_act = lineas[idx + 1].upper()
-                        else:
-                            detalle_act = ""
-                        actuaciones_validas.append((fecha_act, detalle_act))
-
-            if not datos["FECHA INICIO JUICIO"] and actuaciones_validas:
-                datos["FECHA INICIO JUICIO"] = actuaciones_validas[-1][0]
-
-            # 3. Clasificación con Similitud Semántica
-            estado_encontrado = False
-            for fecha_act, detalle_act in actuaciones_validas:
-                etapa, fase, score = self.extractor.evaluar_similitud_semantica(detalle_act)
-                if etapa and score >= 0.7:
-                    datos["FECHA INICIAL FASE ACTUAL"] = fecha_act
-                    datos["ETAPA_PROCESAL"] = etapa
-                    datos["FASE_PROCESAL"] = fase
-                    estado_encontrado = True
-                    print(f"[+] Match en Ruta Respaldo DOM (Score {score}): '{fase}' en fecha {fecha_act}")
-                    break
-
-            if not estado_encontrado and actuaciones_validas:
-                datos["FECHA INICIAL FASE ACTUAL"] = actuaciones_validas[0][0]
-                datos["ETAPA_PROCESAL"] = "ESTADO DESCONOCIDO"
-                datos["FASE_PROCESAL"] = actuaciones_validas[0][1][:100]
-
-            return datos
+            contenido_html = self.page.content()
+            datos_dom = self.extractor.procesar_html_string(contenido_html)
+            # Conservar fecha de inicio si fue extraída previamente
+            if datos["FECHA INICIO JUICIO"] and not datos_dom.get("FECHA INICIO JUICIO"):
+                datos_dom["FECHA INICIO JUICIO"] = datos["FECHA INICIO JUICIO"]
+            return datos_dom
         except Exception as e:
-            print(f"[ERROR] Inconveniente al leer actuaciones en Ruta Respaldo: {e}")
+            logger.error("Inconveniente al leer actuaciones en Ruta Respaldo: %s", e)
             return datos
 
     def cerrar_navegador(self):
@@ -310,4 +258,4 @@ class BotJudicial:
             self.browser.close()
         if self.playwright:
             self.playwright.stop()
-        print("[*] Navegador cerrado.")
+        logger.info("Navegador cerrado.")

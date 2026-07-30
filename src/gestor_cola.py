@@ -82,6 +82,10 @@ class GestorCola:
                     FOREIGN KEY (numero_causa) REFERENCES juicios(numero_causa)
                 )
             """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_juicios_estado ON juicios(estado)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_resultados_causa ON resultados_expediente(numero_causa)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_eventos_causa ON eventos_extraccion(numero_causa)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_eventos_creado ON eventos_extraccion(creado_en)")
             conn.commit()
 
     def poblar_cola(self, df_o_lista):
@@ -228,3 +232,69 @@ class GestorCola:
             if filas_modificadas > 0:
                 logger.info("Reiniciados %s registros de 'ERROR' a 'PENDIENTE'.", filas_modificadas)
             return filas_modificadas
+
+    def recuperar_huerfanos(self):
+        """
+        Recupera registros que quedaron atrapados en estado 'EN_PROCESO'
+        (por ejemplo, tras una interrupción inesperada del proceso).
+        Los devuelve a 'PENDIENTE' e incrementa su contador de reintentos.
+        Registra un evento de recuperación en eventos_extraccion.
+        Retorna la cantidad de registros recuperados.
+        """
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            # Identificar huérfanos
+            cursor.execute(
+                "SELECT numero_causa FROM juicios WHERE estado = 'EN_PROCESO'"
+            )
+            huerfanos = cursor.fetchall()
+
+            if not huerfanos:
+                return 0
+
+            # Recuperar a PENDIENTE
+            cursor.execute(
+                """
+                UPDATE juicios
+                SET estado = 'PENDIENTE', reintentos = reintentos + 1
+                WHERE estado = 'EN_PROCESO'
+                """
+            )
+            filas = cursor.rowcount
+
+            # Registrar evento de recuperación
+            for (causa,) in huerfanos:
+                cursor.execute(
+                    """
+                    INSERT INTO eventos_extraccion (numero_causa, origen, detalle)
+                    VALUES (?, 'RECUPERACION', 'Registro huérfano EN_PROCESO recuperado a PENDIENTE al inicio del proceso.')
+                    """,
+                    (causa,)
+                )
+
+            conn.commit()
+            logger.info(
+                "Recuperados %s registros huérfanos de 'EN_PROCESO' a 'PENDIENTE': %s",
+                filas,
+                [c[0] for c in huerfanos]
+            )
+            return filas
+
+    def verificar_esquema(self):
+        """
+        Verifica que las tres tablas requeridas existen en la base de datos.
+        Retorna True si el esquema es válido, False en caso contrario.
+        """
+        tablas_requeridas = ["juicios", "resultados_expediente", "eventos_extraccion"]
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tablas_existentes = {row[0] for row in cursor.fetchall()}
+
+        faltantes = [t for t in tablas_requeridas if t not in tablas_existentes]
+        if faltantes:
+            logger.error("Tablas faltantes en la base de datos: %s", faltantes)
+            return False
+
+        logger.info("Esquema de base de datos verificado correctamente.")
+        return True

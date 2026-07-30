@@ -10,6 +10,8 @@ data/*.xlsx
 data/*.tmp
 !data/REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx
 estado_casos.db
+*.db.backup_*
+*.bak
 temp_htmls/
 *.html
 

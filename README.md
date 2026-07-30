@@ -89,6 +89,18 @@ El proyecto utiliza una arquitectura desacoplada orientada a eventos y persisten
 
 ## Instrucciones de Ejecución
 
+### 0. Migración de Base de Datos (OBLIGATORIO en primera ejecución)
+
+Antes de ejecutar el sistema por primera vez (o si la base de datos tiene problemas), ejecutar:
+```bash
+python migracion_db.py
+```
+Esto:
+- Crea un backup de `estado_casos.db`
+- Crea las tablas faltantes (`resultados_expediente`, `eventos_extraccion`)
+- Añade índices de rendimiento
+- Recupera registros huérfanos atrapados en `EN_PROCESO`
+
 ### 1. Ejecución Principal / Orquestador en Producción
 
 Para ejecutar el orquestador principal con interfaz asistida:
@@ -105,6 +117,8 @@ Para la ejecución en modo headless masivo:
 ```bash
 python -m src.orquestador
 ```
+
+> **Nota**: Ambos flujos ahora sincronizan sus resultados en SQLite (`estado_casos.db`) además del CSV.
 
 ### 2. Auditoría e Integridad del Lote
 
@@ -125,5 +139,6 @@ python -m src.limpieza
 ## Registros y Auditoría
 
 * **Log de Producción**: `ejecucion_produccion.log`
-* **Base de Estado**: `estado_casos.db`
+* **Base de Estado**: `estado_casos.db` (SQLite con tablas: `juicios`, `resultados_expediente`, `eventos_extraccion`)
 * **Resultados Finales**: `data/reporte_trabajo.csv` / `data/REPORTE_PROCESADO_FINAL.xlsx`
+* **Casos Fallidos**: `data/casos_fallidos.txt`

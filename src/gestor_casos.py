@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import shutil
+from datetime import datetime
 import pandas as pd
 from pandas.errors import EmptyDataError
 from src.logger_config import obtener_logger
@@ -159,6 +160,50 @@ class GestorCasos:
 
     def exportar_excel(self):
         """EXPORT: Genera el Excel .xlsx consolidado final."""
+        # Calcular días en fase actual antes de exportar
+        self.calcular_dias_fase_actual()
         logger.info("Exportando informe final a: %s", self.ruta_final)
         self.df.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
         logger.info("¡Archivo Excel final generado exitosamente!")
+
+    def calcular_dias_fase_actual(self):
+        """
+        Calcula la columna 'DIAS EN LA FASE ACTUAL' como la diferencia en días calendario
+        entre la fecha actual y 'FECHA INICIAL FASE ACTUAL'.
+        Soporta formatos dd/mm/yyyy y yyyy-mm-dd.
+        """
+        col_fecha = 'FECHA INICIAL FASE ACTUAL'
+        col_dias = 'DIAS EN LA FASE ACTUAL'
+
+        if col_fecha not in self.df.columns:
+            logger.warning("Columna '%s' no encontrada. No se calculará '%s'.", col_fecha, col_dias)
+            return
+
+        if col_dias not in self.df.columns:
+            self.df[col_dias] = None
+
+        hoy = datetime.now()
+        conteo = 0
+
+        for idx, valor in self.df[col_fecha].items():
+            if pd.isna(valor) or str(valor).strip() == "":
+                continue
+
+            fecha_str = str(valor).strip()
+            fecha_parsed = None
+
+            # Intentar formato dd/mm/yyyy (formato del portal e-SATJE)
+            for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+                try:
+                    fecha_parsed = datetime.strptime(fecha_str, fmt)
+                    break
+                except ValueError:
+                    continue
+
+            if fecha_parsed:
+                dias = (hoy - fecha_parsed).days
+                self.df.at[idx, col_dias] = max(0, dias)
+                conteo += 1
+
+        logger.info("'%s' calculado para %s registros.", col_dias, conteo)
+

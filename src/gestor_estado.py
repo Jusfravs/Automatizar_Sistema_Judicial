@@ -1,10 +1,42 @@
-# src/gestor_estado.py
 import json
 import os
+from datetime import datetime
 import pandas as pd
 from src.logger_config import obtener_logger
 
 logger = obtener_logger("GestorEstado")
+
+
+def calcular_dias_fase_actual_df(df):
+    """Calcula la columna DIAS EN LA FASE ACTUAL a partir de FECHA INICIAL FASE ACTUAL."""
+    col_fecha = 'FECHA INICIAL FASE ACTUAL'
+    col_dias = 'DIAS EN LA FASE ACTUAL'
+
+    if col_fecha not in df.columns:
+        return df
+
+    if col_dias not in df.columns:
+        df[col_dias] = None
+
+    hoy = datetime.now()
+    for idx, valor in df[col_fecha].items():
+        if pd.isna(valor) or str(valor).strip() == "":
+            continue
+
+        fecha_str = str(valor).strip()
+        fecha_parsed = None
+        for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+            try:
+                fecha_parsed = datetime.strptime(fecha_str, fmt)
+                break
+            except ValueError:
+                continue
+
+        if fecha_parsed:
+            dias = (hoy - fecha_parsed).days
+            df.at[idx, col_dias] = max(0, dias)
+
+    return df
 
 
 class GestorEstado:
@@ -18,8 +50,8 @@ class GestorEstado:
     def generar_reporte_final(self, ruta_json="datos_extraidos.json", ruta_salida_csv="data/reporte_trabajo_final.csv"):
         """
         Lee el archivo JSON con los datos extraídos por AgenteExtractor,
-        aplana la estructura usando pd.json_normalize, limpia nulos
-        y exporta la tabla final a CSV (y Excel opcional) en UTF-8.
+        aplana la estructura usando pd.json_normalize, calcula DIAS EN LA FASE ACTUAL,
+        y exporta la tabla final a CSV en UTF-8.
         """
         logger.info("Compilando reporte final desde: %s", ruta_json)
         if not os.path.exists(ruta_json):
@@ -37,11 +69,15 @@ class GestorEstado:
             # Aplanar estructura JSON
             df = pd.json_normalize(datos)
 
+            # Calcular Días en la Fase Actual
+            df = calcular_dias_fase_actual_df(df)
+
             # Reordenar columnas clave si existen
             columnas_deseadas = [
                 "NUMERO_JUICIO",
                 "FECHA INICIO JUICIO",
                 "FECHA INICIAL FASE ACTUAL",
+                "DIAS EN LA FASE ACTUAL",
                 "ETAPA_PROCESAL",
                 "FASE_PROCESAL",
                 "HISTORIAL_ACTUACIONES"

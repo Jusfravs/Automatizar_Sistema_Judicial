@@ -7,6 +7,7 @@ import tempfile
 import time
 import pandas as pd
 
+from src.antigravity_adapter import extraer_y_normalizar_dict
 from src.gestor_cola import GestorCola
 from src.agente_explorador import AgenteExplorador
 from src.agente_extractor import AgenteExtractor
@@ -113,6 +114,19 @@ class Orquestador:
         - Intercepción API (Ruta Principal + Pandas)
         - Sincronización DOM (Ruta Respaldo + BeautifulSoup4)
         """
+        # Verificar esquema de la base de datos antes de iniciar
+        if not self.gestor_cola.verificar_esquema():
+            logger.critical(
+                "El esquema de la base de datos no es válido. "
+                "Ejecute 'python migracion_db.py' para reparar."
+            )
+            return
+
+        # Recuperar registros huérfanos (EN_PROCESO → PENDIENTE)
+        huerfanos = self.gestor_cola.recuperar_huerfanos()
+        if huerfanos > 0:
+            logger.info("Se recuperaron %s registros huérfanos al inicio.", huerfanos)
+
         logger.info("Iniciando motor de ejecución multi-agente en producción...")
         procesados_lote = 0
         fallos_por_causa = {}
@@ -136,53 +150,42 @@ class Orquestador:
 
                 logger.info("Procesando causa #%s: %s", procesados_lote + 1, numero_causa)
 
-                # 2. La ruta primaria intenta capturar XHR/fetch; sólo devuelve HTML al usar el respaldo DOM.
-                ruta_html = self.agente_explorador.descargar_html_juicio(numero_causa)
-                df_api = self.agente_explorador.procesar_datos_api_con_pandas()
-                datos_extraidos = None
-                origen_resultado = None  # Se asigna explícitamente en cada ruta
+                # 2. Intentar ruta primaria con antigravity_cli (XHR/JSON + normalización).
+                datos_extraidos = extraer_y_normalizar_dict(numero_causa)
+                origen_resultado = None
+                ruta_html = None
 
-                if df_api is not None and not df_api.empty:
-                    payload_api = self.agente_explorador.obtener_payload_api()
-                    logger.info("[RUTA PRIMARIA XHR] DataFrame recibido para causa %s (%s registros).", numero_causa, len(df_api))
-                    datos_extraidos = {
-                        "NUMERO_JUICIO": numero_causa,
-                        "ORIGEN_DATA": "API_XHR",
-                        "RAW_API": payload_api,
-                        "COLUMNAS_API": df_api.columns.tolist(),
-                    }
-                    origen_resultado = "API_XHR"
+                if datos_extraidos is not None:
+                    logger.info("[RUTA PRIMARIA] antigravity_cli extrajo datos estructurados para causa %s.", numero_causa)
+                    origen_resultado = "ANTIGRAVITY_XHR"
                 else:
-                    error_api = self.agente_explorador.obtener_error_api() or "No se recibió un payload XHR/fetch utilizable."
-                    self.gestor_cola.registrar_error_extraccion(numero_causa, "API_XHR", error_api)
-                    logger.warning("[RUTA PRIMARIA FALLIDA] Causa %s: %s", numero_causa, error_api)
+                    logger.warning("[RUTA PRIMARIA FALLIDA] antigravity_cli no devolvió datos para causa %s.", numero_causa)
 
-                if datos_extraidos is None and (not ruta_html or not os.path.exists(ruta_html)):
-                    intentos_fallidos = fallos_por_causa.get(numero_causa, 0) + 1
-                    fallos_por_causa[numero_causa] = intentos_fallidos
-                    logger.warning(
-                        "Fallaron la ruta XHR y el respaldo DOM para la causa %s. Registrando 'ERROR'.",
-                        numero_causa,
-                    )
-                    self.gestor_cola.actualizar_estado(numero_causa, "ERROR")
-                    retraso_minimo = 2 ** intentos_fallidos
-                    retraso = random.uniform(retraso_minimo, retraso_minimo * 2)
-                    logger.warning(
-                        "Intento fallido %s para la causa %s; reintento tras backoff de %.2fs.",
-                        intentos_fallidos,
-                        numero_causa,
-                        retraso,
-                    )
-                    time.sleep(retraso)
-                    continue
-
-                if datos_extraidos is None:
-                    # 3. RUTA RESPALDO: Procesamiento HTML offline con BeautifulSoup4 + lxml
-                    logger.info("[RUTA RESPALDO DOM] Procesando HTML offline con BeautifulSoup4 para causa %s...", numero_causa)
-                    datos_extraidos = self.agente_extractor.procesar_archivo_html(ruta_html)
-                    datos_extraidos["NUMERO_JUICIO"] = numero_causa
-                    datos_extraidos["ORIGEN_DATA"] = "DOM_BS4"
-                    origen_resultado = "DOM_BS4"
+                    # 3. Ruta de respaldo DOM existente
+                    ruta_html = self.agente_explorador.descargar_html_juicio(numero_causa)
+                    if ruta_html and os.path.exists(ruta_html):
+                        datos_extraidos = self.agente_extractor.procesar_archivo_html(ruta_html)
+                        datos_extraidos["NUMERO_JUICIO"] = numero_causa
+                        datos_extraidos["ORIGEN_DATA"] = "DOM_BS4"
+                        origen_resultado = "DOM_BS4"
+                    else:
+                        intentos_fallidos = fallos_por_causa.get(numero_causa, 0) + 1
+                        fallos_por_causa[numero_causa] = intentos_fallidos
+                        logger.warning(
+                            "Fallaron la ruta primaria antigravity_cli y la ruta de respaldo DOM para la causa %s. Registrando 'ERROR'.",
+                            numero_causa,
+                        )
+                        self.gestor_cola.actualizar_estado(numero_causa, "ERROR")
+                        retraso_minimo = 2 ** intentos_fallidos
+                        retraso = random.uniform(retraso_minimo, retraso_minimo * 2)
+                        logger.warning(
+                            "Intento fallido %s para la causa %s; reintento tras backoff de %.2fs.",
+                            intentos_fallidos,
+                            numero_causa,
+                            retraso,
+                        )
+                        time.sleep(retraso)
+                        continue
 
                 # 4. Resultado y reserva de cola se confirman juntos en SQLite.
                 self.gestor_cola.registrar_resultado_transaccional(

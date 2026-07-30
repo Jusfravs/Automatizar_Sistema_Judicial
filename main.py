@@ -2,6 +2,7 @@ import os
 import sys
 
 from src.gestor_casos import GestorCasos
+from src.gestor_cola import GestorCola
 from src.logger_config import obtener_logger
 from src.motor_busqueda_web import BotJudicial
 
@@ -28,6 +29,25 @@ def main():
 
     repo = GestorCasos("config.json")
     casos = repo.obtener_casos_pendientes()
+
+    # --- Integración con SQLite (GestorCola) ---
+    cola = GestorCola(ruta_db="estado_casos.db")
+
+    # Verificar esquema de la base de datos
+    if not cola.verificar_esquema():
+        logger.critical(
+            "El esquema de la base de datos no es válido. "
+            "Ejecute 'python migracion_db.py' para reparar."
+        )
+        sys.exit(1)
+
+    # Recuperar registros huérfanos (EN_PROCESO → PENDIENTE)
+    huerfanos_recuperados = cola.recuperar_huerfanos()
+    if huerfanos_recuperados > 0:
+        logger.info("Se recuperaron %s registros huérfanos.", huerfanos_recuperados)
+
+    # Poblar la cola SQLite con los casos del CSV (INSERT OR IGNORE)
+    cola.poblar_cola(casos)
 
     # Permitir iniciar procesamiento desde un número de juicio específico pasado como argumento.
     if len(sys.argv) > 1:
@@ -66,23 +86,47 @@ def main():
                 if bot.procesar_flujo_judicatura(numero_juicio):
                     datos = bot.extraer_detalles_juicio()
 
+                    # Guardar en CSV (flujo original)
                     if repo.actualizar_caso(numero_juicio, datos):
                         exitosos += 1
-                        logger.info("[+] Juicio %s guardado.", numero_juicio)
+                        logger.info("[+] Juicio %s guardado en CSV.", numero_juicio)
                     else:
                         logger.error(
-                            "[-] Error al guardar los datos del juicio %s en el repositorio.",
+                            "[-] Error al guardar los datos del juicio %s en el repositorio CSV.",
                             numero_juicio,
                         )
                         casos_fallidos.append(numero_juicio)
+                        cola.actualizar_estado(numero_juicio, "ERROR")
+                        continue
+
+                    # Guardar en SQLite (sincronización)
+                    try:
+                        cola.registrar_resultado_transaccional(
+                            numero_juicio,
+                            datos,
+                            origen="ASISTIDO_CSV",
+                            ruta_html=None,
+                        )
+                        logger.info("[+] Juicio %s sincronizado en SQLite.", numero_juicio)
+                    except Exception as e_sqlite:
+                        logger.warning(
+                            "[!] No se pudo sincronizar %s en SQLite: %s",
+                            numero_juicio, e_sqlite
+                        )
+
                 else:
                     logger.warning("[-] No se pudo procesar el flujo para el juicio %s.", numero_juicio)
                     casos_fallidos.append(numero_juicio)
+                    cola.actualizar_estado(numero_juicio, "ERROR")
 
             except Exception:
                 # Capturamos cualquier error de Playwright o red sin romper el bucle for.
                 logger.exception("[!] Excepción crítica en causa %s.", numero_juicio)
                 casos_fallidos.append(numero_juicio)
+                try:
+                    cola.actualizar_estado(numero_juicio, "ERROR")
+                except Exception:
+                    pass
 
             # Autoguardado preventivo.
             if i % intervalo_guardado == 0:
@@ -112,6 +156,13 @@ def main():
             bot.cerrar_navegador()
         except Exception:
             logger.exception("No se pudo cerrar correctamente el navegador.")
+
+    # Estadísticas finales de SQLite
+    try:
+        stats = cola.obtener_estadisticas()
+        logger.info("[SQLite] Estadísticas finales: %s", stats)
+    except Exception:
+        pass
 
     logger.info("[OK] PROCESO COMPLETADO. %s de %s causas procesadas con éxito.", exitosos, total)
 
