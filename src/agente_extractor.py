@@ -1,6 +1,7 @@
 # src/agente_extractor.py
 import os
 import re
+import json
 import unicodedata
 from bs4 import BeautifulSoup
 from src.logger_config import obtener_logger
@@ -474,6 +475,20 @@ class AgenteExtractor:
                 resultado["ETAPA_PROCESAL"] = etapa_inferida
                 resultado["FASE_PROCESAL"] = fase_inferida
                 resultado["FECHA INICIAL FASE ACTUAL"] = fecha_inferida or (actuaciones[0]["fecha"] if actuaciones else None)
+                
+                # Log estructurado de la decisión de fase para auditoría
+                try:
+                    log_payload = {
+                        "source": "dom",
+                        "reason": "inferencia_autonoma",
+                        "fase_deducida": fase_inferida,
+                        "etapa": etapa_inferida,
+                        "fecha_elegida": resultado["FECHA INICIAL FASE ACTUAL"],
+                        "num_actuaciones": len(actuaciones)
+                    }
+                    logger.info("[DECISION_FASE] %s", json.dumps(log_payload, ensure_ascii=False))
+                except Exception:
+                    pass
             elif actuaciones:
                 # Fallback contextual si se encontraron actuaciones pero ninguna cuadró estrictamente
                 resultado["FECHA INICIAL FASE ACTUAL"] = actuaciones[0]["fecha"]

@@ -1,12 +1,64 @@
 # src/motor_busqueda_web.py
 import os
 import re
+import json
 import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 from src.agente_extractor import AgenteExtractor, NavegadorArbolContenido
 from src.logger_config import obtener_logger
 
+# Intentar soporte opcional de YAML para keywords configurables
+try:
+    import yaml
+    _YAML_AVAILABLE = True
+except Exception:
+    _YAML_AVAILABLE = False
+
 logger = obtener_logger("BotJudicial")
+
+
+def _load_extraction_keywords():
+    """Carga una lista de keywords desde rutas conocidas o desde un archivo YAML/TSV simple.
+    Busca en (en este orden): env(EXTRACTION_KEYWORDS_PATH), config/extraction_keywords.yml,
+    data/extraction_keywords.yml, extraction_keywords.yml. Devuelve lista de strings en minúsculas.
+    """
+    candidates = [
+        os.environ.get("EXTRACTION_KEYWORDS_PATH"),
+        os.path.join("config", "extraction_keywords.yml"),
+        os.path.join("data", "extraction_keywords.yml"),
+        "extraction_keywords.yml",
+    ]
+    for p in candidates:
+        if not p:
+            continue
+        try:
+            if os.path.exists(p):
+                if _YAML_AVAILABLE:
+                    with open(p, "r", encoding="utf-8") as fh:
+                        data = yaml.safe_load(fh)
+                    if isinstance(data, dict):
+                        kws = []
+                        for v in data.values():
+                            if isinstance(v, list):
+                                kws.extend([str(x) for x in v])
+                            elif isinstance(v, str):
+                                kws.append(v)
+                        return [k.lower() for k in kws if k]
+                    elif isinstance(data, list):
+                        return [str(x).lower() for x in data if x]
+                else:
+                    # fallback: leer líneas no comentadas
+                    with open(p, "r", encoding="utf-8") as fh:
+                        lines = [l.strip() for l in fh.readlines()]
+                    lines = [l for l in lines if l and not l.startswith("#")]
+                    return [l.lower() for l in lines]
+        except Exception:
+            continue
+
+    # Default conservative set
+    return [
+        'mandam', 'mandamiento', 'mandamiento de ejecucion', 'auto de ejecucion', 'auto de ejecucion', 'auto de cumplimiento'
+    ]
 
 
 class BotJudicial:
@@ -202,6 +254,12 @@ class BotJudicial:
 
         # --- RUTA PRINCIPAL: INTERCEPCIÓN API (BYPASS BEAUTIFULSOUP4 + PANDAS) ---
         if self.paquetes_api_interceptados:
+            # Cargar keywords configurables para detección de mandamiento (opcional)
+            try:
+                keywords = _load_extraction_keywords()
+            except Exception:
+                keywords = ['mandam','mandamiento','mandamiento de ejecucion','auto de ejecucion','auto de cumplimiento']
+
             logger.info("[RUTA PRINCIPAL API] Procesando %s respuesta(s) JSON con Pandas...", len(self.paquetes_api_interceptados))
             try:
                 registros = []
@@ -241,7 +299,7 @@ class BotJudicial:
                                         continue
                                     # 1) Priorizar 'tipo' que contenga 'MANDAMIENTO'
                                     tfield = rsearch.get('tipo') or ''
-                                    if isinstance(tfield, str) and 'mandamiento' in tfield.lower():
+                                    if isinstance(tfield, str) and any(k in tfield.lower() for k in keywords):
                                         fecha_c = rsearch.get('fecha') or rsearch.get('fechaActuacion') or rsearch.get('fechaProvidencia')
                                         if fecha_c:
                                             candidatos.append(fecha_c)
@@ -249,7 +307,7 @@ class BotJudicial:
                                     # 2) búsqueda directa en campos de texto
                                     for txt_field in ('actividad', 'nombreProvidencia', 'nombreTipoResolucion', 'nombreTipoAccion'):
                                         tv = rsearch.get(txt_field)
-                                        if isinstance(tv, str) and 'mandam' in tv.lower():
+                                        if isinstance(tv, str) and any(k in tv.lower() for k in keywords):
                                             fecha_c = rsearch.get('fecha') or rsearch.get('fechaActuacion') or rsearch.get('fechaProvidencia')
                                             if fecha_c:
                                                 candidatos.append(fecha_c)
@@ -260,7 +318,7 @@ class BotJudicial:
                                         for a in actos:
                                             if isinstance(a, dict):
                                                 text_a = (a.get('actuacion') or a.get('detalle') or a.get('actividad') or a.get('tipo') or '')
-                                                if isinstance(text_a, str) and 'mandam' in text_a.lower():
+                                                if isinstance(text_a, str) and any(k in text_a.lower() for k in keywords):
                                                     fecha_c = a.get('fecha') or a.get('fechaActuacion') or a.get('fechaProvidencia')
                                                     if fecha_c:
                                                         candidatos.append(fecha_c)
@@ -279,6 +337,20 @@ class BotJudicial:
 
                             if not fecha_n:
                                 fecha_n = reg.get("fechaIngreso") or reg.get("fecha_ingreso") or reg.get("fechaProvidencia")
+
+                            # Log estructurado de la decisión de fecha para auditoría
+                            try:
+                                log_payload = {
+                                    "case_id": numero_juicio,
+                                    "source": "api",
+                                    "reason": "nombreTipoAccion contains EJECUT",
+                                    "candidates": candidatos,
+                                    "chosen_date": fecha_n,
+                                    "fecha_origen": ("registro" if any(isinstance(rsearch.get('tipo'), str) and any(k in (rsearch.get('tipo') or '').lower() for k in keywords) for rsearch in registros) else "actuacion" if candidatos else "fechaIngreso_or_fallback")
+                                }
+                                logger.info("[DECISION_FECHA] %s", json.dumps(log_payload, ensure_ascii=False))
+                            except Exception:
+                                pass
 
                             datos["FECHA INICIAL FASE ACTUAL"] = fecha_n if fecha_n else datos.get("FECHA INICIO JUICIO")
                             datos["ETAPA_PROCESAL"] = "6 LIQUIDACION Y EMBARGO"
@@ -376,6 +448,9 @@ class BotJudicial:
                 frames_html = []
                 for f in self.page.frames:
                     try:
+                        # proteger contra frames None en entornos de test
+                        if f is None:
+                            continue
                         fc = f.content()
                         if fc:
                             frames_html.append(fc)
