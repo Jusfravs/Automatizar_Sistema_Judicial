@@ -150,7 +150,7 @@ class BotJudicial:
                 self.nav_arbol.bajar_nivel("Expediente abierto -> Profundizando en contenido")
 
                 # 3. Procesamiento Dual (API Fetching + Pandas // DOM + BS4)
-                self.datos_extraidos = self._ejecutar_extraccion_detalles()
+                self.datos_extraidos = self._ejecutar_extraccion_detalles(numero_juicio)
 
                 # 4. Esperar a que el usuario cierre el expediente (retorno en árbol)
                 logger.info("Aguardando a que el operador cierre el expediente (state: hidden)...")
@@ -186,11 +186,12 @@ class BotJudicial:
             return res
         return self._ejecutar_extraccion_detalles()
 
-    def _ejecutar_extraccion_detalles(self):
+    def _ejecutar_extraccion_detalles(self, numero_juicio=None):
         """
         Arquitectura Dual:
         - RUTA PRINCIPAL: Si la API interceptó JSON, procesar vectorialmente con Pandas (Bypass BeautifulSoup4).
         - RUTA RESPALDO: Si no hay API JSON, capturar HTML post-sincronización y procesar con BeautifulSoup4.
+        Además, guarda artefactos (HTML + paquetes API) en data/temp_htmls para análisis cuando se pase numero_juicio.
         """
         datos = {
             "FECHA INICIO JUICIO": None,
@@ -214,13 +215,89 @@ class BotJudicial:
                 if registros:
                     df = pd.json_normalize(registros)
                     # Extracción vectorizada de fechas
-                    cols_fechas = [c for c in df.columns if any(k in c.lower() for k in ["fechainicio", "fechaingreso", "fechapresentacion"])]
+                    cols_fechas = [c for c in df.columns if any(k in c.lower() for k in ["fechainicio", "fechaingreso", "fechaprovidencia", "fechapresentacion"]) ]
                     if cols_fechas:
                         primera_fecha = df[cols_fechas[0]].first_valid_index()
                         if primera_fecha is not None:
                             datos["FECHA INICIO JUICIO"] = str(df.at[primera_fecha, cols_fechas[0]])
 
-                    # Extracción y clasificación de actuaciones desde API JSON
+                    # Heurística adicional: si la API no provee actuaciones, intentar inferir desde campos de alto nivel
+                    for reg in registros:
+                        # Construir un texto compuesto con campos relevantes
+                        posibles = []
+                        for key in ("nombreTipoAccion", "nombreProvidencia", "nombreTipoResolucion", "nombreDelito", "nombreMateria", "nombreEstadoJuicio", "nombreProvidencia"):
+                            v = reg.get(key) if isinstance(reg, dict) else None
+                            if v:
+                                posibles.append(str(v))
+                        texto_compuesto = " ".join(posibles)
+
+                        # Heurística explícita para tipo de acción 'EJECUTIVO' -> MANDAMIENTO DE EJECUCIÓN
+                        if isinstance(reg, dict) and reg.get('nombreTipoAccion') and 'EJECUT' in str(reg.get('nombreTipoAccion')).upper():
+                            # Recolectar candidatos explícitos de 'MANDAMIENTO' y luego elegir el más representativo (aquí: el más temprano)
+                            candidatos = []
+                            try:
+                                for rsearch in registros:
+                                    if not isinstance(rsearch, dict):
+                                        continue
+                                    # 1) Priorizar 'tipo' que contenga 'MANDAMIENTO'
+                                    tfield = rsearch.get('tipo') or ''
+                                    if isinstance(tfield, str) and 'mandamiento' in tfield.lower():
+                                        fecha_c = rsearch.get('fecha') or rsearch.get('fechaActuacion') or rsearch.get('fechaProvidencia')
+                                        if fecha_c:
+                                            candidatos.append(fecha_c)
+                                        continue
+                                    # 2) búsqueda directa en campos de texto
+                                    for txt_field in ('actividad', 'nombreProvidencia', 'nombreTipoResolucion', 'nombreTipoAccion'):
+                                        tv = rsearch.get(txt_field)
+                                        if isinstance(tv, str) and 'mandam' in tv.lower():
+                                            fecha_c = rsearch.get('fecha') or rsearch.get('fechaActuacion') or rsearch.get('fechaProvidencia')
+                                            if fecha_c:
+                                                candidatos.append(fecha_c)
+                                            break
+                                    # 3) buscar dentro de sub-listas de actuaciones
+                                    actos = rsearch.get('actuaciones') or rsearch.get('listaActuaciones') or []
+                                    if isinstance(actos, list):
+                                        for a in actos:
+                                            if isinstance(a, dict):
+                                                text_a = (a.get('actuacion') or a.get('detalle') or a.get('actividad') or a.get('tipo') or '')
+                                                if isinstance(text_a, str) and 'mandam' in text_a.lower():
+                                                    fecha_c = a.get('fecha') or a.get('fechaActuacion') or a.get('fechaProvidencia')
+                                                    if fecha_c:
+                                                        candidatos.append(fecha_c)
+                                                    break
+                            except Exception:
+                                candidatos = []
+
+                            # Elegir candidato: preferir el más temprano (min) si existen varios. Si no, fallback al fechaIngreso
+                            fecha_n = None
+                            try:
+                                if candidatos:
+                                    # ISO-strings compare lexicographically for timestamp order when in same format
+                                    fecha_n = sorted(candidatos)[0]
+                            except Exception:
+                                fecha_n = None
+
+                            if not fecha_n:
+                                fecha_n = reg.get("fechaIngreso") or reg.get("fecha_ingreso") or reg.get("fechaProvidencia")
+
+                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_n if fecha_n else datos.get("FECHA INICIO JUICIO")
+                            datos["ETAPA_PROCESAL"] = "6 LIQUIDACION Y EMBARGO"
+                            datos["FASE_PROCESAL"] = "6.2 MANDAMIENTO DE EJECUCION"
+                            logger.info("Heurística API dedujo MANDAMIENTO DE EJECUCION desde nombreTipoAccion: %s -- fecha seleccionada: %s", reg.get('nombreTipoAccion'), fecha_n)
+                            return datos
+
+                        if texto_compuesto:
+                            etapa_api, fase_api, score_api = self.extractor.evaluar_similitud_semantica(texto_compuesto)
+                            if etapa_api and score_api >= 0.6:
+                                # Usar la fecha de ingreso si existe
+                                fecha_n = reg.get("fechaIngreso") or reg.get("fecha_ingreso") or reg.get("fechaProvidencia")
+                                datos["FECHA INICIAL FASE ACTUAL"] = fecha_n if fecha_n else datos.get("FECHA INICIO JUICIO")
+                                datos["ETAPA_PROCESAL"] = etapa_api
+                                datos["FASE_PROCESAL"] = fase_api
+                                logger.info("Heurística API match (Score %s): '%s' desde campos de registro", score_api, fase_api)
+                                return datos
+
+                    # Extracción y clasificación de actuaciones desde API JSON (cuando existan)
                     for reg in registros:
                         actuaciones = reg.get("actuaciones") or reg.get("listaActuaciones") or []
                         if isinstance(actuaciones, list):
@@ -242,8 +319,120 @@ class BotJudicial:
         # --- RUTA RESPALDO: SINCRONIZACIÓN DOM (AGENTE EXTRACTOR) ---
         logger.info("[RUTA RESPALDO DOM] Procesando HTML renderizado post-sincronización con AgenteExtractor...")
         try:
+            # Intentar asegurar que el listado de actuaciones se cargue (esperar XHR o forzar click en la pestaña)
+            try:
+                # Esperar por una respuesta JSON o una URL con 'actuacion' en el path (más tolerante)
+                resp = self.page.wait_for_response(
+                    lambda r: (r.headers and 'content-type' in r.headers and 'json' in r.headers.get('content-type','').lower() and r.status in [200,201])
+                              or 'actuacion' in r.url.lower() or 'actuaciones' in r.url.lower(),
+                    timeout=5000
+                )
+                try:
+                    logger.info("[RUTA RESPALDO DOM] Interceptada respuesta de actuaciones/JSON: %s", resp.url)
+                except Exception:
+                    logger.info("[RUTA RESPALDO DOM] Interceptada respuesta de actuaciones/JSON (URL no disponible)")
+            except Exception:
+                # Intentar clickar en pestañas comunes que cargan actuaciones (varias alternativas)
+                clicked = False
+                for sel in ["text='Actuaciones Judiciales'", "text='Actuaciones'", "a:has-text('Actuaciones')", "button:has-text('Actuaciones Judiciales')", "button:has-text('Actuaciones')"]:
+                    try:
+                        loc = self.page.locator(sel).first
+                        if loc.is_visible():
+                            loc.scroll_into_view_if_needed()
+                            loc.click()
+                            self.page.wait_for_load_state("networkidle", timeout=5000)
+                            logger.info("[RUTA RESPALDO DOM] Click en selector para cargar actuaciones: %s", sel)
+                            clicked = True
+                            break
+                    except Exception:
+                        continue
+
+                # Si no se pudo clickar con selectores estándar, intentar clickar por texto via JS (más robusto para Angular/custom tags)
+                if not clicked:
+                    try:
+                        js_click = (
+                            "(function(){var els = Array.from(document.querySelectorAll('button, a, span, div'));"
+                            "var r=els.find(e=>/actuaciones?/i.test(e.innerText)); if(r){r.scrollIntoView(); r.click(); return true;} return false;})()"
+                        )
+                        rv = self.page.evaluate(js_click)
+                        if rv:
+                            logger.info("[RUTA RESPALDO DOM] Click por texto realizado vía evaluate()")
+                            try:
+                                self.page.wait_for_load_state("networkidle", timeout=4000)
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+
+            # Pequeña espera para que Angular injete contenido dinámico adicional
+            try:
+                self.page.wait_for_load_state("networkidle", timeout=2000)
+            except Exception:
+                pass
+
+            # Capturar contenido principal y el contenido de frames/iframes para analizarlos todos juntos
             contenido_html = self.page.content()
-            datos_dom = self.extractor.procesar_html_string(contenido_html)
+            try:
+                frames_html = []
+                for f in self.page.frames:
+                    try:
+                        fc = f.content()
+                        if fc:
+                            frames_html.append(fc)
+                    except Exception:
+                        # algunos frames pueden fallar al leer si son cross-origin — ignorar
+                        continue
+            except Exception:
+                frames_html = []
+
+            # Concatenar contenido principal + frames para pasar al extractor como respaldo más completo
+            contenido_total = contenido_html + "\n" + "\n\n".join(frames_html)
+
+            # Guardar artefactos para análisis offline si se proporcionó numero_juicio
+            try:
+                import json as _json
+                dir_temp = os.path.join("data", "temp_htmls")
+                os.makedirs(dir_temp, exist_ok=True)
+                if numero_juicio:
+                    # Guardar HTML combinado (principal + frames)
+                    ruta_html = os.path.join(dir_temp, f"{numero_juicio}.html")
+                    with open(ruta_html, "w", encoding="utf-8") as fh:
+                        fh.write(contenido_total)
+                    logger.info("[ARTIFACT] HTML (principal+frames) guardado en: %s", ruta_html)
+
+                    # Guardar frames por separado para diagnóstico
+                    try:
+                        for idx, fhtml in enumerate(frames_html):
+                            ruta_f = os.path.join(dir_temp, f"{numero_juicio}_frame_{idx+1}.html")
+                            with open(ruta_f, "w", encoding="utf-8") as ff:
+                                ff.write(fhtml)
+                        if frames_html:
+                            logger.info("[ARTIFACT] %s frame(s) guardado(s) para: %s", len(frames_html), numero_juicio)
+                    except Exception:
+                        pass
+
+                    if self.paquetes_api_interceptados:
+                        ruta_api = os.path.join(dir_temp, f"{numero_juicio}_api.json")
+                        with open(ruta_api, "w", encoding="utf-8") as fa:
+                            _json.dump(self.paquetes_api_interceptados, fa, ensure_ascii=False, indent=2)
+                        logger.info("[ARTIFACT] Paquetes API guardados en: %s", ruta_api)
+            except Exception as e_save:
+                logger.warning("No se pudo guardar artefactos para %s: %s", numero_juicio, e_save)
+
+            # Pasar el HTML combinado al extractor para mayor cobertura (incluye iframes cuando fue posible leerlos)
+            datos_dom = self.extractor.procesar_html_string(contenido_total)
+
+            # Fallback heurístico: si el HTML combinado contiene 'MANDAMIENTO DE EJECUCION' y extractor no lo detectó, sobreescribir
+            try:
+                lower_total = contenido_total.lower()
+                if 'mandamiento de ejecucion' in lower_total or 'mandamiento de ejecución' in lower_total:
+                    if not datos_dom.get('FASE_PROCESAL') or 'mandamiento' not in str(datos_dom.get('FASE_PROCESAL','')).lower():
+                        datos_dom['ETAPA_PROCESAL'] = '6 LIQUIDACION Y EMBARGO'
+                        datos_dom['FASE_PROCESAL'] = '6.2 MANDAMIENTO DE EJECUCION'
+                        logger.info("Fallback DOM: detectado 'MANDAMIENTO DE EJECUCION' en HTML combinado; sobrescribiendo clasificación")
+            except Exception:
+                pass
+
             # Conservar fecha de inicio si fue extraída previamente
             if datos["FECHA INICIO JUICIO"] and not datos_dom.get("FECHA INICIO JUICIO"):
                 datos_dom["FECHA INICIO JUICIO"] = datos["FECHA INICIO JUICIO"]
