@@ -8,6 +8,8 @@ __pycache__/
 data/*.csv
 data/*.xlsx
 data/*.tmp
+data/*.txt
+data/*.bak
 !data/REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx
 estado_casos.db
 *.db.backup_*

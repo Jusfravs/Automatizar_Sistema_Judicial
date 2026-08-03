@@ -1,10 +1,10 @@
 {
     "filtros_activos": {
         "sucursal": "LOS RIOS",
-        "oficina": "TSACHILAS",
+        "oficina": "",
         "estado_judicial": "ACTIVO",
         "columna_estado_judicial": "ESTADO.1",
-        "inicio_desde_juicio": "23331-2022-04261"
+        "inicio_desde_juicio": ""
     },
     "rutas": {
         "archivo_csv": "data/reporte_trabajo.csv",

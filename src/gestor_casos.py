@@ -100,15 +100,21 @@ class GestorCasos:
         else:
             raise KeyError("No se encontro una columna 'ESTADO' ni 'ESTADO.1' en el CSV.")
         
-        suc = str(self.filtros.get('sucursal', '')).strip().upper()
-        ofi = str(self.filtros.get('oficina', '')).strip().upper()
-        est = str(self.filtros.get('estado_judicial', '')).strip().upper()
+        mask = pd.Series(True, index=self.df.index)
 
-        df_filtrado = self.df[
-            (self.df['SUCURSAL'].astype(str).str.strip().str.upper() == suc) &
-            (self.df['OFICINA'].astype(str).str.strip().str.upper() == ofi) &
-            (self.df[col_estado].astype(str).str.strip().str.upper() == est)
-        ]
+        suc = str(self.filtros.get('sucursal', '') or '').strip().upper()
+        if suc and suc not in ('TODAS', 'TODOS', 'ALL', 'NONE'):
+            mask &= (self.df['SUCURSAL'].astype(str).str.strip().str.upper() == suc)
+
+        ofi = str(self.filtros.get('oficina', '') or '').strip().upper()
+        if ofi and ofi not in ('TODAS', 'TODOS', 'ALL', 'NONE'):
+            mask &= (self.df['OFICINA'].astype(str).str.strip().str.upper() == ofi)
+
+        est = str(self.filtros.get('estado_judicial', '') or '').strip().upper()
+        if est and est not in ('TODAS', 'TODOS', 'ALL', 'NONE'):
+            mask &= (self.df[col_estado].astype(str).str.strip().str.upper() == est)
+
+        df_filtrado = self.df[mask]
 
         casos = df_filtrado['NUMERO_JUICIO'].dropna().astype(str).str.strip().tolist()
 

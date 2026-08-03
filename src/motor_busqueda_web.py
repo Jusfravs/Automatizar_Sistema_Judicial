@@ -73,6 +73,7 @@ class BotJudicial:
         self.url_portal = url_portal
         self.playwright = None
         self.browser = None
+        self.context = None
         self.page = None
         self.extractor = AgenteExtractor()
         self.nav_arbol = NavegadorArbolContenido()
@@ -80,17 +81,47 @@ class BotJudicial:
         self.datos_extraidos = None
 
     def iniciar_navegador(self, modo_visible=True):
-        """Inicia el navegador Chromium con listener de intercepción de red API."""
+        """Inicia el navegador Chromium con bypass anti-automatización para F5 WAF y listener API."""
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(headless=not modo_visible)
-        self.page = self.browser.new_page()
+        self.browser = self.playwright.chromium.launch(
+            headless=not modo_visible,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+                "--disable-infobars",
+                "--ignore-certificate-errors",
+            ],
+            ignore_default_args=["--enable-automation"]
+        )
+        self.context = self.browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+            viewport={"width": 1366, "height": 768},
+            ignore_https_errors=True
+        )
+        self.context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            window.navigator.chrome = { runtime: {} };
+            Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+            Object.defineProperty(navigator, 'languages', { get: () => ['es-EC', 'es', 'en-US', 'en'] });
+        """)
+        self.page = self.context.new_page()
         
         # Ruta Principal: Listener de intercepción de red (API Fetching)
         self.page.on("response", self._interceptar_respuesta_api)
         
         logger.info("Navegador iniciado en %s", self.url_portal)
         self.page.goto(self.url_portal, timeout=60000, wait_until="domcontentloaded")
-        self.page.wait_for_load_state("networkidle", timeout=30000)
+        
+        # Aguardar la resolución pasiva del reto F5 WAF y renderizado de la UI Angular
+        try:
+            self.page.wait_for_selector(
+                "input[placeholder*='códigoDependencia-Año-Secuencial'], input[formcontrolname='numeroJuicio'], button:has-text('BUSCAR')",
+                state="visible",
+                timeout=20000
+            )
+            logger.info("[OK] Portal del Consejo de la Judicatura cargado correctamente.")
+        except Exception:
+            logger.warning("[!] La UI de búsqueda tardó en aparecer; continuando observación.")
 
     def _verificar_sesion_activa(self):
         """
@@ -173,7 +204,9 @@ class BotJudicial:
         logger.info("Iniciando causa: %s", numero_juicio)
         self.paquetes_api_interceptados.clear()
         
-        selector_freno_estricto = "text=/Actor\\/Ofendido:|Información del proceso|Actuaciones Judiciales|Exportar PDF/i"
+        # Freno de ejecución estricto: debe coincidir ÚNICAMENTE con la vista de detalle del expediente (Image 2),
+        # NO con la cabecera de la tabla de judicaturas "Actuaciones Judiciales" (Image 1).
+        selector_freno_estricto = "text=/Información del proceso|Exportar PDF|Ampliar todo|Contraer todo/i"
         max_reintentos = 3
         intentos = 0
 
@@ -196,8 +229,31 @@ class BotJudicial:
                 except Exception as e_fill:
                     logger.warning("Aviso al preparar la caja de búsqueda: %s", e_fill)
 
-                # 2. RUTA RESPALDO: Freno de Ejecución Estricto (wait_for_selector)
-                logger.info("FRENO DE EJECUCIÓN: Aguardando inyección completa en Angular...")
+                # Intentar auto-click en el icono de carpeta 📁 si estamos en la tabla de resultados (Image 1)
+                try:
+                    self.page.wait_for_timeout(1000)
+                    if not self.page.locator(selector_freno_estricto).first.is_visible():
+                        for btn_sel in [
+                            "tr td button:has(i)",
+                            "tr td button",
+                            "tr td a",
+                            "i.fa-folder",
+                            "i.fa-folder-open",
+                            "button:has(.fa-folder)",
+                        ]:
+                            try:
+                                folder_btn = self.page.locator(btn_sel).first
+                                if folder_btn.is_visible():
+                                    logger.info("Navegando automáticamente al expediente (click en carpeta 📁)...")
+                                    folder_btn.click()
+                                    break
+                            except Exception:
+                                continue
+                except Exception:
+                    pass
+
+                # 2. RUTA RESPALDO: Freno de Ejecución Estricto en la pantalla de detalle del expediente (Image 2)
+                logger.info("FRENO DE EJECUCIÓN: Aguardando apertura del expediente (vista de detalle 'Información del proceso')...")
                 self.page.wait_for_selector(selector_freno_estricto, state="visible", timeout=300000)
                 self.nav_arbol.bajar_nivel("Expediente abierto -> Profundizando en contenido")
 
@@ -518,6 +574,11 @@ class BotJudicial:
 
     def cerrar_navegador(self):
         """Cierra la sesión del navegador."""
+        if hasattr(self, 'context') and self.context:
+            try:
+                self.context.close()
+            except Exception:
+                pass
         if self.browser:
             self.browser.close()
         if self.playwright:
