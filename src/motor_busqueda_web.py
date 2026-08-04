@@ -335,112 +335,30 @@ class BotJudicial:
                         if primera_fecha is not None:
                             datos["FECHA INICIO JUICIO"] = str(df.at[primera_fecha, cols_fechas[0]])
 
-                    # Heurística adicional: si la API no provee actuaciones, intentar inferir desde campos de alto nivel
+                    # Recolectar actuaciones estructuradas desde la API JSON para inferencia jerárquica (Regla del Árbol)
+                    actuaciones_api = []
                     for reg in registros:
-                        # Construir un texto compuesto con campos relevantes
-                        posibles = []
-                        for key in ("nombreTipoAccion", "nombreProvidencia", "nombreTipoResolucion", "nombreDelito", "nombreMateria", "nombreEstadoJuicio", "nombreProvidencia"):
-                            v = reg.get(key) if isinstance(reg, dict) else None
-                            if v:
-                                posibles.append(str(v))
-                        texto_compuesto = " ".join(posibles)
-
-                        # Heurística explícita para tipo de acción 'EJECUTIVO' -> MANDAMIENTO DE EJECUCIÓN
-                        if isinstance(reg, dict) and reg.get('nombreTipoAccion') and 'EJECUT' in str(reg.get('nombreTipoAccion')).upper():
-                            # Recolectar candidatos explícitos de 'MANDAMIENTO' y luego elegir el más representativo (aquí: el más temprano)
-                            candidatos = []
-                            try:
-                                for rsearch in registros:
-                                    if not isinstance(rsearch, dict):
-                                        continue
-                                    # 1) Priorizar 'tipo' que contenga 'MANDAMIENTO'
-                                    tfield = rsearch.get('tipo') or ''
-                                    if isinstance(tfield, str) and any(k in tfield.lower() for k in keywords):
-                                        fecha_c = rsearch.get('fecha') or rsearch.get('fechaActuacion') or rsearch.get('fechaProvidencia')
-                                        if fecha_c:
-                                            candidatos.append(fecha_c)
-                                        continue
-                                    # 2) búsqueda directa en campos de texto
-                                    for txt_field in ('actividad', 'nombreProvidencia', 'nombreTipoResolucion', 'nombreTipoAccion'):
-                                        tv = rsearch.get(txt_field)
-                                        if isinstance(tv, str) and any(k in tv.lower() for k in keywords):
-                                            fecha_c = rsearch.get('fecha') or rsearch.get('fechaActuacion') or rsearch.get('fechaProvidencia')
-                                            if fecha_c:
-                                                candidatos.append(fecha_c)
-                                            break
-                                    # 3) buscar dentro de sub-listas de actuaciones
-                                    actos = rsearch.get('actuaciones') or rsearch.get('listaActuaciones') or []
-                                    if isinstance(actos, list):
-                                        for a in actos:
-                                            if isinstance(a, dict):
-                                                text_a = (a.get('actuacion') or a.get('detalle') or a.get('actividad') or a.get('tipo') or '')
-                                                if isinstance(text_a, str) and any(k in text_a.lower() for k in keywords):
-                                                    fecha_c = a.get('fecha') or a.get('fechaActuacion') or a.get('fechaProvidencia')
-                                                    if fecha_c:
-                                                        candidatos.append(fecha_c)
-                                                    break
-                            except Exception:
-                                candidatos = []
-
-                            # Elegir candidato: preferir el más temprano (min) si existen varios. Si no, fallback al fechaIngreso
-                            fecha_n = None
-                            try:
-                                if candidatos:
-                                    # ISO-strings compare lexicographically for timestamp order when in same format
-                                    fecha_n = sorted(candidatos)[0]
-                            except Exception:
-                                fecha_n = None
-
-                            if not fecha_n:
-                                fecha_n = reg.get("fechaIngreso") or reg.get("fecha_ingreso") or reg.get("fechaProvidencia")
-
-                            # Log estructurado de la decisión de fecha para auditoría
-                            try:
-                                log_payload = {
-                                    "case_id": numero_juicio,
-                                    "source": "api",
-                                    "reason": "nombreTipoAccion contains EJECUT",
-                                    "candidates": candidatos,
-                                    "chosen_date": fecha_n,
-                                    "fecha_origen": ("registro" if any(isinstance(rsearch.get('tipo'), str) and any(k in (rsearch.get('tipo') or '').lower() for k in keywords) for rsearch in registros) else "actuacion" if candidatos else "fechaIngreso_or_fallback")
-                                }
-                                logger.info("[DECISION_FECHA] %s", json.dumps(log_payload, ensure_ascii=False))
-                            except Exception:
-                                pass
-
-                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_n if fecha_n else datos.get("FECHA INICIO JUICIO")
-                            datos["ETAPA_PROCESAL"] = "6 LIQUIDACION Y EMBARGO"
-                            datos["FASE_PROCESAL"] = "6.2 MANDAMIENTO DE EJECUCION"
-                            logger.info("Heurística API dedujo MANDAMIENTO DE EJECUCION desde nombreTipoAccion: %s -- fecha seleccionada: %s", reg.get('nombreTipoAccion'), fecha_n)
-                            return datos
-
-                        if texto_compuesto:
-                            etapa_api, fase_api, score_api = self.extractor.evaluar_similitud_semantica(texto_compuesto)
-                            if etapa_api and score_api >= 0.6:
-                                # Usar la fecha de ingreso si existe
-                                fecha_n = reg.get("fechaIngreso") or reg.get("fecha_ingreso") or reg.get("fechaProvidencia")
-                                datos["FECHA INICIAL FASE ACTUAL"] = fecha_n if fecha_n else datos.get("FECHA INICIO JUICIO")
-                                datos["ETAPA_PROCESAL"] = etapa_api
-                                datos["FASE_PROCESAL"] = fase_api
-                                logger.info("Heurística API match (Score %s): '%s' desde campos de registro", score_api, fase_api)
-                                return datos
-
-                    # Extracción y clasificación de actuaciones desde API JSON (cuando existan)
-                    for reg in registros:
-                        actuaciones = reg.get("actuaciones") or reg.get("listaActuaciones") or []
-                        if isinstance(actuaciones, list):
-                            for act in actuaciones:
+                        acts = reg.get("actuaciones") or reg.get("listaActuaciones") or []
+                        if isinstance(acts, list):
+                            for act in acts:
                                 if isinstance(act, dict):
-                                    f_act = act.get("fecha") or act.get("fechaActuacion")
-                                    d_act = act.get("actuacion") or act.get("detalle") or act.get("tipoActuacion")
-                                    if f_act and d_act:
-                                        etapa, fase, score = self.extractor.evaluar_similitud_semantica(str(d_act))
-                                        if etapa and score >= 0.7:
-                                            datos["FECHA INICIAL FASE ACTUAL"] = str(f_act)
-                                            datos["ETAPA_PROCESAL"] = etapa
-                                            datos["FASE_PROCESAL"] = fase
-                                            logger.info("Match en Ruta Principal API (Score %s): '%s' en fecha %s", score, fase, f_act)
-                                            return datos
+                                    f_act = act.get("fecha") or act.get("fechaActuacion") or act.get("fechaProvidencia")
+                                    d_act = act.get("actuacion") or act.get("detalle") or act.get("tipoActuacion") or act.get("actividad")
+                                    if d_act:
+                                        actuaciones_api.append({
+                                            "fecha": str(f_act) if f_act else None,
+                                            "detalle": str(d_act).upper()
+                                        })
+
+                    if actuaciones_api:
+                        from src.agente_extractor import MotorInferenciaProcesal
+                        etapa_api, fase_api, fecha_api = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones_api)
+                        if etapa_api:
+                            datos["ETAPA_PROCESAL"] = etapa_api
+                            datos["FASE_PROCESAL"] = fase_api
+                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_api or datos.get("FECHA INICIO JUICIO")
+                            logger.info("[RUTA PRINCIPAL API] Clasificación por Regla del Árbol: '%s' / '%s' en fecha %s", etapa_api, fase_api, datos["FECHA INICIAL FASE ACTUAL"])
+                            return datos
             except Exception as e_pandas:
                 logger.warning("Conmutando a Ruta de Respaldo por aviso en Pandas: %s", e_pandas)
 
@@ -552,17 +470,6 @@ class BotJudicial:
 
             # Pasar el HTML combinado al extractor para mayor cobertura (incluye iframes cuando fue posible leerlos)
             datos_dom = self.extractor.procesar_html_string(contenido_total)
-
-            # Fallback heurístico: si el HTML combinado contiene 'MANDAMIENTO DE EJECUCION' y extractor no lo detectó, sobreescribir
-            try:
-                lower_total = contenido_total.lower()
-                if 'mandamiento de ejecucion' in lower_total or 'mandamiento de ejecución' in lower_total:
-                    if not datos_dom.get('FASE_PROCESAL') or 'mandamiento' not in str(datos_dom.get('FASE_PROCESAL','')).lower():
-                        datos_dom['ETAPA_PROCESAL'] = '6 LIQUIDACION Y EMBARGO'
-                        datos_dom['FASE_PROCESAL'] = '6.2 MANDAMIENTO DE EJECUCION'
-                        logger.info("Fallback DOM: detectado 'MANDAMIENTO DE EJECUCION' en HTML combinado; sobrescribiendo clasificación")
-            except Exception:
-                pass
 
             # Conservar fecha de inicio si fue extraída previamente
             if datos["FECHA INICIO JUICIO"] and not datos_dom.get("FECHA INICIO JUICIO"):

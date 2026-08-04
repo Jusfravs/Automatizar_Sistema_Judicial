@@ -263,52 +263,101 @@ class MotorInferenciaProcesal:
         return -1
 
     @classmethod
+    def _segmentar_por_instancia(cls, actuaciones):
+        """
+        Segmenta las actuaciones según la instancia procesal o rama del árbol.
+        Devuelve un diccionario { 'PRIMERA INSTANCIA': [...], 'SEGUNDA INSTANCIA': [...], ... }
+        """
+        instancias = {
+            "PRIMERA INSTANCIA": []
+        }
+        instancia_actual = "PRIMERA INSTANCIA"
+
+        for act in actuaciones:
+            detalle = act.get("detalle", "")
+            norm = normalizar_texto(detalle)
+            
+            # Detectar cambio de instancia o rama en el árbol de actuaciones
+            if any(k in norm for k in ["CORTE PROVINCIAL", "SEGUNDA INSTANCIA", "SALA ESPECIALIZADA", "TRIBUNAL DE ALZADA"]):
+                instancia_actual = "SEGUNDA INSTANCIA"
+                if instancia_actual not in instancias:
+                    instancias[instancia_actual] = []
+            elif any(k in norm for k in ["CORTE NACIONAL", "CASACION", "SALA DE LO CONTENCIOSO"]):
+                instancia_actual = "CASACION"
+                if instancia_actual not in instancias:
+                    instancias[instancia_actual] = []
+            elif "INSTANCIA" in act and act["INSTANCIA"]:
+                instancia_actual = str(act["INSTANCIA"]).upper()
+                if instancia_actual not in instancias:
+                    instancias[instancia_actual] = []
+
+            instancias[instancia_actual].append(act)
+
+        return instancias
+
+    @classmethod
+    def _seleccionar_rama_activa(cls, instancias_dict):
+        """
+        Selecciona la rama activa del árbol (la de mayor jerarquía procesal que contenga actuaciones).
+        Prioridad: CASACION > SEGUNDA INSTANCIA > PRIMERA INSTANCIA (o cualquier otra instancia personalizada).
+        """
+        for orden in ["CASACION", "SEGUNDA INSTANCIA", "TRIBUNAL"]:
+            if orden in instancias_dict and instancias_dict[orden]:
+                return orden, instancias_dict[orden]
+
+        # Si no hay instancias superiores, retornar la primera disponible con actuaciones
+        for nombre, lista_acts in instancias_dict.items():
+            if lista_acts:
+                return nombre, lista_acts
+
+        return "PRIMERA INSTANCIA", []
+
+    @classmethod
     def inferir_estado_procesal(cls, actuaciones, texto_global=""):
         """
-        Analiza las actuaciones procesales cronológicamente aplicando las reglas de autonomía
-        e inferencia de MODULO_FILTRO_CASOS.md.
-        
-        Reglas de Inferencia Implementadas:
-        1. Carátula de Juicio -> Si no hay auto de calificación aún, la primera actuación o carátula 
-           se infiere como PRESENTAR DEMANDA.
-        2. Citación por prensa vs persona -> Inspección de boletines, extractos o prensa.
-        3. Contestación con Calificación/Convocatoria -> Salto automático e inferencia directa a FIJACION FECHA AUDIENCIA.
-        4. Nombramiento de Perito -> Informe perito liquidador en cadena de liquidación.
-        5. Oficios Bancarios / Superintendencia de Bancos -> Inferencia de CONGELAMIENTO DE CUENTAS / CIERRE.
-        6. Selección del hito más avanzado según jerarquía procesal.
+        Analiza el estado procesal basándose ESTRICTAMENTE en la jerarquía del Árbol de Actuaciones (Regla del Árbol):
+        1. Segmenta las actuaciones por instancia / rama.
+        2. Localiza la rama activa (nodo más reciente / de mayor jerarquía).
+        3. Evalúa el avance procesal priorizando la actuación MÁS RECIENTE dentro de la rama activa.
+        4. Prohíbe falsos positivos por palabras clave aisladas de actuaciones obsoletas o texto plano suelto.
         """
         if not actuaciones and not texto_global:
             return None, None, None
 
-        hallazgos = []  # Lista de dicts: {"etapa": ..., "fase": ..., "fecha": ..., "prioridad": ...}
+        # PASO 1 & 2: Segmentar por instancia y seleccionar la rama activa
+        if actuaciones:
+            instancias = cls._segmentar_por_instancia(actuaciones)
+            nombre_rama, actuaciones_rama = cls._seleccionar_rama_activa(instancias)
+        else:
+            nombre_rama, actuaciones_rama = "TEXTO_GLOBAL", []
+
+        if not actuaciones_rama and not texto_global:
+            return None, None, None
+
+        # Evaluamos las actuaciones dentro de la rama activa
+        # Las actuaciones se asumen en orden cronológico (índice 0 = más reciente o viceversa)
+        # Identificar si índice 0 es la más reciente o la más antigua por fechas
+        actuaciones_evaluar = list(actuaciones_rama)
+
         tiene_calificacion_demanda = False
         tiene_contestacion = False
         tiene_calificacion_contestacion = False
-        tiene_nombramiento_perito = False
-        tiene_embargo = False
 
-        # 1. Escaneo preliminar para flags contextuales de la causa
-        for act in actuaciones:
+        for act in actuaciones_evaluar:
             detalle = act.get("detalle", "")
             norm = normalizar_texto(detalle)
 
             if any(k in norm for k in ["CALIFICACION LA DEMANDA", "CALIFICA LA DEMANDA", "AUTO DE CALIFICACION", "AUTO INICIAL", "ACEPTA A TRAMITE"]):
                 tiene_calificacion_demanda = True
-
             if any(k in norm for k in ["CONTESTACION", "RESPONDE DEMANDA", "EXCEPCIONES", "ALLANAMIENTO"]):
                 tiene_contestacion = True
-
             if tiene_contestacion and any(k in norm for k in ["CALIFICACION DE LA CONTESTACION", "CALIFICA CONTESTACION", "CONVOCATORIA", "CONVOCA A AUDIENCIA"]):
                 tiene_calificacion_contestacion = True
 
-            if any(k in norm for k in ["NOMBRAMIENTO DE PERITO", "DESIGNA PERITO", "NOMBRAMIENTO PERITO"]):
-                tiene_nombramiento_perito = True
+        hallazgos = []
 
-            if any(k in norm for k in ["EMBARGO", "DESPOSEIMIENTO", "ACTA DE EMBARGO"]):
-                tiene_embargo = True
-
-        # 2. Evaluación individual de cada actuación
-        for act in actuaciones:
+        # PASO 3: Evaluar actuaciones en la rama activa.
+        for act in actuaciones_evaluar:
             detalle = act.get("detalle", "")
             fecha = act.get("fecha", None)
             norm = normalizar_texto(detalle)
@@ -319,27 +368,20 @@ class MotorInferenciaProcesal:
             if not tiene_calificacion_demanda and any(k in norm for k in ["CARATULA", "INGRESO DE CAUSA", "PRESENTACION", "LIBELO"]):
                 hallazgos.append({
                     "etapa": "1 PRESENTACION Y CALIFICACION",
-                    "fase": "1.1 PRESENTAR DEMANDA (CARATULA DE JUICIO)",
+                    "fase": "1.1 PRESENTAR DEMANDA",
                     "fecha": fecha,
-                    "prioridad": cls.obtener_indice_fase("1.1 PRESENTAR DEMANDA")
+                    "prioridad": cls.obtener_indice_fase("1.1 PRESENTAR DEMANDA"),
+                    "actuacion": norm
                 })
 
-            # Regla de Inferencia 5: Oficio del Banco / Superintendencia de Bancos -> Congelamiento y Cierre
-            if any(k in norm for k in ["SUPERINTENDENCIA DE BANCOS", "AGREGUESE OFICIO EMITIDO POR BANCO", "AGREGUESE EL OFICIO EMITIDO POR EL BANCO", "OFICIO EMITIDO POR EL BANCO"]):
+            # Regla de Inferencia: Oficio del Banco en rama activa
+            if any(k in norm for k in ["SUPERINTENDENCIA DE BANCOS", "AGREGUESE OFICIO EMITIDO POR BANCO", "AGREGUESE EL OFICIO EMITIDO POR EL BANCO"]):
                 hallazgos.append({
                     "etapa": "6 LIQUIDACION Y EMBARGO",
                     "fase": "6.5 CONGELAMIENTO DE CUENTAS / CIERRE",
                     "fecha": fecha,
-                    "prioridad": cls.obtener_indice_fase("6.5 CONGELAMIENTO DE CUENTAS / CIERRE")
-                })
-
-            # Regla de Inferencia 4: Nombramiento de perito seguido de escrito/informe -> Liquidación perito liquidador
-            if tiene_nombramiento_perito and any(k in norm for k in ["INFORME", "ESCRITO", "LIQUIDACION", "PERITO"]):
-                hallazgos.append({
-                    "etapa": "6 LIQUIDACION Y EMBARGO",
-                    "fase": "6.1 LIQUIDACION PERITO LIQUIDADOR",
-                    "fecha": fecha,
-                    "prioridad": cls.obtener_indice_fase("6.1 LIQUIDACION PERITO LIQUIDADOR")
+                    "prioridad": cls.obtener_indice_fase("6.5 CONGELAMIENTO DE CUENTAS / CIERRE"),
+                    "actuacion": norm
                 })
 
             # Evaluación contra la Taxonomía Semántica Completa
@@ -352,21 +394,23 @@ class MotorInferenciaProcesal:
                             "etapa": etapa,
                             "fase": fase,
                             "fecha": fecha,
-                            "prioridad": prioridad
+                            "prioridad": prioridad,
+                            "actuacion": norm
                         })
                         break
 
-        # Regla de Inferencia 3: Contestación con calificación/convocatoria -> Avance automático a FIJACION FECHA AUDIENCIA
+        # Regla de Inferencia: Contestación con calificación/convocatoria
         if tiene_contestacion and tiene_calificacion_contestacion:
-            fecha_ref = actuaciones[0]["fecha"] if actuaciones else None
+            fecha_ref = actuaciones_evaluar[0]["fecha"] if actuaciones_evaluar else None
             hallazgos.append({
                 "etapa": "4 AUDIENCIA",
                 "fase": "4.1 FIJACION FECHA AUDIENCIA",
                 "fecha": fecha_ref,
-                "prioridad": cls.obtener_indice_fase("4.1 FIJACION FECHA AUDIENCIA")
+                "prioridad": cls.obtener_indice_fase("4.1 FIJACION FECHA AUDIENCIA"),
+                "actuacion": "CALIFICACION DE CONTESTACION"
             })
 
-        # Regla de Inferencia 2: Si no hubo hallazgos en actuaciones, probar en contexto global
+        # Evaluación en texto global SOLO si no hubo hallazgos en la rama activa
         if not hallazgos and texto_global:
             norm_global = normalizar_texto(texto_global)
             for etapa, fase, terminos in cls.TAXONOMIA_COMPLETA:
@@ -374,19 +418,21 @@ class MotorInferenciaProcesal:
                     term_norm = normalizar_texto(term)
                     if term_norm in norm_global:
                         prioridad = cls.obtener_indice_fase(fase)
-                        fecha_ref = actuaciones[0]["fecha"] if actuaciones else None
+                        fecha_ref = actuaciones_evaluar[0]["fecha"] if actuaciones_evaluar else None
                         hallazgos.append({
                             "etapa": etapa,
                             "fase": fase,
                             "fecha": fecha_ref,
-                            "prioridad": prioridad
+                            "prioridad": prioridad,
+                            "actuacion": "TEXTO_GLOBAL"
                         })
                         break
 
         if not hallazgos:
             return None, None, None
 
-        # 3. Seleccionar el hito más avanzado procesalmente
+        # PASO 4: Emitir clasificación respetando el avance en la rama activa.
+        # Seleccionar la actuación de mayor avance procesal dentro de la rama activa
         hallazgos_ordenados = sorted(hallazgos, key=lambda x: x["prioridad"], reverse=True)
         mejor = hallazgos_ordenados[0]
         return mejor["etapa"], mejor["fase"], mejor["fecha"]

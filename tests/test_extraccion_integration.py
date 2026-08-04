@@ -63,18 +63,22 @@ def test_variant_1_dom_multiple_actuaciones():
 
 
 def test_variant_2_api_ejecutivo_type():
-    """Test caso variante 2: nombreTipoAccion='EJECUTIVO' debe deducir mandamiento."""
+    """Test caso variante 2: nombreTipoAccion='EJECUTIVO' con actuaciones de CITACION no debe deducir mandamiento."""
     bot = BotJudicial(url_portal="https://example.local")
     data = load_json("case_variant_2_api.json")
+    # Inyectar actuaciones reales de citación en el paquete API
+    data["actuaciones"] = [
+        {"fecha": "10/01/2022", "actuacion": "Calificación de la demanda"},
+        {"fecha": "15/01/2022", "actuacion": "Boleta de citación al demandado"}
+    ]
     
-    # Simular paquete API interceptado: el JSON es un registro directo (no lista)
     bot.paquetes_api_interceptados = [{"url": "https://api.mock/causa/54321-2022-00456", "data": [data]}]
     
     datos = bot._ejecutar_extraccion_detalles(numero_juicio="54321-2022-00456")
     
     assert datos is not None
     assert datos.get("FASE_PROCESAL"), f"FASE_PROCESAL vacío: {datos}"
-    assert "MANDAMIENTO" in datos.get("FASE_PROCESAL").upper() or "EJECUCION" in datos.get("FASE_PROCESAL").upper(), f"FASE_PROCESAL inesperada: {datos.get('FASE_PROCESAL')}"
-    # Fecha esperada: la del mandamiento o la más temprana disponible
-    # Si la heurística falla en extraer candidatos, debe usar fechaIngreso
+    # Bajo la Regla del Árbol, debe clasificarse como CITACION (no MANDAMIENTO DE EJECUCION)
+    assert "CITACION" in datos.get("FASE_PROCESAL").upper(), f"Se esperaba CITACION pero se obtuvo: {datos.get('FASE_PROCESAL')}"
+    assert "MANDAMIENTO" not in datos.get("FASE_PROCESAL").upper(), "Falso positivo: se dedujo MANDAMIENTO solo por tipo de acción EJECUTIVO"
     assert datos.get("FECHA INICIAL FASE ACTUAL") is not None, "No se estableció fecha"

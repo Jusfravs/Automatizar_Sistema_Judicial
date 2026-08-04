@@ -20,14 +20,27 @@ INSTRUCCIONES DE PROCESAMIENTO:
    - ETAPA 5 SENTENCIA (Fases: 5.1 SENTENCIA EMITIDA POR EL JUEZ, 5.2 APELACION, 5.3 SENTENCIA EJECUTORIADA)
    - ETAPA 6 LIQUIDACION Y EMBARGO (Fases: 6.1 LIQUIDACION PERITO LIQUIDADOR, 6.2 MANDAMIENTO DE EJECUCION, 6.3 EMBARGO, 6.4 REMATE, 6.5 CONGELAMIENTO DE CUENTAS / CIERRE)
 
-2. Extracción de Entidades y Unidad Judicial:
+2. INSTRUCCIÓN CRÍTICA DE CLASIFICACIÓN (REGLA DEL ÁRBOL):
+   - Tu ubicación procesal debe basarse ESTRICTAMENTE en la estructura jerárquica del "Árbol de Actuaciones" / instancias procesales.
+   - Reconstrucción Jerárquica: Identifica la estructura de carpetas, nodos e instancias (Primera Instancia, Segunda Instancia, Tribunal, etc.).
+   - Rastreo de la Rama Activa: Ubica el nodo o rama más reciente que registra actividad. No leas el último texto suelto que encuentres.
+   - Inferencia Contextual: Lee las actuaciones de ESE nodo específico e infiere la fase procesal basándote únicamente en el avance documentado en esa rama activa.
+   - Prohibición de Falsos Positivos: Bajo ninguna circunstancia clasifiques una causa como "Mandamiento de Ejecución" o fase de cierre a menos que exista un nodo explícito en el árbol o una actuación en la rama activa que lo dictamine legalmente. Si el árbol indica fases previas (ej. Calificación, Citación, Prueba), respeta esa ubicación.
+
+3. PROCESO DE PENSAMIENTO OBLIGATORIO:
+   - PASO 1: Mapear mentalmente el árbol procesal del caso proporcionado.
+   - PASO 2: Identificar la instancia o rama de mayor jerarquía actualmente abierta.
+   - PASO 3: Localizar la actuación más reciente estrictamente dentro de ese último nodo.
+   - PASO 4: Emitir la clasificación procesal basándote exclusivamente en la ubicación estructural inferida.
+
+4. Extracción de Entidades y Unidad Judicial:
    Identifica los actores procesales principales (Demandante / Actor, Demandado) y la Unidad Judicial o Juzgado interviniente.
 
-3. Extracción de Fecha y Resumen Operativo:
-   - Identifica la fecha exacta del último movimiento registrado (formato DD/MM/YYYY o YYYY-MM-DD).
+5. Extracción de Fecha y Resumen Operativo:
+   - Identifica la fecha exacta del último movimiento registrado en la rama activa (formato DD/MM/YYYY o YYYY-MM-DD).
    - Genera una síntesis operativa breve (máximo 3 líneas) explicando la actuación judicial más reciente.
 
-4. Anonimización y Seguridad de Datos:
+6. Anonimización y Seguridad de Datos:
    Si el texto contiene números de cédula/RUC, correos electrónicos o números de teléfono personal, reemplázalos por "[DATO PROTEGIDO]".
 
 FORMATO DE SALIDA (ESTRICTO):

@@ -14,7 +14,7 @@ def probar_inferencias():
                 {"fecha": "10/01/2024", "detalle": "INGRESO DE CAUSA Y PRESENTACION CON CARATULA DE JUICIO"}
             ],
             "etapa_esperada": "1 PRESENTACION Y CALIFICACION",
-            "fase_esperada": "1.1 PRESENTAR DEMANDA (CARATULA DE JUICIO)"
+            "fase_esperada": "1.1 PRESENTAR DEMANDA"
         },
         {
             "nombre": "2. Completar / Aclarar demanda",
