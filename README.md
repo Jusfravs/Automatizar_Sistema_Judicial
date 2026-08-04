@@ -4,7 +4,7 @@ Sistema automatizado de alta resiliencia para la consulta, extracción, análisi
 
 ---
 
-## 📐 Arquitectura del Sistema Multi-Agente
+## Arquitectura del Sistema Multi-Agente
 
 El proyecto utiliza una arquitectura desacoplada orientada a eventos, tolerancia a fallos y persistencia transaccional SQLite para procesar lotes masivos de causas judiciales (ej. 4,017 juicios).
 
@@ -49,7 +49,7 @@ El proyecto utiliza una arquitectura desacoplada orientada a eventos, tolerancia
 
 ---
 
-## 🧩 Componentes Principales
+## Componentes Principales
 
 | Componente | Archivo | Descripción |
 | :--- | :--- | :--- |
@@ -64,7 +64,7 @@ El proyecto utiliza una arquitectura desacoplada orientada a eventos, tolerancia
 
 ---
 
-## 📂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 Casos Judiciales/
@@ -106,7 +106,7 @@ Casos Judiciales/
 
 ---
 
-## ⚙️ Configuración (`config.json`)
+## Configuración (`config.json`)
 
 El archivo [config.json](file:///c:/Users/HP/OneDrive/Desktop/Casos%20Judiciales/config.json) define los parámetros de ejecución:
 
@@ -139,7 +139,7 @@ El archivo [config.json](file:///c:/Users/HP/OneDrive/Desktop/Casos%20Judiciales
 
 ---
 
-## 💻 Requisitos Previos e Instalación
+## Requisitos Previos e Instalación
 
 ### Requisitos del Sistema
 - Python **3.10** o superior
@@ -174,7 +174,7 @@ El archivo [config.json](file:///c:/Users/HP/OneDrive/Desktop/Casos%20Judiciales
 
 ---
 
-## 🚀 Guía de Ejecución
+## Guía de Ejecución
 
 ### 1. Migración e Inicialización de la Base de Datos (Primer uso)
 Antes de lanzar el orquestador o tras realizar actualizaciones de estructura en SQLite:
@@ -220,7 +220,7 @@ python -m src.limpieza
 
 ---
 
-## 🧪 Suite de Pruebas Unitarias e Integración (`pytest`)
+## Suite de Pruebas Unitarias e Integración (`pytest`)
 
 El proyecto incluye pruebas automatizadas con `pytest`:
 
@@ -246,7 +246,7 @@ pytest tests/test_prompt_procesador.py
 
 ---
 
-## 🛠️ Herramientas de Mantenimiento (`scripts/`)
+## Herramientas de Mantenimiento (`scripts/`)
 
 - **Reiniciar estados en la BD:**
   ```bash
@@ -264,7 +264,7 @@ pytest tests/test_prompt_procesador.py
 
 ---
 
-## 📊 Archivos de Salida y Registros
+## Archivos de Salida y Registros
 
 - **Base de Datos Principal:** `estado_casos.db` (SQLite)
 - **Reporte CSV de Trabajo:** `data/reporte_trabajo.csv`
