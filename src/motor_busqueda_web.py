@@ -123,11 +123,31 @@ class BotJudicial:
         except Exception:
             logger.warning("[!] La UI de búsqueda tardó en aparecer; continuando observación.")
 
+    def asegurar_navegador_vivo(self, modo_visible=True):
+        """
+        Verifica si la página y el contexto del navegador están activos.
+        Si se cerró el navegador (Target page, context or browser has been closed),
+        lo relanza automáticamente sin interrumpir la ejecución masiva.
+        """
+        try:
+            if not self.page or self.page.is_closed() or not self.browser or not self.browser.is_connected():
+                logger.warning("[!] El navegador o la pestaña fue cerrada. Relanzando automáticamente...")
+                self.cerrar_navegador()
+                self.iniciar_navegador(modo_visible=modo_visible)
+                return True
+        except Exception:
+            logger.warning("[!] Error al verificar estado del navegador. Reiniciando instancia de Playwright...")
+            self.cerrar_navegador()
+            self.iniciar_navegador(modo_visible=modo_visible)
+            return True
+        return False
+
     def _verificar_sesion_activa(self):
         """
-        Verifica si la sesión del portal sigue activa.
-        Si detecta expiración, vuelve a navegar al portal.
+        Verifica si la sesión del portal sigue activa y el navegador está vivo.
+        Si detecta expiración o cierre, relanza la navegación.
         """
+        self.asegurar_navegador_vivo(modo_visible=True)
         try:
             contenido = self.page.inner_text("body", timeout=5000)
             indicadores_expiracion = [
@@ -138,10 +158,15 @@ class BotJudicial:
                 if indicador.lower() in contenido.lower():
                     logger.warning("[!] Sesión expirada detectada. Reiniciando navegación...")
                     self.page.goto(self.url_portal, timeout=60000, wait_until="domcontentloaded")
-                    self.page.wait_for_load_state("networkidle", timeout=30000)
+                    try:
+                        self.page.wait_for_load_state("networkidle", timeout=15000)
+                    except Exception:
+                        pass
                     return False
-        except Exception:
-            pass
+        except Exception as e_verif:
+            if "closed" in str(e_verif).lower():
+                logger.warning("[!] Detectado navegador cerrado durante verificación. Relanzando...")
+                self.asegurar_navegador_vivo(modo_visible=True)
         return True
 
     def _interceptar_respuesta_api(self, response):
@@ -275,12 +300,17 @@ class BotJudicial:
                     return False
             except Exception as e:
                 intentos += 1
+                msg_err = str(e).lower()
                 logger.warning("Excepción en bucle de observación pasiva (intento %s/%s): %s", intentos, max_reintentos, e)
+                if "closed" in msg_err or "target page" in msg_err:
+                    logger.warning("[!] Detectado cierre de navegador. Relanzando Chromium automáticamente...")
+                    self.asegurar_navegador_vivo(modo_visible=True)
                 if intentos >= max_reintentos:
                     logger.error("Máximo de reintentos alcanzado para causa %s. Abortando.", numero_juicio)
                     return False
                 try:
-                    self.page.wait_for_selector("body", state="visible", timeout=5000)
+                    if self.page and not self.page.is_closed():
+                        self.page.wait_for_selector("body", state="visible", timeout=5000)
                 except Exception:
                     pass
 
@@ -410,9 +440,20 @@ class BotJudicial:
                     except Exception:
                         pass
 
-            # Pequeña espera para que Angular injete contenido dinámico adicional
+            # Esperar explícitamente a que Angular inyecte las filas de la tabla de actuaciones en el DOM
             try:
-                self.page.wait_for_load_state("networkidle", timeout=2000)
+                self.page.wait_for_selector(
+                    "table tr td, tr.mat-row, mat-row, .actuacion-item, tr:has(td)",
+                    state="visible",
+                    timeout=8000
+                )
+                logger.info("[RUTA RESPALDO DOM] Tabla de actuaciones detectada y visible en el DOM.")
+            except Exception:
+                logger.warning("[!] No se detectaron filas de tabla explícitas en 8s; procediendo con la lectura del DOM actual.")
+
+            # Esperar estabilización de red
+            try:
+                self.page.wait_for_load_state("networkidle", timeout=3000)
             except Exception:
                 pass
 
