@@ -25,61 +25,85 @@ class GestorCasos:
         self.hoja = rutas.get('hoja_lectura', 'migrado')
         self.filtros = self.config.get('filtros_activos', {})
 
-        self._inicializar_csv()
-
-        try:
-            self.df = pd.read_csv(self.ruta_csv, low_memory=False)
-            if self.df.empty:
-                raise EmptyDataError("El archivo CSV está completamente vacío.")
-        except EmptyDataError:
-            logger.critical(
-                "El archivo CSV está vacío o corrupto. "
-                "Intentando autoreparar desde el Excel original..."
-            )
-            if os.path.exists(self.ruta_csv):
-                try:
-                    os.remove(self.ruta_csv)
-                except Exception:
-                    pass
-            self._inicializar_csv()
+        # Cargar CSV existente si existe y es válido
+        if os.path.exists(self.ruta_csv):
             try:
                 self.df = pd.read_csv(self.ruta_csv, low_memory=False)
-            except Exception:
-                logger.critical("No se pudo restaurar la base de datos CSV. Verifique el Excel de origen.")
-                sys.exit(1)
-        except FileNotFoundError:
-            logger.critical("No se encontró el CSV en '%s'. Creando desde Excel...", self.ruta_csv)
-            self._inicializar_csv()
-            try:
+                self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
+                if self.df.empty:
+                    raise EmptyDataError("CSV vacío")
+            except Exception as e:
+                logger.warning("No se pudo cargar el CSV existente ('%s'): %s. Regenerando desde Excel...", self.ruta_csv, e)
+                self._inicializar_csv(forzar=True)
                 self.df = pd.read_csv(self.ruta_csv, low_memory=False)
-            except Exception:
-                logger.critical("No se pudo crear la base de datos CSV en '%s'.", self.ruta_csv)
-                sys.exit(1)
-        except Exception as e:
-            logger.critical("Error inesperado al cargar la base de datos CSV: %s", e)
-            sys.exit(1)
-
-        # Normalizar cabeceras (limpia espacios y fuerza mayúsculas)
-        self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
-
-        if 'SUCURSAL' not in self.df.columns and os.path.exists(self.ruta_excel):
-            logger.warning("'SUCURSAL' no encontrada en CSV. Regenerando CSV desde Excel...")
-            if os.path.exists(self.ruta_csv):
-                try:
-                    os.remove(self.ruta_csv)
-                except Exception:
-                    pass
-            self._inicializar_csv()
+                self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
+        else:
+            logger.info("CSV no encontrado. Creando desde Excel original...")
+            self._inicializar_csv(forzar=True)
             self.df = pd.read_csv(self.ruta_csv, low_memory=False)
             self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
 
-    def _inicializar_csv(self):
-        """CREATE: Genera el CSV de trabajo desde el Excel original si no existe."""
-        if not os.path.exists(self.ruta_csv) and os.path.exists(self.ruta_excel):
-            logger.info("Inicializando base de datos CSV desde Excel...")
-            df_excel = pd.read_excel(self.ruta_excel, sheet_name=self.hoja, header=0)
-            df_excel.columns = df_excel.columns.astype(str).str.strip().str.upper()
-            df_excel.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
+        # Si faltan columnas esenciales o filas incompletas, sincronizar una sola vez
+        if ('SUCURSAL' not in self.df.columns or len(self.df) < 1000) and os.path.exists(self.ruta_excel):
+            logger.info("El CSV tiene %s registros. Sincronizando datos con el Excel completo...", len(self.df))
+            self._inicializar_csv(forzar=True)
+            self.df = pd.read_csv(self.ruta_csv, low_memory=False)
+            self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
+
+    def _cargar_excel_robusto(self):
+        """Carga el Excel usando una copia sombra para evitar bloqueos si está abierto en Excel, e infiere el header."""
+        import subprocess
+        excel_path = os.path.abspath(self.ruta_excel)
+        temp_path = os.path.abspath(os.path.join(os.path.dirname(self.ruta_excel), "_temp_excel_shadow.xlsx"))
+        
+        # Copiar con PowerShell para evitar error de bloqueo de archivo exclusivo en Windows
+        cmd = f'powershell -Command "Copy-Item \'{excel_path}\' \'{temp_path}\' -Force"'
+        subprocess.run(cmd, shell=True, capture_output=True)
+
+        archivo_lectura = temp_path if os.path.exists(temp_path) else self.ruta_excel
+
+        try:
+            for h in [0, 1]:
+                try:
+                    df = pd.read_excel(archivo_lectura, sheet_name=self.hoja, header=h)
+                    df.columns = df.columns.astype(str).str.strip().str.upper()
+                    if 'SUCURSAL' in df.columns or 'CODIGO_JUICIO' in df.columns:
+                        logger.info("Excel cargado correctamente detectando header=%s (%s filas).", h, len(df))
+                        return df
+                except Exception:
+                    continue
+            raise ValueError("No se pudo detectar la cabecera correcta en el archivo Excel.")
+        finally:
+            if os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except Exception:
+                    pass
+
+    def _inicializar_csv(self, forzar=False):
+        """CREATE: Genera o combina el CSV de trabajo desde el Excel original."""
+        if not os.path.exists(self.ruta_excel):
+            return
+
+        if os.path.exists(self.ruta_csv) and not forzar:
+            return
+
+        logger.info("Inicializando/sincronizando base de datos CSV desde Excel...")
+        df_excel = self._cargar_excel_robusto()
+
+        if os.path.exists(self.ruta_csv):
+            try:
+                df_existente = pd.read_csv(self.ruta_csv, low_memory=False)
+                df_existente.columns = df_existente.columns.astype(str).str.strip().str.upper()
+                if 'CODIGO_JUICIO' in df_existente.columns and 'CODIGO_JUICIO' in df_excel.columns:
+                    logger.info("Combinando datos existentes del CSV con la base completa del Excel...")
+                    df_merged = df_existente.set_index('CODIGO_JUICIO').combine_first(df_excel.set_index('CODIGO_JUICIO')).reset_index()
+                    df_merged.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
+                    return
+            except Exception as e:
+                logger.warning("No se pudo combinar el CSV existente, se creará uno nuevo: %s", e)
+
+        df_excel.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
 
     def obtener_casos_pendientes(self):
         """READ: Obtiene la lista de números de juicio que cumplen con los filtros."""
