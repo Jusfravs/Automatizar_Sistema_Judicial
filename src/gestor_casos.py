@@ -166,6 +166,11 @@ class GestorCasos:
                 if val is not None:
                     if col not in self.df.columns:
                         self.df[col] = None
+
+                    # Si el valor es una lista o diccionario (ej. HISTORIAL_ACTUACIONES), serializar a JSON string
+                    if isinstance(val, (list, dict)):
+                        val = json.dumps(val, ensure_ascii=False)
+
                     self.df.at[idx, col] = val
             return True
         return False
