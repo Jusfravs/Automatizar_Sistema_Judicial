@@ -615,7 +615,7 @@ class AgenteExtractor:
                 nav_arbol.bajar_nivel(f"Inferencia Autónoma exitosa -> '{fase_inferida}' en fecha {fecha_inferida}")
                 resultado["ETAPA_PROCESAL"] = etapa_inferida
                 resultado["FASE_PROCESAL"] = fase_inferida
-                resultado["FECHA INICIAL FASE ACTUAL"] = fecha_inferida or (actuaciones[0]["fecha"] if actuaciones else None)
+                resultado["FECHA INICIAL FASE ACTUAL"] = fecha_inferida
 
                 # Campos enriquecidos para nuevas columnas MOLDE
                 resultado["ULTIMA ETAPA"] = etapa_inferida

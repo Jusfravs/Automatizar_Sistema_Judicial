@@ -38,6 +38,24 @@ def test_api_mandamiento_detection():
     assert datos.get("FECHA INICIAL FASE ACTUAL") in ("2022-06-15", "15/06/2022"), f"Fecha incorrecta: {datos.get('FECHA INICIAL FASE ACTUAL')}"
 
 
+
+def test_api_usa_fecha_de_la_actuacion_detectada():
+    """La fecha de la fase debe provenir de su actuacion, no del inicio del juicio."""
+    bot = BotJudicial(url_portal="https://example.local")
+    api_payload = [{
+        "fechaIngreso": "2020-01-01",
+        "actuaciones": [
+            {"fechaCrea": "15/01/2022", "actuacion": "Boleta de citacion al demandado"}
+        ]
+    }]
+    bot.paquetes_api_interceptados = [{"url": "https://api.mock/causa/fecha", "data": api_payload}]
+
+    datos = bot._ejecutar_extraccion_detalles(numero_juicio="fecha-actuacion")
+
+    assert "CITACION" in datos["FASE_PROCESAL"].upper()
+    assert datos["FECHA INICIAL FASE ACTUAL"] == "15/01/2022"
+    assert datos["FECHA FIN ULTIMA FASE"] == "15/01/2022"
+
 def test_dom_extractor_detects_mandamiento():
     extractor = AgenteExtractor()
     html = load_html("training_case.html")

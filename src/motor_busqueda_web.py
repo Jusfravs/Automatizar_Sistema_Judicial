@@ -372,7 +372,13 @@ class BotJudicial:
                         if isinstance(acts, list):
                             for act in acts:
                                 if isinstance(act, dict):
-                                    f_act = act.get("fecha") or act.get("fechaActuacion") or act.get("fechaProvidencia")
+                                    f_act = next(
+                                        (act.get(campo) for campo in (
+                                            "fecha", "fechaActuacion", "fechaProvidencia",
+                                            "fechaCrea", "fechaCreacion", "fechaRegistro", "fechaIngreso"
+                                        ) if act.get(campo)),
+                                        None
+                                    )
                                     d_act = act.get("actuacion") or act.get("detalle") or act.get("tipoActuacion") or act.get("actividad")
                                     if d_act:
                                         actuaciones_api.append({
@@ -386,7 +392,7 @@ class BotJudicial:
                         if res_api and res_api.get("ULTIMA_ETAPA"):
                             etapa_api = res_api.get("ULTIMA_ETAPA")
                             fase_api = res_api.get("ULTIMA_FASE")
-                            fecha_api = res_api.get("FECHA_FIN_ULTIMA_FASE") or datos.get("FECHA INICIO JUICIO")
+                            fecha_api = res_api.get("FECHA_FIN_ULTIMA_FASE")
                             
                             datos["ETAPA_PROCESAL"] = etapa_api
                             datos["FASE_PROCESAL"] = fase_api
