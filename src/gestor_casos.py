@@ -194,28 +194,134 @@ class GestorCasos:
             return False
 
     def exportar_excel(self):
-        """EXPORT: Genera el Excel .xlsx consolidado final."""
-        # Calcular días en fase actual antes de exportar
-        self.calcular_dias_fase_actual()
-        logger.info("Exportando informe final a: %s", self.ruta_final)
-        self.df.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
+        """EXPORT: Genera el Excel .xlsx consolidado final con reestructuración de columnas y formato en rojo."""
+        import openpyxl
+        from openpyxl.styles import PatternFill, Font
+
+        # 1. Calcular días transcurridos
+        self.calcular_dias_transcurridos()
+
+        # 2. Lista de las columnas obsoletas a eliminar del Excel final si existen
+        cols_a_eliminar = [
+            'ETAPA_PROCESAL (ACTUAL)',
+            'FASE_PROCESAL (ACTUAL)',
+            'ETAPA_PROCESAL (MIGRADO)',
+            'CODIGO_FASE',
+            'FASE_PROCESAL (MIGRADO)',
+            'FECHA INICIAL FASE ACTUAL',
+            'DIAS EN LA FASE ACTUAL',
+            'ETAPA_PROCESAL',
+            'FASE_PROCESAL'
+        ]
+
+        df_export = self.df.copy()
+
+        # Crear copia de FECHA INICIO JUICIO si no existe
+        if 'FECHA INICIO JUICIO' not in df_export.columns:
+            df_export['FECHA INICIO JUICIO'] = None
+
+        # Asegurar presencia de nuevas columnas MOLDE
+        nuevas_cols_molde = [
+            'FECHA INICIO JUICIO',
+            'FECHA FIN ULTIMA FASE',
+            'ULTIMA ETAPA',
+            'ULTIMA FASE',
+            'DIAS TRANSCURRIDOS',
+            'ETAPA ACTUAL',
+            'FASE ACTUAL',
+            'FECHA INICIO FASE ACTUAL'
+        ]
+
+        for col in nuevas_cols_molde:
+            if col not in df_export.columns:
+                df_export[col] = None
+
+        # Copiar FECHA FIN ULTIMA FASE a FECHA INICIO FASE ACTUAL si está vacía
+        mask_copia = df_export['FECHA INICIO FASE ACTUAL'].isna() & df_export['FECHA FIN ULTIMA FASE'].notna()
+        df_export.loc[mask_copia, 'FECHA INICIO FASE ACTUAL'] = df_export.loc[mask_copia, 'FECHA FIN ULTIMA FASE']
+
+        # Eliminar columnas viejas de df_export
+        cols_existentes_eliminar = [c for c in cols_a_eliminar if c in df_export.columns]
+        df_export.drop(columns=cols_existentes_eliminar, inplace=True, errors='ignore')
+
+        # Reordenar columnas: poner las 8 nuevas después de COMENTARIO_ULTIMO con 1 columna vacía separadora
+        cols_base = [c for c in df_export.columns if c not in nuevas_cols_molde and c != ' ']
+
+        if 'COMENTARIO_ULTIMO' in cols_base:
+            idx_comentario = cols_base.index('COMENTARIO_ULTIMO')
+            cols_izq = cols_base[:idx_comentario + 1]
+            cols_der = cols_base[idx_comentario + 1:]
+        else:
+            cols_izq = cols_base
+            cols_der = []
+
+        df_export[' '] = ""  # Columna separadora vacía
+        cols_ordenadas = cols_izq + [' '] + nuevas_cols_molde + cols_der
+        
+        # Eliminar posibles duplicados manteniendo orden
+        cols_finales = []
+        vistos = set()
+        for c in cols_ordenadas:
+            if c in df_export.columns and c not in vistos:
+                cols_finales.append(c)
+                vistos.add(c)
+
+        df_final = df_export[cols_finales]
+
+        logger.info("Exportando informe final reestructurado a: %s", self.ruta_final)
+        df_final.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
+
+        # 3. Aplicar formato condicional a filas con error en rojo usando openpyxl
+        try:
+            wb = openpyxl.load_workbook(self.ruta_final)
+            ws = wb[self.hoja] if self.hoja in wb.sheetnames else wb.active
+
+            fill_rojo = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+            font_rojo = Font(color="9C0006", bold=True)
+
+            # Buscar índice de columna COMENTARIO_ULTIMO o cualquier celda con error
+            col_comentario_idx = None
+            for col_idx in range(1, ws.max_column + 1):
+                header_val = ws.cell(row=1, column=col_idx).value
+                if header_val and str(header_val).strip().upper() == 'COMENTARIO_ULTIMO':
+                    col_comentario_idx = col_idx
+                    break
+
+            for row_idx in range(2, ws.max_row + 1):
+                es_error = False
+                if col_comentario_idx:
+                    val = ws.cell(row=row_idx, column=col_comentario_idx).value
+                    if val and ("ERROR:" in str(val).upper() or "NO DEVOLVIO RESULTADOS" in str(val).upper()):
+                        es_error = True
+
+                if es_error:
+                    for col_idx in range(1, ws.max_column + 1):
+                        cell = ws.cell(row=row_idx, column=col_idx)
+                        cell.fill = fill_rojo
+                        cell.font = font_rojo
+
+            wb.save(self.ruta_final)
+            wb.close()
+            logger.info("Formato de resaltado rojo para errores aplicado correctamente.")
+        except Exception as e_xl:
+            logger.warning("No se pudo aplicar estilo openpyxl al Excel final: %s", e_xl)
+
         logger.info("¡Archivo Excel final generado exitosamente!")
 
-    def calcular_dias_fase_actual(self):
+    def calcular_dias_transcurridos(self):
         """
-        Calcula la columna 'DIAS EN LA FASE ACTUAL' como la diferencia en días calendario
-        entre la fecha actual y 'FECHA INICIAL FASE ACTUAL'.
+        Calcula la columna 'DIAS TRANSCURRIDOS' como la diferencia en días calendario
+        entre la fecha actual y 'FECHA FIN ULTIMA FASE' (o 'FECHA INICIAL FASE ACTUAL').
         Soporta formatos dd/mm/yyyy y yyyy-mm-dd.
         """
-        col_fecha = 'FECHA INICIAL FASE ACTUAL'
-        col_dias = 'DIAS EN LA FASE ACTUAL'
+        col_fecha = 'FECHA FIN ULTIMA FASE' if 'FECHA FIN ULTIMA FASE' in self.df.columns else 'FECHA INICIAL FASE ACTUAL'
+        col_dias = 'DIAS TRANSCURRIDOS'
 
         if col_fecha not in self.df.columns:
             logger.warning("Columna '%s' no encontrada. No se calculará '%s'.", col_fecha, col_dias)
             return
 
-        if col_dias not in self.df.columns:
-            self.df[col_dias] = None
+        self.df[col_dias] = None
 
         hoy = datetime.now()
         conteo = 0
@@ -227,7 +333,6 @@ class GestorCasos:
             fecha_str = str(valor).strip()
             fecha_parsed = None
 
-            # Intentar formato dd/mm/yyyy (formato del portal e-SATJE)
             for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
                 try:
                     fecha_parsed = datetime.strptime(fecha_str, fmt)
@@ -241,4 +346,8 @@ class GestorCasos:
                 conteo += 1
 
         logger.info("'%s' calculado para %s registros.", col_dias, conteo)
+
+    def calcular_dias_fase_actual(self):
+        """Método de retrocompatibilidad que delega en calcular_dias_transcurridos."""
+        self.calcular_dias_transcurridos()
 

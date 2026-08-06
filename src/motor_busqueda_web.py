@@ -382,11 +382,24 @@ class BotJudicial:
 
                     if actuaciones_api:
                         from src.agente_extractor import MotorInferenciaProcesal
-                        etapa_api, fase_api, fecha_api = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones_api)
-                        if etapa_api:
+                        res_api = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones_api)
+                        if res_api and res_api.get("ULTIMA_ETAPA"):
+                            etapa_api = res_api.get("ULTIMA_ETAPA")
+                            fase_api = res_api.get("ULTIMA_FASE")
+                            fecha_api = res_api.get("FECHA_FIN_ULTIMA_FASE") or datos.get("FECHA INICIO JUICIO")
+                            
                             datos["ETAPA_PROCESAL"] = etapa_api
                             datos["FASE_PROCESAL"] = fase_api
-                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_api or datos.get("FECHA INICIO JUICIO")
+                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_api
+                            datos["ULTIMA ETAPA"] = etapa_api
+                            datos["ULTIMA FASE"] = fase_api
+                            datos["FECHA FIN ULTIMA FASE"] = fecha_api
+                            datos["ETAPA ACTUAL"] = res_api.get("ETAPA_ACTUAL") or etapa_api
+                            datos["FASE ACTUAL"] = res_api.get("FASE_ACTUAL") or fase_api
+                            datos["FECHA INICIO FASE ACTUAL"] = fecha_api
+                            if res_api.get("MENSAJE_ESPECIAL"):
+                                datos["COMENTARIO_ULTIMO"] = res_api.get("MENSAJE_ESPECIAL")
+
                             logger.info("[RUTA PRINCIPAL API] Clasificación por Regla del Árbol: '%s' / '%s' en fecha %s", etapa_api, fase_api, datos["FECHA INICIAL FASE ACTUAL"])
                             return datos
             except Exception as e_pandas:

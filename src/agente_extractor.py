@@ -47,12 +47,50 @@ class NavegadorArbolContenido:
         return self.nivel_actual
 
 
+class ResultadoInferencia(tuple):
+    """
+    Resultado enriquecido de la inferencia procesal.
+    Compatible con desempaquetado de 3-tupla: (etapa, fase, fecha)
+    y con acceso por diccionario/propiedades para las nuevas columnas Excel.
+    """
+    def __new__(cls, ultima_etapa, ultima_fase, fecha_fin, etapa_actual=None, fase_actual=None, mensaje_especial=None):
+        return super().__new__(cls, (ultima_etapa, ultima_fase, fecha_fin))
+
+    def __init__(self, ultima_etapa, ultima_fase, fecha_fin, etapa_actual=None, fase_actual=None, mensaje_especial=None):
+        self.ultima_etapa = ultima_etapa
+        self.ultima_fase = ultima_fase
+        self.fecha_fin_ultima_fase = fecha_fin
+        self.etapa_actual = etapa_actual or ultima_etapa
+        self.fase_actual = fase_actual or ultima_fase
+        self.mensaje_especial = mensaje_especial
+
+    def get(self, key, default=None):
+        mapping = {
+            "ULTIMA_ETAPA": self.ultima_etapa,
+            "ULTIMA_FASE": self.ultima_fase,
+            "FECHA_FIN_ULTIMA_FASE": self.fecha_fin_ultima_fase,
+            "ETAPA_ACTUAL": self.etapa_actual,
+            "FASE_ACTUAL": self.fase_actual,
+            "FECHA_INICIO_FASE_ACTUAL": self.fecha_fin_ultima_fase,
+            "MENSAJE_ESPECIAL": self.mensaje_especial,
+            "ETAPA_PROCESAL": self.ultima_etapa,
+            "FASE_PROCESAL": self.ultima_fase,
+            "FECHA INICIAL FASE ACTUAL": self.fecha_fin_ultima_fase
+        }
+        return mapping.get(key, default)
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.get(key)
+        return super().__getitem__(key)
+
+
 class MotorInferenciaProcesal:
     """
-    Motor de Inferencia Procesal Autónoma basado en MODULO_FILTRO_CASOS.md.
+    Motor de Inferencia Procesal Autónoma basado en MODULO_FILTRO_CASOS.md y MOLDE_NUEVOS_CAMBIOS.md.
     Combina coincidencia conceptual por similitud semántica con inferencia
     de reglas de negocio procesales (deducción de transiciones de estado, 
-    evaluación de carátulas, oficios bancarios, cadenas periciales y citaciones).
+    evaluación de carátulas, oficios bancarios, cadenas periciales, citaciones y 7 reglas avanzadas).
     """
 
     # Jerarquía procesal ordenada de menor a mayor avance
@@ -97,7 +135,6 @@ class MotorInferenciaProcesal:
     }
 
     TAXONOMIA_COMPLETA = [
-        # Fase 6: LIQUIDACION Y EMBARGO
         (
             "6 LIQUIDACION Y EMBARGO", "6.5 CONGELAMIENTO DE CUENTAS / CIERRE",
             [
@@ -143,8 +180,6 @@ class MotorInferenciaProcesal:
                 "NOMBRAMIENTO DE PERITO", "INFORME DEL PERITO"
             ]
         ),
-
-        # Fase 5: SENTENCIA
         (
             "5 SENTENCIA", "5.3 SENTENCIA EJECUTORIADA",
             [
@@ -168,8 +203,6 @@ class MotorInferenciaProcesal:
                 "SENTENCIA ORAL", "DICTAMEN JUDICIAL"
             ]
         ),
-
-        # Fase 4: AUDIENCIA
         (
             "4 AUDIENCIA", "4.3 ACUERDO DE MEDIACION",
             [
@@ -197,8 +230,6 @@ class MotorInferenciaProcesal:
                 "REPROGRAMACION AUDIENCIA", "CALIFICACION DE LA CONTESTACION Y CONVOCATORIA"
             ]
         ),
-
-        # Fase 3: CONTESTACION
         (
             "3 CONTESTACION", "3.1 CONTESTACION",
             [
@@ -206,8 +237,6 @@ class MotorInferenciaProcesal:
                 "RESPONDE DEMANDA", "ESCRITO DE CONTESTACION", "OPONE EXCEPCIONES"
             ]
         ),
-
-        # Fase 2: CITACION
         (
             "2 CITACION", "2.2 CITACION POR PRENSA",
             [
@@ -223,17 +252,16 @@ class MotorInferenciaProcesal:
                 "BOLETA FIJADA", "RAZON DE CITACION", "DILIGENCIA DE CITACION",
                 "ACTA DE CITACION", "NOTIFICACION DE DEMANDA", "OFICIO DE CITACION",
                 "CITAR AL DEMANDADO", "SE CITA", "NOTIFICAR", "NOTIFIQUESE",
-                "BOLETA DE CITACION", "DILIGENCIA DE NOTIFICACIÓN", "CITACION REALIZADA"
+                "BOLETA DE CITACION", "DILIGENCIA DE NOTIFICACIÓN", "CITACION REALIZADA",
+                "CITACION NO REALIZADA", "REENVIO CITACION", "RAZON ENVIO A CITACIONES", "RAZON DE NO CITACION"
             ]
         ),
-
-        # Fase 1: PRESENTACION Y CALIFICACION
         (
             "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION",
             [
                 "CALIFICACION", "CALIFICA", "CALIFICADA", "AUTO INICIAL",
                 "ADMITIDA", "ADMITE", "ACEPTA A TRAMITE", "CALIFICA LA DEMANDA",
-                "AUTO DE CALIFICACION"
+                "AUTO DE CALIFICACION", "DEMANDA Y CALIFICACION"
             ]
         ),
         (
@@ -241,7 +269,7 @@ class MotorInferenciaProcesal:
             [
                 "COMPLETAR", "COMPLETAR DEMANDA", "ACLARAR DEMANDA", "ACLARACION",
                 "SUBSANAR", "MANDAR A COMPLETAR", "PREVENCION DE COMPLETAR",
-                "COMPLETA DEMANDA", "COMPLETAR Y/O ACLARAR"
+                "COMPLETA DEMANDA", "COMPLETAR Y/O ACLARAR", "COMPLETAR Y ACLARAR"
             ]
         ),
         (
@@ -256,11 +284,31 @@ class MotorInferenciaProcesal:
 
     @classmethod
     def obtener_indice_fase(cls, fase):
-        """Retorna la posición jerárquica de una fase."""
+        """Devuelve el índice numérico de la fase para comparaciones de precedencia."""
+        if not fase:
+            return -1
         for idx, f in enumerate(cls.ORDEN_FASES):
             if f in fase or fase in f:
                 return idx
         return -1
+
+    @classmethod
+    def calcular_siguiente_fase(cls, fase_actual):
+        """
+        Dada la fase actual encontrada, retorna la siguiente fase y etapa según ORDEN_FASES.
+        Si la fase es la última (6.5), retorna la misma fase.
+        Si la fase es 6.4 REMATE o 6.5 CONGELAMIENTO, no avanza.
+        """
+        idx = cls.obtener_indice_fase(fase_actual)
+        if idx < 0:
+            return None, None
+
+        if idx >= len(cls.ORDEN_FASES) - 1 or cls.ORDEN_FASES[idx] in ("6.4 REMATE", "6.5 CONGELAMIENTO DE CUENTAS / CIERRE"):
+            return cls.MAPEO_ETAPAS.get(cls.ORDEN_FASES[idx]), cls.ORDEN_FASES[idx]
+
+        siguiente_fase = cls.ORDEN_FASES[idx + 1]
+        siguiente_etapa = cls.MAPEO_ETAPAS.get(siguiente_fase)
+        return siguiente_etapa, siguiente_fase
 
     @classmethod
     def _segmentar_por_instancia(cls, actuaciones):
@@ -315,14 +363,11 @@ class MotorInferenciaProcesal:
     @classmethod
     def inferir_estado_procesal(cls, actuaciones, texto_global=""):
         """
-        Analiza el estado procesal basándose ESTRICTAMENTE en la jerarquía del Árbol de Actuaciones (Regla del Árbol):
-        1. Segmenta las actuaciones por instancia / rama.
-        2. Localiza la rama activa (nodo más reciente / de mayor jerarquía).
-        3. Evalúa el avance procesal priorizando la actuación MÁS RECIENTE dentro de la rama activa.
-        4. Prohíbe falsos positivos por palabras clave aisladas de actuaciones obsoletas o texto plano suelto.
+        Analiza el estado procesal basándose ESTRICTAMENTE en la jerarquía del Árbol de Actuaciones y 7 Reglas Especiales:
+        Retorna una instancia de ResultadoInferencia.
         """
         if not actuaciones and not texto_global:
-            return None, None, None
+            return ResultadoInferencia(None, None, None)
 
         # PASO 1 & 2: Segmentar por instancia y seleccionar la rama activa
         if actuaciones:
@@ -332,11 +377,8 @@ class MotorInferenciaProcesal:
             nombre_rama, actuaciones_rama = "TEXTO_GLOBAL", []
 
         if not actuaciones_rama and not texto_global:
-            return None, None, None
+            return ResultadoInferencia(None, None, None)
 
-        # Evaluamos las actuaciones dentro de la rama activa
-        # Las actuaciones se asumen en orden cronológico (índice 0 = más reciente o viceversa)
-        # Identificar si índice 0 es la más reciente o la más antigua por fechas
         actuaciones_evaluar = list(actuaciones_rama)
 
         tiene_calificacion_demanda = False
@@ -364,7 +406,6 @@ class MotorInferenciaProcesal:
             if not norm:
                 continue
 
-            # Regla de Inferencia 1: Carátula de juicio / Presentación si NO hay calificación aún
             if not tiene_calificacion_demanda and any(k in norm for k in ["CARATULA", "INGRESO DE CAUSA", "PRESENTACION", "LIBELO"]):
                 hallazgos.append({
                     "etapa": "1 PRESENTACION Y CALIFICACION",
@@ -374,7 +415,6 @@ class MotorInferenciaProcesal:
                     "actuacion": norm
                 })
 
-            # Regla de Inferencia: Oficio del Banco en rama activa
             if any(k in norm for k in ["SUPERINTENDENCIA DE BANCOS", "AGREGUESE OFICIO EMITIDO POR BANCO", "AGREGUESE EL OFICIO EMITIDO POR EL BANCO"]):
                 hallazgos.append({
                     "etapa": "6 LIQUIDACION Y EMBARGO",
@@ -384,7 +424,6 @@ class MotorInferenciaProcesal:
                     "actuacion": norm
                 })
 
-            # Evaluación contra la Taxonomía Semántica Completa
             for etapa, fase, terminos in cls.TAXONOMIA_COMPLETA:
                 for term in terminos:
                     term_norm = normalizar_texto(term)
@@ -399,7 +438,6 @@ class MotorInferenciaProcesal:
                         })
                         break
 
-        # Regla de Inferencia: Contestación con calificación/convocatoria
         if tiene_contestacion and tiene_calificacion_contestacion:
             fecha_ref = actuaciones_evaluar[0]["fecha"] if actuaciones_evaluar else None
             hallazgos.append({
@@ -410,7 +448,6 @@ class MotorInferenciaProcesal:
                 "actuacion": "CALIFICACION DE CONTESTACION"
             })
 
-        # Evaluación en texto global SOLO si no hubo hallazgos en la rama activa
         if not hallazgos and texto_global:
             norm_global = normalizar_texto(texto_global)
             for etapa, fase, terminos in cls.TAXONOMIA_COMPLETA:
@@ -429,13 +466,67 @@ class MotorInferenciaProcesal:
                         break
 
         if not hallazgos:
-            return None, None, None
+            return ResultadoInferencia(None, None, None)
 
         # PASO 4: Emitir clasificación respetando el avance en la rama activa.
-        # Seleccionar la actuación de mayor avance procesal dentro de la rama activa
         hallazgos_ordenados = sorted(hallazgos, key=lambda x: x["prioridad"], reverse=True)
         mejor = hallazgos_ordenados[0]
-        return mejor["etapa"], mejor["fase"], mejor["fecha"]
+
+        ultima_etapa = mejor["etapa"]
+        ultima_fase = mejor["fase"]
+        fecha_fin = mejor["fecha"]
+
+        # --- APLICACIÓN DE LAS 7 REGLAS DE NEGOCIO DEL MOLDE ---
+        texto_actuaciones_unido = " ".join([normalizar_texto(a.get("detalle", "")) for a in actuaciones_evaluar])
+
+        # Regla 2: Citación no realizada / reenvío citación sin citación realizada posterior
+        tiene_citacion_fallida = any(k in texto_actuaciones_unido for k in ["CITACION NO REALIZADA", "REENVIO CITACION", "RAZON ENVIO A CITACIONES", "RAZON DE NO CITACION"])
+        tiene_citacion_exitosa = any(k in texto_actuaciones_unido for k in ["CITACION REALIZADA", "BOLETA DE CITACION NOTIFICADA", "ACTA DE CITACION", "CITADO Y NOTIFICADO"])
+        if tiene_citacion_fallida and not tiene_citacion_exitosa:
+            ultima_etapa = "1 PRESENTACION Y CALIFICACION"
+            ultima_fase = "1.3 CALIFICACION"
+
+        # Regla 5: Abandono por falta de impulso procesal con razón de ejecutoria
+        tiene_abandono = "ABANDONO POR FALTA DE IMPULSO PROCESAL" in texto_actuaciones_unido
+        tiene_ejecutoria = any(k in texto_actuaciones_unido for k in ["RAZON DE EJECUTORIA", "EJECUTORIADA"])
+        if tiene_abandono and tiene_ejecutoria:
+            ultima_etapa = "1 PRESENTACION Y CALIFICACION"
+            ultima_fase = "1.3 CALIFICACION"
+
+        # Regla 6: Acuerdo de Mediación antes de Razón de Ejecutoria
+        tiene_mediacion = any(k in texto_actuaciones_unido for k in ["ACUERDO DE MEDIACION", "ACTA DE MEDIACION", "MEDIACIÓN"])
+        if tiene_mediacion and not tiene_ejecutoria:
+            ultima_etapa = "5 SENTENCIA"
+            ultima_fase = "5.3 SENTENCIA EJECUTORIADA"
+
+        # Regla 7: Nombramiento de Perito sin Informe Pericial posterior
+        tiene_nombramiento_perito = any(k in texto_actuaciones_unido for k in ["NOMBRAMIENTO DE PERITO", "PERITO LIQUIDADOR NOMBRADO"])
+        tiene_informe_perito = any(k in texto_actuaciones_unido for k in ["INFORME PERICIAL", "INFORME DEL PERITO", "INFORME PERITO LIQUIDADOR"])
+        if ultima_fase == "6.1 LIQUIDACION PERITO LIQUIDADOR" and tiene_nombramiento_perito and not tiene_informe_perito:
+            ultima_etapa = "5 SENTENCIA"
+            ultima_fase = "5.3 SENTENCIA EJECUTORIADA"
+
+        # Regla 1: Remate o Congelamiento (no avanzar a siguiente fase)
+        mensaje_especial = None
+        if ultima_fase == "6.4 REMATE":
+            etapa_actual = "6 LIQUIDACION Y EMBARGO"
+            fase_actual = "6.4 REMATE"
+            mensaje_especial = "CASO SOLVENTADO POR REMATE"
+        elif ultima_fase == "6.5 CONGELAMIENTO DE CUENTAS / CIERRE":
+            etapa_actual = "6 LIQUIDACION Y EMBARGO"
+            fase_actual = "6.5 CONGELAMIENTO DE CUENTAS / CIERRE"
+            mensaje_especial = "CASO SOLVENTADO POR CONGELAMIENTO"
+        else:
+            etapa_actual, fase_actual = cls.calcular_siguiente_fase(ultima_fase)
+
+        return ResultadoInferencia(
+            ultima_etapa=ultima_etapa,
+            ultima_fase=ultima_fase,
+            fecha_fin=fecha_fin,
+            etapa_actual=etapa_actual,
+            fase_actual=fase_actual,
+            mensaje_especial=mensaje_especial
+        )
 
 
 class AgenteExtractor:
@@ -512,15 +603,29 @@ class AgenteExtractor:
             resultado["FECHA INICIO JUICIO"] = fecha_inicio
 
             # PASO 2: Inferencia Procesal Autónoma
-            etapa_inferida, fase_inferida, fecha_inferida = MotorInferenciaProcesal.inferir_estado_procesal(
+            res_inf = MotorInferenciaProcesal.inferir_estado_procesal(
                 actuaciones, texto_global=soup.get_text(" ", strip=True)
             )
 
-            if etapa_inferida:
+            if res_inf and res_inf.get("ULTIMA_ETAPA"):
+                etapa_inferida = res_inf.get("ULTIMA_ETAPA")
+                fase_inferida = res_inf.get("ULTIMA_FASE")
+                fecha_inferida = res_inf.get("FECHA_FIN_ULTIMA_FASE")
+
                 nav_arbol.bajar_nivel(f"Inferencia Autónoma exitosa -> '{fase_inferida}' en fecha {fecha_inferida}")
                 resultado["ETAPA_PROCESAL"] = etapa_inferida
                 resultado["FASE_PROCESAL"] = fase_inferida
                 resultado["FECHA INICIAL FASE ACTUAL"] = fecha_inferida or (actuaciones[0]["fecha"] if actuaciones else None)
+
+                # Campos enriquecidos para nuevas columnas MOLDE
+                resultado["ULTIMA ETAPA"] = etapa_inferida
+                resultado["ULTIMA FASE"] = fase_inferida
+                resultado["FECHA FIN ULTIMA FASE"] = resultado["FECHA INICIAL FASE ACTUAL"]
+                resultado["ETAPA ACTUAL"] = res_inf.get("ETAPA_ACTUAL") or etapa_inferida
+                resultado["FASE ACTUAL"] = res_inf.get("FASE_ACTUAL") or fase_inferida
+                resultado["FECHA INICIO FASE ACTUAL"] = resultado["FECHA FIN ULTIMA FASE"]
+                if res_inf.get("MENSAJE_ESPECIAL"):
+                    resultado["COMENTARIO_ULTIMO"] = res_inf.get("MENSAJE_ESPECIAL")
                 
                 # Log estructurado de la decisión de fase para auditoría
                 try:
@@ -536,8 +641,15 @@ class AgenteExtractor:
                 except Exception:
                     pass
             elif actuaciones:
-                # Fallback contextual si se encontraron actuaciones pero ninguna cuadró estrictamente
-                resultado["FECHA INICIAL FASE ACTUAL"] = actuaciones[0]["fecha"]
+                # Fallback contextual si se encontraron actuaciones pero ninguna cuadró strictly
+                fecha_fallback = actuaciones[0]["fecha"]
+                resultado["FECHA INICIAL FASE ACTUAL"] = fecha_fallback
+                resultado["FECHA FIN ULTIMA FASE"] = fecha_fallback
+                resultado["ULTIMA ETAPA"] = "ESTADO DESCONOCIDO"
+                resultado["ULTIMA FASE"] = actuaciones[0]["detalle"][:100]
+                resultado["ETAPA ACTUAL"] = "ESTADO DESCONOCIDO"
+                resultado["FASE ACTUAL"] = actuaciones[0]["detalle"][:100]
+                resultado["FECHA INICIO FASE ACTUAL"] = fecha_fallback
                 resultado["ETAPA_PROCESAL"] = "ESTADO DESCONOCIDO"
                 resultado["FASE_PROCESAL"] = actuaciones[0]["detalle"][:100]
 
