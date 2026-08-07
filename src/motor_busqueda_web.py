@@ -2,6 +2,8 @@
 import os
 import re
 import json
+from time import monotonic
+from traceback import format_exc
 import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 from src.agente_extractor import AgenteExtractor, NavegadorArbolContenido
@@ -69,7 +71,7 @@ class BotJudicial:
     2. Ruta de Respaldo (Sincronización DOM): Freno de ejecución con wait_for_selector('text="Actor/Ofendido:"')
        para asegurar inyección en Angular antes de enviar el HTML a BeautifulSoup4.
     """
-    def __init__(self, url_portal):
+    def __init__(self, url_portal, navegacion=None):
         self.url_portal = url_portal
         self.playwright = None
         self.browser = None
@@ -79,6 +81,19 @@ class BotJudicial:
         self.nav_arbol = NavegadorArbolContenido()
         self.paquetes_api_interceptados = []
         self.datos_extraidos = None
+        self.navegacion = {
+            "captcha_timeout_ms": 300000,
+            "captcha_render_timeout_ms": 15000,
+            "resultados_timeout_ms": 30000,
+            "datos_generales_timeout_ms": 30000,
+            "actuaciones_timeout_ms": 30000,
+            "pantalla_final_timeout_ms": 30000,
+            "pantalla_final_estabilizacion_ms": 1500,
+            "max_reintentos_transicion": 2,
+        }
+        self.navegacion.update(navegacion or {})
+        self.ultimo_estado_navegacion = None
+        self._busquedas_enviadas = set()
 
     def iniciar_navegador(self, modo_visible=True):
         """Inicia el navegador Chromium con bypass anti-automatización para F5 WAF y listener API."""
@@ -219,6 +234,632 @@ class BotJudicial:
             self.page.goto(self.url_portal, wait_until="domcontentloaded")
             return False
 
+    @staticmethod
+    def _causa_canonica(numero_juicio):
+        """Normaliza el numero de causa para comparar portal y archivo de origen."""
+        return re.sub(r"\D", "", str(numero_juicio or ""))
+
+    @staticmethod
+    def _causa_para_formulario(numero_juicio):
+        """Conserva el formato que exige la m?scara de e-SATJE al escribir la causa."""
+        valor = str(numero_juicio or "").strip()
+        if re.fullmatch(r"\d{5}-\d{4}-\d{5,}", valor):
+            return valor
+        causa = BotJudicial._causa_canonica(valor)
+        if len(causa) >= 14:
+            return f"{causa[:5]}-{causa[5:9]}-{causa[9:]}"
+        return valor
+
+    def _cambiar_estado_navegacion(self, causa, anterior, siguiente, accion, **extra):
+        self.ultimo_estado_navegacion = siguiente
+        evento = {
+            "causa": self._causa_canonica(causa),
+            "estado_anterior": anterior,
+            "estado_siguiente": siguiente,
+            "accion": accion,
+            **extra,
+        }
+        logger.info("[NAVEGACION_ESATJE] %s", json.dumps(evento, ensure_ascii=False, default=str))
+
+    def _input_causa_unico(self):
+        selector = "input[formcontrolname='numeroCausa'], input[formcontrolname='numeroJuicio'], input[placeholder*='Dependencia' i], input[placeholder*='causa' i]"
+        locator = self.page.locator(selector)
+        if locator.count() != 1:
+            raise RuntimeError("INPUT_CAUSA_AMBIGUO_O_AUSENTE")
+        return locator.nth(0)
+
+    def _boton_buscar_unico(self):
+        boton = self.page.get_by_role("button", name=re.compile(r"^\s*BUSCAR\s*$", re.IGNORECASE))
+        if boton.count() == 1:
+            return boton.nth(0)
+
+        respaldo = self.page.locator("button[type='submit']:has-text('BUSCAR'), button:has-text('BUSCAR')")
+        if respaldo.count() != 1:
+            raise RuntimeError("BOTON_BUSCAR_AMBIGUO_O_AUSENTE")
+        return respaldo.nth(0)
+
+    def _captcha_renderizado(self):
+        """Confirma que Angular ya mont? el control CAPTCHA en el formulario."""
+        respuestas = self.page.locator("textarea[name='g-recaptcha-response']")
+        widgets = self.page.locator(
+            "ngx-recaptcha2, .g-recaptcha, .h-captcha, "
+            "iframe[title*='recaptcha' i], iframe[src*='recaptcha' i]"
+        )
+        return respuestas.count() > 0 or widgets.count() > 0
+
+    def _captcha_visible(self):
+        """Indica si el CAPTCHA visible a?n no tiene un token v?lido del operador."""
+        respuestas = self.page.locator("textarea[name='g-recaptcha-response']")
+        widgets = self.page.locator(
+            "ngx-recaptcha2, .g-recaptcha, .h-captcha, "
+            "iframe[title*='recaptcha' i], iframe[src*='recaptcha' i]"
+        )
+        if widgets.count() == 0 and respuestas.count() == 0:
+            return False
+
+        for indice in range(respuestas.count()):
+            try:
+                if respuestas.nth(indice).input_value().strip():
+                    return False
+            except Exception:
+                continue
+        return True
+
+    @staticmethod
+    def _boton_habilitado(boton):
+        clases = boton.get_attribute("class") or ""
+        etiqueta = boton.get_attribute("aria-label") or ""
+        return (
+            boton.is_visible()
+            and boton.is_enabled()
+            and boton.get_attribute("disabled") is None
+            and boton.get_attribute("aria-disabled") != "true"
+            and "button-disabled" not in clases.lower()
+            and "deshabilitado" not in etiqueta.lower()
+        )
+
+    def _preparar_busqueda(self, numero_juicio):
+        causa = self._causa_canonica(numero_juicio)
+        if not causa:
+            raise ValueError("CAUSA_VACIA")
+
+        if not self.regresar_al_buscador():
+            raise RuntimeError("NO_SE_PUDO_VOLVER_AL_BUSCADOR")
+
+        campo = self._input_causa_unico()
+        campo.fill("")
+        campo.press_sequentially(self._causa_para_formulario(numero_juicio), delay=15)
+        campo.dispatch_event("input")
+        campo.dispatch_event("change")
+
+        if self._causa_canonica(campo.input_value()) != causa:
+            raise RuntimeError("CAUSA_NO_CONFIRMADA_EN_CAMPO")
+
+        self._cambiar_estado_navegacion(causa, "PREPARAR_BUSCADOR", "CAUSA_ESCRITA", "escribir_causa")
+        return causa
+
+    def _esperar_busqueda_habilitada(self, causa):
+        limite = monotonic() + (self.navegacion["captcha_timeout_ms"] / 1000)
+        limite_renderizado = min(
+            limite,
+            monotonic() + (self.navegacion.get("captcha_render_timeout_ms", 15000) / 1000),
+        )
+        estable = 0
+        captcha_renderizado = False
+        causa_reescrita = False
+        while monotonic() < limite:
+            campo = self._input_causa_unico()
+            boton = self._boton_buscar_unico()
+            causa_correcta = self._causa_canonica(campo.input_value()) == causa
+            habilitado = self._boton_habilitado(boton)
+            captcha_renderizado = captcha_renderizado or self._captcha_renderizado()
+            esperando_renderizado = not captcha_renderizado and monotonic() < limite_renderizado
+
+            if captcha_renderizado and habilitado and not causa_correcta and not causa_reescrita:
+                campo.fill("")
+                campo.press_sequentially(self._causa_para_formulario(causa), delay=15)
+                campo.dispatch_event("input")
+                campo.dispatch_event("change")
+                causa_reescrita = True
+                self.page.wait_for_timeout(250)
+                continue
+
+            if not esperando_renderizado and causa_correcta and habilitado:
+                estable += 1
+                if estable >= 2:
+                    self._cambiar_estado_navegacion(causa, "ESPERAR_FIN_CAPTCHA", "BUSQUEDA_HABILITADA", "captcha_finalizado")
+                    return boton
+            else:
+                estable = 0
+            self.page.wait_for_timeout(250)
+
+        self._cambiar_estado_navegacion(causa, "ESPERAR_FIN_CAPTCHA", "CAPTCHA_TIMEOUT", "espera_pasiva_timeout")
+        raise PlaywrightTimeoutError("CAPTCHA_TIMEOUT: BUSCAR no quedo habilitado")
+
+    def _enviar_busqueda_una_vez(self, causa, intento_id):
+        clave = (causa, intento_id)
+        if clave in self._busquedas_enviadas:
+            raise RuntimeError("DOBLE_CLICK_BUSCAR_BLOQUEADO")
+
+        campo = self._input_causa_unico()
+        boton = self._boton_buscar_unico()
+        if self._causa_canonica(campo.input_value()) != causa:
+            raise RuntimeError("CAUSA_CAMBIO_ANTES_DE_BUSCAR")
+        if not self._boton_habilitado(boton):
+            raise RuntimeError("BUSCAR_NO_HABILITADO")
+
+        self._busquedas_enviadas.add(clave)
+        boton.click()
+        self._cambiar_estado_navegacion(
+            causa,
+            "BUSQUEDA_HABILITADA",
+            "BUSQUEDA_ENVIADA",
+            "click_buscar",
+            intento_id=intento_id,
+            click_numero=1,
+        )
+
+    def _filas_resultado_coincidentes(self, causa):
+        causa = self._causa_canonica(causa)
+        filas = self.page.locator("table tbody tr, table tr, mat-row, [role='grid'] [role='row'], [role='row']")
+        coincidencias = []
+        for indice in range(filas.count()):
+            fila = filas.nth(indice)
+            try:
+                if fila.is_visible() and causa in self._causa_canonica(fila.inner_text()):
+                    coincidencias.append(fila)
+            except Exception:
+                continue
+        return coincidencias
+
+    def _esperar_resultados(self, causa):
+        limite = monotonic() + (self.navegacion["resultados_timeout_ms"] / 1000)
+        while monotonic() < limite:
+            if "/causas" in self.page.url.lower():
+                enlaces_movimientos = self.page.locator(
+                    "a[aria-label*='movimientos' i], a:has(mat-icon:has-text('folder_open'))"
+                )
+                if enlaces_movimientos.count() == 1 and enlaces_movimientos.first.is_visible():
+                    self._cambiar_estado_navegacion(
+                        causa, "BUSQUEDA_ENVIADA", "RESULTADOS_LISTOS", "validar_vista_causas"
+                    )
+                    return enlaces_movimientos.first
+            texto = self.page.inner_text("body").upper()
+            if "REGISTROS ENCONTRADOS: 0" in texto or "NO SE ENCONTRARON RESULTADOS" in texto:
+                self._cambiar_estado_navegacion(causa, "BUSQUEDA_ENVIADA", "SIN_RESULTADOS", "validar_resultados")
+                return "SIN_RESULTADOS"
+
+            coincidencias = self._filas_resultado_coincidentes(causa)
+            if len(coincidencias) == 1:
+                self._cambiar_estado_navegacion(causa, "BUSQUEDA_ENVIADA", "RESULTADOS_LISTOS", "validar_resultados")
+                return coincidencias[0]
+            if len(coincidencias) > 1:
+                self._cambiar_estado_navegacion(causa, "BUSQUEDA_ENVIADA", "RESULTADO_AMBIGUO", "validar_resultados")
+                raise RuntimeError("RESULTADO_AMBIGUO")
+            self.page.wait_for_timeout(250)
+
+        raise PlaywrightTimeoutError("RESULTADOS_TIMEOUT")
+
+    def _boton_carpeta_en_fila(self, fila, contexto):
+        selectores = (
+            "button:has(i.fa-folder), a:has(i.fa-folder), button:has(i.fa-folder-open), a:has(i.fa-folder-open)",
+            "[role='link']:has(i.material-icons:has-text('folder')), [role='link']:has(i:has-text('folder'))",
+            "button[aria-label*='detalle' i], a[aria-label*='detalle' i], [role='link'][aria-label*='detalle' i]",
+            "[mattooltip='Ver archivos'], [role='link'][aria-label*='archivo' i]",
+        )
+        for selector in selectores:
+            botones = fila.locator(selector)
+            if botones.count() == 1:
+                return botones.nth(0)
+
+        accionables = fila.locator("button, a, [role='link'], [role='button'], [mattooltip='Ver archivos']")
+        candidatos = []
+        for indice in range(accionables.count()):
+            accionable = accionables.nth(indice)
+            try:
+                etiqueta = " ".join(
+                    filtro for filtro in (
+                        accionable.get_attribute("aria-label"),
+                        accionable.get_attribute("title"),
+                        accionable.inner_text(),
+                    ) if filtro
+                ).upper()
+                tiene_icono = accionable.locator(
+                    "i.fa-folder, i.fa-folder-open, i.material-icons:has-text('folder'), i:has-text('folder')"
+                ).count() > 0
+                if "CARPETA" in etiqueta or "ARCHIVO" in etiqueta or tiene_icono:
+                    candidatos.append(accionable)
+            except Exception:
+                continue
+        if len(candidatos) != 1:
+            raise RuntimeError(f"CARPETA_AMBIGUA_O_AUSENTE:{contexto}")
+        return candidatos[0]
+
+    def _abrir_detalle_causa(self, causa, fila):
+        if "/causas" in self.page.url.lower():
+            enlace_movimientos = self.page.locator(
+                "a[aria-label*='movimientos' i], a:has(mat-icon:has-text('folder_open'))"
+            )
+            if enlace_movimientos.count() != 1:
+                raise RuntimeError("ENLACE_MOVIMIENTOS_AUSENTE_O_AMBIGUO")
+            etiqueta = enlace_movimientos.first.get_attribute("aria-label") or ""
+            if causa not in self._causa_canonica(etiqueta):
+                raise RuntimeError("ENLACE_MOVIMIENTOS_NO_CORRESPONDE_A_CAUSA")
+            enlace_movimientos.first.click()
+            self.page.wait_for_url(
+                re.compile(r"/movimientos(?:[/?#]|$)"),
+                timeout=self.navegacion["datos_generales_timeout_ms"],
+            )
+            enlace_detalle = self.page.locator(
+                "[mattooltip='Ver detalle del proceso judicial'], "
+                "[aria-label*='detalle del proceso judicial' i]"
+            )
+            if enlace_detalle.count() != 1:
+                raise RuntimeError("ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO")
+            enlace_detalle.first.click()
+            self.page.wait_for_url(
+                re.compile(r"/actuaciones(?:[/?#]|$)"),
+                timeout=self.navegacion["datos_generales_timeout_ms"],
+            )
+            self._cambiar_estado_navegacion(
+                causa, "RESULTADOS_LISTOS", "DETALLE_CAUSA_ABIERTO", "click_movimientos_y_detalle"
+            )
+            return
+        if causa not in self._causa_canonica(fila.inner_text()):
+            raise RuntimeError("FILA_NO_CORRESPONDE_A_CAUSA")
+        carpeta = self._boton_carpeta_en_fila(fila, "detalle")
+        carpeta.scroll_into_view_if_needed()
+        if not carpeta.is_visible() or not carpeta.is_enabled():
+            raise RuntimeError("CARPETA_DETALLE_NO_ACCIONABLE")
+        carpeta.click()
+        self._cambiar_estado_navegacion(causa, "RESULTADOS_LISTOS", "DETALLE_CAUSA_ABIERTO", "click_carpeta_detalle")
+
+    def _esperar_datos_generales(self, causa):
+        limite = monotonic() + (self.navegacion["datos_generales_timeout_ms"] / 1000)
+        while monotonic() < limite:
+            texto = self.page.inner_text("body")
+            texto_normalizado = texto.upper()
+            if (
+                "DATOS GENERALES" in texto_normalizado
+                and "NUMERO DE PROCESO" in texto_normalizado
+                and causa in self._causa_canonica(texto)
+            ):
+                self._cambiar_estado_navegacion(causa, "DETALLE_CAUSA_ABIERTO", "DATOS_GENERALES_LISTOS", "validar_datos_generales")
+                return True
+            self.page.wait_for_timeout(250)
+        raise PlaywrightTimeoutError("DATOS_GENERALES_TIMEOUT")
+
+    def _esperar_pantalla_final_estable(self, causa):
+        """Espera a que terminen de renderizar actuaciones y controles de archivos."""
+        limite = monotonic() + (self.navegacion["pantalla_final_timeout_ms"] / 1000)
+        firma_anterior = None
+        estable = 0
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=10000)
+        except Exception:
+            pass
+        while monotonic() < limite:
+            texto = self.page.inner_text("body")
+            carpetas = self.page.locator(
+                "[mattooltip='Ver archivos'], [role='link'][aria-label*='archivos' i]"
+            )
+            firma = (len(texto), carpetas.count(), self.page.locator(".fila").count())
+            if "INFORMACION DEL PROCESO" in texto.upper() and carpetas.count() > 0 and firma == firma_anterior:
+                estable += 1
+                if estable >= 3:
+                    self.page.wait_for_timeout(self.navegacion["pantalla_final_estabilizacion_ms"])
+                    self._cambiar_estado_navegacion(
+                        causa, "DATOS_GENERALES_LISTOS", "PANTALLA_FINAL_ESTABLE", "estabilizar_actuaciones"
+                    )
+                    return True
+            else:
+                estable = 0
+            firma_anterior = firma
+            self.page.wait_for_timeout(250)
+        raise PlaywrightTimeoutError("PANTALLA_FINAL_NO_ESTABLE")
+
+    def _descriptores_carpetas_actuaciones(self):
+        filas = self.page.locator("table tbody tr, table tr, [role='row'], mat-row, .fila")
+        descriptores = []
+        vistos = set()
+        for indice in range(filas.count()):
+            fila = filas.nth(indice)
+            try:
+                if not fila.is_visible():
+                    continue
+                texto = " ".join(fila.inner_text().split())
+                if not texto:
+                    continue
+                carpeta = self._boton_carpeta_en_fila(fila, "actuaciones")
+                if not carpeta.is_visible():
+                    continue
+                clave = re.sub(r"\s+", " ", texto.upper())[:300]
+                if clave not in vistos:
+                    vistos.add(clave)
+                    descriptores.append({"clave": clave, "indice_visual": indice, "texto": texto})
+            except RuntimeError:
+                continue
+        return descriptores
+
+    def _localizar_fila_carpeta(self, descriptor):
+        filas = self.page.locator("table tbody tr, table tr, [role='row'], mat-row, .fila")
+        candidatos = []
+        for indice in range(filas.count()):
+            fila = filas.nth(indice)
+            try:
+                texto = re.sub(r"\s+", " ", fila.inner_text().upper())[:300]
+                if fila.is_visible() and texto == descriptor["clave"]:
+                    candidatos.append(fila)
+            except Exception:
+                continue
+        if len(candidatos) != 1:
+            raise RuntimeError("CARPETA_NO_RELOCALIZABLE")
+        return candidatos[0]
+
+    def _esperar_actuaciones(self, causa):
+        limite = monotonic() + (self.navegacion["actuaciones_timeout_ms"] / 1000)
+        senales = ("INFORMACION DEL PROCESO", "EXPORTAR PDF", "AMPLIAR TODO", "CONTRAER TODO")
+        while monotonic() < limite:
+            texto = self.page.inner_text("body").upper()
+            if any(senal in texto for senal in senales):
+                self._cambiar_estado_navegacion(causa, "ABRIR_CARPETA", "ACTUACIONES_LISTAS", "validar_actuaciones")
+                return True
+            self.page.wait_for_timeout(250)
+        raise PlaywrightTimeoutError("ACTUACIONES_TIMEOUT")
+
+    def _volver_a_datos_generales(self, causa):
+        for nombre in ("Cerrar", "Regresar"):
+            boton = self.page.get_by_role("button", name=re.compile(rf"^\s*{nombre}\s*$", re.IGNORECASE))
+            if boton.count() == 1:
+                boton.nth(0).click()
+                try:
+                    self._esperar_datos_generales(causa)
+                    return True
+                except PlaywrightTimeoutError:
+                    continue
+        try:
+            self.page.go_back()
+            self._esperar_datos_generales(causa)
+            return True
+        except Exception:
+            return False
+
+    def _volver_al_buscador(self, causa):
+        """Regresa al formulario y verifica que el ?nico campo de causa est? disponible."""
+        for _ in range(3):
+            try:
+                campo = self._input_causa_unico()
+                if campo.is_visible():
+                    self._cambiar_estado_navegacion(
+                        causa, "VOLVER_AL_BUSCADOR", "BUSCADOR_LISTO", "validar_formulario"
+                    )
+                    return True
+            except RuntimeError:
+                pass
+
+            boton = self.page.get_by_role(
+                "button", name=re.compile(r"^\s*Regresar\s*$", re.IGNORECASE)
+            )
+            if boton.count() == 1 and boton.nth(0).is_visible():
+                boton.nth(0).click()
+            else:
+                try:
+                    self.page.go_back()
+                except Exception:
+                    break
+            self.page.wait_for_timeout(250)
+
+        raise RuntimeError("NO_SE_PUDO_VOLVER_AL_BUSCADOR")
+
+    @staticmethod
+    def _clave_archivo(valor):
+        return re.sub(r"[^A-Za-z0-9_-]+", "_", str(valor or "")).strip("_")[:80] or "sin_clave"
+
+    def _guardar_evidencia_fallo(self, causa, estado, error, carpeta=None):
+        """Guarda evidencia diagn?stica sin interrumpir el tratamiento del error."""
+        try:
+            directorio = os.path.join("data", "temp_htmls")
+            os.makedirs(directorio, exist_ok=True)
+            sufijo = "_".join(
+                self._clave_archivo(valor)
+                for valor in (self._causa_canonica(causa), estado, carpeta)
+                if valor
+            )
+            base = os.path.join(directorio, sufijo)
+            if self.page and not self.page.is_closed():
+                try:
+                    self.page.screenshot(path=f"{base}.png", full_page=True)
+                except Exception:
+                    pass
+                try:
+                    with open(f"{base}.html", "w", encoding="utf-8") as archivo:
+                        archivo.write(self.page.content())
+                except Exception:
+                    pass
+                url = self.page.url
+            else:
+                url = None
+
+            evidencia = {
+                "causa": self._causa_canonica(causa),
+                "estado": estado,
+                "carpeta": carpeta,
+                "url": url,
+                "error": str(error),
+                "traza": format_exc(),
+                "ultimo_paquete_api": self.paquetes_api_interceptados[-1] if self.paquetes_api_interceptados else None,
+            }
+            with open(f"{base}.json", "w", encoding="utf-8") as archivo:
+                json.dump(evidencia, archivo, ensure_ascii=False, indent=2, default=str)
+        except Exception as exc:
+            logger.warning("[NAVEGACION_ESATJE] No se pudo guardar evidencia: %s", exc)
+
+    def _paquetes_api_de_carpeta(self, paquetes, causa):
+        """A?sla paquetes posteriores al clic de carpeta y descarta respuestas no relacionadas."""
+        causa = self._causa_canonica(causa)
+        seleccionados = []
+        for paquete in paquetes:
+            url = str(paquete.get("url", "")).lower()
+            contenido = json.dumps(paquete.get("data", ""), ensure_ascii=False, default=str)
+            contenido_canonico = self._causa_canonica(contenido)
+            es_actuacion = "actuacion" in url
+            contiene_causa = causa and causa in contenido_canonico
+            contiene_otro_identificador = bool(re.search(r"\d{10,}", contenido))
+            if es_actuacion and (contiene_causa or not contiene_otro_identificador):
+                seleccionados.append(paquete)
+        return seleccionados
+
+    def _metadatos_carpeta(self, causa, descriptor):
+        texto = re.sub(r"\s+", " ", descriptor.get("texto", "")).strip()
+        dependencia = re.search(
+            r"DEPENDENCIA JURISDICCIONAL\s*:\s*(.*?)(?=\s+CIUDAD\s*:|$)",
+            texto,
+            re.IGNORECASE,
+        )
+        ciudad = re.search(r"CIUDAD\s*:\s*(.*?)(?=\s+\d{1,3}\s+\d{2}/\d{2}/\d{4}|$)", texto, re.IGNORECASE)
+        return {
+            "CAUSA": self._causa_canonica(causa),
+            "CLAVE_CARPETA": descriptor["clave"],
+            "INSTANCIA_CARPETA": descriptor.get("indice_visual"),
+            "DEPENDENCIA_JURISDICCIONAL": dependencia.group(1).strip() if dependencia else None,
+            "CIUDAD_CARPETA": ciudad.group(1).strip() if ciudad else None,
+        }
+
+    def _aplicar_inferencia_consolidada(self, datos):
+        actuaciones = datos.get("HISTORIAL_ACTUACIONES", [])
+        if not actuaciones:
+            return datos
+
+        from src.agente_extractor import MotorInferenciaProcesal
+        inferencia = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        if not inferencia or not inferencia.get("ULTIMA_ETAPA"):
+            return datos
+
+        datos["ETAPA_PROCESAL"] = inferencia.get("ULTIMA_ETAPA")
+        datos["FASE_PROCESAL"] = inferencia.get("ULTIMA_FASE")
+        datos["FECHA INICIAL FASE ACTUAL"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
+        datos["ULTIMA ETAPA"] = inferencia.get("ULTIMA_ETAPA")
+        datos["ULTIMA FASE"] = inferencia.get("ULTIMA_FASE")
+        datos["FECHA FIN ULTIMA FASE"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
+        datos["ETAPA ACTUAL"] = inferencia.get("ETAPA_ACTUAL") or inferencia.get("ULTIMA_ETAPA")
+        datos["FASE ACTUAL"] = inferencia.get("FASE_ACTUAL") or inferencia.get("ULTIMA_FASE")
+        datos["FECHA INICIO FASE ACTUAL"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
+        if inferencia.get("MENSAJE_ESPECIAL"):
+            datos["COMENTARIO_ULTIMO"] = inferencia.get("MENSAJE_ESPECIAL")
+        return datos
+
+    def _procesar_todas_las_carpetas(self, causa):
+        descriptores = self._descriptores_carpetas_actuaciones()
+        if not descriptores:
+            raise RuntimeError("SIN_CARPETAS_ACTUACIONES")
+
+        resultados = []
+        errores = []
+        for descriptor in descriptores:
+            try:
+                fila = self._localizar_fila_carpeta(descriptor)
+                carpeta = self._boton_carpeta_en_fila(fila, "actuaciones")
+                cursor_api = len(self.paquetes_api_interceptados)
+                carpeta.scroll_into_view_if_needed()
+                carpeta.click()
+                self._cambiar_estado_navegacion(causa, "DATOS_GENERALES_LISTOS", "ABRIR_CARPETA", "click_carpeta_actuaciones", carpeta=descriptor["clave"])
+                self._esperar_actuaciones(causa)
+                paquetes_carpeta = self._paquetes_api_de_carpeta(
+                    self.paquetes_api_interceptados[cursor_api:], causa
+                )
+                datos = self._ejecutar_extraccion_detalles(
+                    causa, paquetes_api=paquetes_carpeta, carpeta=descriptor["clave"]
+                )
+                if isinstance(datos, dict):
+                    datos["ORIGEN_CARPETA"] = descriptor
+                    datos["ORIGEN_DATA"] = "API" if paquetes_carpeta else "DOM"
+                    datos.setdefault("HISTORIAL_ACTUACIONES", [])
+                    resultados.append(datos)
+                if not self._volver_a_datos_generales(causa):
+                    raise RuntimeError("NO_SE_PUDO_VOLVER_A_DATOS_GENERALES")
+            except Exception as exc:
+                errores.append({"carpeta": descriptor, "error": str(exc)})
+                logger.warning("[NAVEGACION_ESATJE] Carpeta parcial %s: %s", descriptor["clave"], exc)
+                self._guardar_evidencia_fallo(causa, "ERROR_CARPETA", exc, descriptor["clave"])
+                self._volver_a_datos_generales(causa)
+
+        if not resultados:
+            raise RuntimeError("CARPETAS_SIN_EXTRACCION")
+
+        consolidado = dict(resultados[0])
+        actuaciones = []
+        vistas = set()
+        for datos in resultados:
+            for actuacion in datos.get("HISTORIAL_ACTUACIONES", []):
+                enriquecida = dict(actuacion)
+                enriquecida.update(self._metadatos_carpeta(causa, datos["ORIGEN_CARPETA"]))
+                enriquecida["ORIGEN_CARPETA"] = datos["ORIGEN_CARPETA"]["clave"]
+                enriquecida["ORIGEN_DATA"] = datos.get("ORIGEN_DATA")
+                clave = (
+                    enriquecida.get("fecha"),
+                    enriquecida.get("detalle"),
+                    enriquecida["ORIGEN_CARPETA"],
+                )
+                if clave not in vistas:
+                    vistas.add(clave)
+                    actuaciones.append(enriquecida)
+        consolidado["HISTORIAL_ACTUACIONES"] = actuaciones
+        consolidado["CARPETAS_PROCESADAS"] = [d["ORIGEN_CARPETA"] for d in resultados]
+        consolidado["ERRORES_CARPETAS"] = errores
+        consolidado["ESTADO_NAVEGACION"] = "PARCIAL" if errores else "COMPLETADO"
+        self._aplicar_inferencia_consolidada(consolidado)
+        return consolidado
+
+    def _procesar_flujo_autonomo(self, numero_juicio):
+        causa_original = str(numero_juicio or "").strip()
+        causa = self._causa_canonica(causa_original)
+        self.paquetes_api_interceptados.clear()
+        self._busquedas_enviadas.clear()
+        max_intentos = int(self.navegacion["max_reintentos_transicion"])
+
+        for intento in range(1, max_intentos + 1):
+            intento_id = f"{causa}:{intento}"
+            try:
+                if not self._verificar_sesion_activa():
+                    raise RuntimeError("SESION_EXPIRADA")
+                causa = self._preparar_busqueda(causa_original)
+                self._cambiar_estado_navegacion(causa, "CAUSA_ESCRITA", "ESPERAR_FIN_CAPTCHA", "esperar_buscar_habilitado")
+                self._esperar_busqueda_habilitada(causa)
+                self._enviar_busqueda_una_vez(causa, intento_id)
+                resultado = self._esperar_resultados(causa)
+                if resultado == "SIN_RESULTADOS":
+                    self.datos_extraidos = {"ESTADO_NAVEGACION": "SIN_RESULTADOS", "HISTORIAL_ACTUACIONES": []}
+                    return False
+
+                self._abrir_detalle_causa(causa, resultado)
+                self._esperar_datos_generales(causa)
+                self._esperar_pantalla_final_estable(causa)
+                self.datos_extraidos = self._procesar_todas_las_carpetas(causa)
+                self._volver_a_datos_generales(causa)
+                self._volver_al_buscador(causa)
+                self._cambiar_estado_navegacion(causa, "CONSOLIDAR_EVIDENCIA", "CAUSA_COMPLETADA", "volver_al_buscador")
+                return True
+            except PlaywrightTimeoutError as exc:
+                estado = self.ultimo_estado_navegacion or "CAPTCHA_TIMEOUT"
+                self._cambiar_estado_navegacion(causa, estado, "ERROR_NAVEGACION", "timeout", error=str(exc), intento=intento)
+                self._guardar_evidencia_fallo(causa, estado, exc)
+            except Exception as exc:
+                estado = self.ultimo_estado_navegacion or "ERROR_NAVEGACION"
+                self._cambiar_estado_navegacion(causa, estado, "ERROR_NAVEGACION", "error", error=str(exc), intento=intento)
+                self._guardar_evidencia_fallo(causa, estado, exc)
+
+            if intento < max_intentos:
+                try:
+                    self._volver_al_buscador(causa)
+                except Exception as retorno_error:
+                    logger.warning("[NAVEGACION_ESATJE] No se pudo reiniciar el formulario: %s", retorno_error)
+
+        self.datos_extraidos = {
+            "ESTADO_NAVEGACION": "ERROR_NAVEGACION",
+            "HISTORIAL_ACTUACIONES": [],
+        }
+        return False
+
     def procesar_flujo_judicatura(self, numero_juicio):
         """
         Modo Híbrido Asistido con Arquitectura de Ejecución Dual:
@@ -227,6 +868,7 @@ class BotJudicial:
         3. Procesa Ruta Principal (API + Pandas) o Ruta Respaldo (BeautifulSoup4 + DOM).
         """
         logger.info("Iniciando causa: %s", numero_juicio)
+        return self._procesar_flujo_autonomo(numero_juicio)
         self.paquetes_api_interceptados.clear()
         
         # Freno de ejecución estricto: debe coincidir ÚNICAMENTE con la vista de detalle del expediente (Image 2),
@@ -324,7 +966,7 @@ class BotJudicial:
             return res
         return self._ejecutar_extraccion_detalles()
 
-    def _ejecutar_extraccion_detalles(self, numero_juicio=None):
+    def _ejecutar_extraccion_detalles(self, numero_juicio=None, paquetes_api=None, carpeta=None):
         """
         Arquitectura Dual:
         - RUTA PRINCIPAL: Si la API interceptó JSON, procesar vectorialmente con Pandas (Bypass BeautifulSoup4).
@@ -339,17 +981,19 @@ class BotJudicial:
         }
 
         # --- RUTA PRINCIPAL: INTERCEPCIÓN API (BYPASS BEAUTIFULSOUP4 + PANDAS) ---
-        if self.paquetes_api_interceptados:
+        paquetes = self.paquetes_api_interceptados if paquetes_api is None else paquetes_api
+
+        if paquetes:
             # Cargar keywords configurables para detección de mandamiento (opcional)
             try:
                 keywords = _load_extraction_keywords()
             except Exception:
                 keywords = ['mandam','mandamiento','mandamiento de ejecucion','auto de ejecucion','auto de cumplimiento']
 
-            logger.info("[RUTA PRINCIPAL API] Procesando %s respuesta(s) JSON con Pandas...", len(self.paquetes_api_interceptados))
+            logger.info("[RUTA PRINCIPAL API] Procesando %s respuesta(s) JSON con Pandas...", len(paquetes))
             try:
                 registros = []
-                for p in self.paquetes_api_interceptados:
+                for p in paquetes:
                     d = p.get("data")
                     if isinstance(d, dict):
                         registros.append(d)
@@ -387,6 +1031,7 @@ class BotJudicial:
                                         })
 
                     if actuaciones_api:
+                        datos["HISTORIAL_ACTUACIONES"] = actuaciones_api
                         from src.agente_extractor import MotorInferenciaProcesal
                         res_api = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones_api)
                         if res_api and res_api.get("ULTIMA_ETAPA"):
@@ -520,10 +1165,11 @@ class BotJudicial:
                     except Exception:
                         pass
 
-                    if self.paquetes_api_interceptados:
-                        ruta_api = os.path.join(dir_temp, f"{numero_juicio}_api.json")
+                    if paquetes:
+                        sufijo = f"_{self._clave_archivo(carpeta)}" if carpeta else ""
+                        ruta_api = os.path.join(dir_temp, f"{numero_juicio}{sufijo}_api.json")
                         with open(ruta_api, "w", encoding="utf-8") as fa:
-                            _json.dump(self.paquetes_api_interceptados, fa, ensure_ascii=False, indent=2)
+                            _json.dump(paquetes, fa, ensure_ascii=False, indent=2)
                         logger.info("[ARTIFACT] Paquetes API guardados en: %s", ruta_api)
             except Exception as e_save:
                 logger.warning("No se pudo guardar artefactos para %s: %s", numero_juicio, e_save)

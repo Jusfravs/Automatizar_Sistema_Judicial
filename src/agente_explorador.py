@@ -1,5 +1,6 @@
 # src/agente_explorador.py
 import os
+from time import monotonic
 import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 from src.logger_config import obtener_logger
@@ -22,6 +23,7 @@ class AgenteExplorador:
         "/api/causas",
     )
     TIMEOUT_XHR_MS = 15_000
+    TIMEOUT_CAPTCHA_MS = 300_000
 
     def __init__(
         self,
@@ -206,19 +208,47 @@ class AgenteExplorador:
             input_causa.dispatch_event("change")
             logger.info("[FASE 1] Causa '%s' ingresada. Esperando respuesta XHR/fetch...", causa_str)
 
-            btn_buscar = self.page.locator("button:has-text('BUSCAR'), button:has-text('Buscar'), button[type='submit']").first
+            btn_buscar = self.page.get_by_role("button", name="BUSCAR", exact=True)
+            if btn_buscar.count() != 1:
+                raise RuntimeError("BOTON_BUSCAR_AMBIGUO_O_AUSENTE")
+
+            limite = monotonic() + (self.TIMEOUT_CAPTCHA_MS / 1000)
+            estable = 0
+            selector_captcha = (
+                "iframe[src*='captcha'], iframe[title*='captcha' i], "
+                "[class*='captcha' i], [id*='captcha' i], "
+                "[class*='challenge' i], [id*='challenge' i], [role='dialog']"
+            )
+            while monotonic() < limite:
+                captcha_visible = False
+                try:
+                    captcha = self.page.locator(selector_captcha)
+                    captcha_visible = any(captcha.nth(i).is_visible() for i in range(captcha.count()))
+                except Exception:
+                    pass
+
+                if (
+                    btn_buscar.is_visible()
+                    and btn_buscar.is_enabled()
+                    and btn_buscar.get_attribute("aria-disabled") != "true"
+                    and not captcha_visible
+                ):
+                    estable += 1
+                    if estable >= 2:
+                        break
+                else:
+                    estable = 0
+                self.page.wait_for_timeout(250)
+            else:
+                self.error_api_actual = "CAPTCHA_TIMEOUT: BUSCAR no qued? habilitado."
+                logger.warning("[NAVEGACION_ESATJE] %s", self.error_api_actual)
+                return None
+
             with self.page.expect_response(
                 self._es_respuesta_api_o_error_juicio,
                 timeout=self.TIMEOUT_XHR_MS,
             ) as respuesta_esperada:
-                try:
-                    btn_buscar.wait_for(state="visible", timeout=2000)
-                    if btn_buscar.is_enabled():
-                        btn_buscar.click()
-                    else:
-                        input_causa.press("Enter")
-                except Exception:
-                    input_causa.press("Enter")
+                btn_buscar.click()
 
             respuesta = respuesta_esperada.value
             if respuesta.status != 200:
@@ -250,13 +280,13 @@ class AgenteExplorador:
         """Ruta DOM usada únicamente cuando la captura XHR/fetch falla."""
         try:
             logger.info("[RUTA RESPALDO DOM] Buscando expediente para causa %s.", causa_str)
-            selector_grilla_resultados = "table, [role='grid'], i.fa-folder, i.fa-folder-open, button:has(.fa-folder)"
-            self.page.wait_for_selector(selector_grilla_resultados, state="visible", timeout=10000)
-
-            selector_carpeta_relativo = "xpath=//table//tr//td//a | //table//tr//td//button | //i[contains(@class, 'fa-folder')] | //button[contains(@class, 'mat-mdc-button')]"
-            carpeta = self.page.locator(selector_carpeta_relativo).first
-            carpeta.wait_for(state="visible", timeout=5000)
-            carpeta.click(force=True)
+            texto_actual = self.page.inner_text("body")
+            causa_canonica = "".join(caracter for caracter in causa_str if caracter.isdigit())
+            texto_canonico = "".join(caracter for caracter in texto_actual if caracter.isdigit())
+            if "DATOS GENERALES" not in texto_actual.upper() or causa_canonica not in texto_canonico:
+                raise RuntimeError(
+                    "NAVEGACION_RELATIVA_REQUERIDA: la ruta de respaldo no abre carpetas globales."
+                )
 
             selector_freno_estricto = "text=/Actor\\/Ofendido:|Información del proceso|Actuaciones Judiciales|Exportar PDF/i"
             self.page.wait_for_selector(selector_freno_estricto, state="visible", timeout=15000)

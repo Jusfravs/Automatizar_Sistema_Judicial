@@ -71,7 +71,10 @@ def main():
 
     logger.info("[*] Total de causas a procesar: %s", total)
 
-    bot = BotJudicial(repo.config["navegacion"]["url_portal"])
+    bot = BotJudicial(
+        repo.config["navegacion"]["url_portal"],
+        repo.config.get("navegacion", {}),
+    )
     intervalo_guardado = repo.config.get("sistema", {}).get("intervalo_autoguardado", 5)
     exitosos = 0
     casos_fallidos = []

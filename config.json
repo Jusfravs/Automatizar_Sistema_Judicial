@@ -13,7 +13,12 @@
         "hoja_lectura": "migrado"
     },
     "navegacion": {
-        "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros"
+        "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+        "captcha_timeout_ms": 300000,
+        "resultados_timeout_ms": 30000,
+        "datos_generales_timeout_ms": 30000,
+        "actuaciones_timeout_ms": 30000,
+        "max_reintentos_transicion": 2
     },
     "sistema": {
         "intervalo_autoguardado": 5
