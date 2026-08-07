@@ -67,6 +67,16 @@ def test_dom_extractor_detects_mandamiento():
     assert "MANDAMIENTO" in resultado.get("FASE_PROCESAL").upper() or "MANDAMIENTO" in (resultado.get('HISTORIAL_ACTUACIONES') and json.dumps(resultado.get('HISTORIAL_ACTUACIONES')).upper()), "No se detectó mandamiento en procesamiento DOM"
 
 
+
+def test_caso_referencia_conserva_fecha_de_calificacion():
+    extractor = AgenteExtractor()
+    resultado = extractor.procesar_html_string(load_html("23331-2022-04191.html"))
+
+    assert resultado["ETAPA_PROCESAL"] == "1 PRESENTACION Y CALIFICACION"
+    assert resultado["FASE_PROCESAL"] == "1.3 CALIFICACION"
+    for campo in ("FECHA FIN ULTIMA FASE", "FECHA INICIAL FASE ACTUAL", "FECHA INICIO FASE ACTUAL"):
+        assert resultado[campo] == "16/12/2022", f"{campo} incorrecta: {resultado[campo]}"
+
 def test_variant_1_dom_multiple_actuaciones():
     """Test caso variante 1: Mandamiento en tabla de actuaciones."""
     extractor = AgenteExtractor()

@@ -109,5 +109,44 @@ class TestClasificacionArbol(unittest.TestCase):
         self.assertNotIn("MANDAMIENTO", resultado["FASE_PROCESAL"])
 
 
+
+    def test_regla_2_usa_fecha_de_calificacion_sin_dependencia_del_orden(self):
+        actuaciones_base = [
+            {"fecha": "16/12/2022", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION)"},
+            {"fecha": "04/07/2023", "detalle": "CITACION: NO REALIZADA - CAMBIO DE DIRECCION"},
+            {"fecha": "01/12/2022", "detalle": "PRESENTACION DE DEMANDA"},
+        ]
+        ordenes = (
+            actuaciones_base,
+            list(reversed(actuaciones_base)),
+            [actuaciones_base[1], actuaciones_base[2], actuaciones_base[0]],
+        )
+        for actuaciones in ordenes:
+            resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+            self.assertEqual(resultado.ultima_etapa, "1 PRESENTACION Y CALIFICACION")
+            self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+            self.assertEqual(resultado.fecha_fin_ultima_fase, "16/12/2022")
+            self.assertIn("CALIFICACION DE SOLICITUD", resultado.get("ACTUACION_RESPALDO"))
+            self.assertEqual(resultado.get("REGLA_APLICADA"), "regla_2_citacion_fallida")
+
+    def test_regla_2_elige_la_calificacion_mas_reciente(self):
+        actuaciones = [
+            {"fecha": "16/12/2022", "detalle": "AUTO DE CALIFICACION"},
+            {"fecha": "10/01/2023", "detalle": "CALIFICACION DE DEMANDA"},
+            {"fecha": "04/07/2023", "detalle": "CITACION NO REALIZADA"},
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_etapa, "1 PRESENTACION Y CALIFICACION")
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "10/01/2023")
+
+    def test_regla_2_sin_calificacion_no_hereda_fecha_de_citacion(self):
+        actuaciones = [{"fecha": "04/07/2023", "detalle": "CITACION NO REALIZADA"}]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_etapa, "1 PRESENTACION Y CALIFICACION")
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertIsNone(resultado.fecha_fin_ultima_fase)
+        self.assertEqual(resultado.get("REGLA_APLICADA"), "regla_2_citacion_fallida")
+
 if __name__ == "__main__":
     unittest.main()

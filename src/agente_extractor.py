@@ -3,6 +3,7 @@ import os
 import re
 import json
 import unicodedata
+from datetime import datetime
 from bs4 import BeautifulSoup
 from src.logger_config import obtener_logger
 
@@ -53,16 +54,20 @@ class ResultadoInferencia(tuple):
     Compatible con desempaquetado de 3-tupla: (etapa, fase, fecha)
     y con acceso por diccionario/propiedades para las nuevas columnas Excel.
     """
-    def __new__(cls, ultima_etapa, ultima_fase, fecha_fin, etapa_actual=None, fase_actual=None, mensaje_especial=None):
+    def __new__(cls, ultima_etapa, ultima_fase, fecha_fin, etapa_actual=None, fase_actual=None, mensaje_especial=None, **_):
         return super().__new__(cls, (ultima_etapa, ultima_fase, fecha_fin))
 
-    def __init__(self, ultima_etapa, ultima_fase, fecha_fin, etapa_actual=None, fase_actual=None, mensaje_especial=None):
+    def __init__(self, ultima_etapa, ultima_fase, fecha_fin, etapa_actual=None, fase_actual=None, mensaje_especial=None, actuacion_respaldo=None, regla_aplicada=None, fase_original=None, fecha_original=None):
         self.ultima_etapa = ultima_etapa
         self.ultima_fase = ultima_fase
         self.fecha_fin_ultima_fase = fecha_fin
         self.etapa_actual = etapa_actual or ultima_etapa
         self.fase_actual = fase_actual or ultima_fase
         self.mensaje_especial = mensaje_especial
+        self.actuacion_respaldo = actuacion_respaldo
+        self.regla_aplicada = regla_aplicada
+        self.fase_original = fase_original
+        self.fecha_original = fecha_original
 
     def get(self, key, default=None):
         mapping = {
@@ -73,6 +78,10 @@ class ResultadoInferencia(tuple):
             "FASE_ACTUAL": self.fase_actual,
             "FECHA_INICIO_FASE_ACTUAL": self.fecha_fin_ultima_fase,
             "MENSAJE_ESPECIAL": self.mensaje_especial,
+            "ACTUACION_RESPALDO": self.actuacion_respaldo,
+            "REGLA_APLICADA": self.regla_aplicada,
+            "FASE_ORIGINAL": self.fase_original,
+            "FECHA_ORIGINAL": self.fecha_original,
             "ETAPA_PROCESAL": self.ultima_etapa,
             "FASE_PROCESAL": self.ultima_fase,
             "FECHA INICIAL FASE ACTUAL": self.fecha_fin_ultima_fase
@@ -310,6 +319,37 @@ class MotorInferenciaProcesal:
         siguiente_etapa = cls.MAPEO_ETAPAS.get(siguiente_fase)
         return siguiente_etapa, siguiente_fase
 
+
+    @staticmethod
+    def _fecha_ordenable(fecha):
+        """Convierte fechas de actuaciones a un valor comparable sin alterar su formato de salida."""
+        if fecha is None:
+            return datetime.min
+        valor = str(fecha).strip()
+        for formato in ("%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(valor[:10], formato)
+            except ValueError:
+                continue
+        return datetime.min
+
+    @classmethod
+    def _hallazgo_mas_reciente(cls, hallazgos, fase):
+        """Devuelve la evidencia fechada m??s reciente de una fase, sin depender del orden de entrada."""
+        candidatos = [h for h in hallazgos if h["fase"] == fase and h.get("fecha")]
+        if not candidatos:
+            return None
+        return max(enumerate(candidatos), key=lambda item: (cls._fecha_ordenable(item[1]["fecha"]), item[0]))[1]
+
+
+    @classmethod
+    def _decision_con_evidencia(cls, regla, etapa, fase, evidencia):
+        """Crea una decisi??n at??mica y nunca reutiliza una fecha de otra fase."""
+        if evidencia:
+            return {**evidencia, "etapa": etapa, "fase": fase}
+        logger.warning("[DECISION_FASE] %s", json.dumps({"regla_aplicada": regla, "fase_final": fase, "advertencia": "sin_evidencia_de_fecha"}, ensure_ascii=False))
+        return {"etapa": etapa, "fase": fase, "fecha": None, "actuacion": None}
+
     @classmethod
     def _segmentar_por_instancia(cls, actuaciones):
         """
@@ -472,39 +512,52 @@ class MotorInferenciaProcesal:
         hallazgos_ordenados = sorted(hallazgos, key=lambda x: x["prioridad"], reverse=True)
         mejor = hallazgos_ordenados[0]
 
-        ultima_etapa = mejor["etapa"]
-        ultima_fase = mejor["fase"]
-        fecha_fin = mejor["fecha"]
+        decision = dict(mejor)
+        fase_original = decision["fase"]
+        fecha_original = decision.get("fecha")
+        regla_aplicada = "hallazgo_taxonomia"
 
         # --- APLICACIÓN DE LAS 7 REGLAS DE NEGOCIO DEL MOLDE ---
         texto_actuaciones_unido = " ".join([normalizar_texto(a.get("detalle", "")) for a in actuaciones_evaluar])
 
         # Regla 2: Citación no realizada / reenvío citación sin citación realizada posterior
-        tiene_citacion_fallida = any(k in texto_actuaciones_unido for k in ["CITACION NO REALIZADA", "REENVIO CITACION", "RAZON ENVIO A CITACIONES", "RAZON DE NO CITACION"])
+        tiene_citacion_fallida = (
+            any(k in texto_actuaciones_unido for k in ["CITACION NO REALIZADA", "REENVIO CITACION", "RAZON ENVIO A CITACIONES", "RAZON DE NO CITACION"])
+            or ("CITACION" in texto_actuaciones_unido and "NO REALIZADA" in texto_actuaciones_unido)
+        )
         tiene_citacion_exitosa = any(k in texto_actuaciones_unido for k in ["CITACION REALIZADA", "BOLETA DE CITACION NOTIFICADA", "ACTA DE CITACION", "CITADO Y NOTIFICADO"])
         if tiene_citacion_fallida and not tiene_citacion_exitosa:
-            ultima_etapa = "1 PRESENTACION Y CALIFICACION"
-            ultima_fase = "1.3 CALIFICACION"
+            evidencia = cls._hallazgo_mas_reciente(hallazgos, "1.3 CALIFICACION")
+            decision = cls._decision_con_evidencia("regla_2_citacion_fallida", "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION", evidencia)
+            regla_aplicada = "regla_2_citacion_fallida"
 
         # Regla 5: Abandono por falta de impulso procesal con razón de ejecutoria
         tiene_abandono = "ABANDONO POR FALTA DE IMPULSO PROCESAL" in texto_actuaciones_unido
         tiene_ejecutoria = any(k in texto_actuaciones_unido for k in ["RAZON DE EJECUTORIA", "EJECUTORIADA"])
         if tiene_abandono and tiene_ejecutoria:
-            ultima_etapa = "1 PRESENTACION Y CALIFICACION"
-            ultima_fase = "1.3 CALIFICACION"
+            evidencia = cls._hallazgo_mas_reciente(hallazgos, "1.3 CALIFICACION")
+            decision = cls._decision_con_evidencia("regla_5_abandono_ejecutoria", "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION", evidencia)
+            regla_aplicada = "regla_5_abandono_ejecutoria"
 
         # Regla 6: Acuerdo de Mediación antes de Razón de Ejecutoria
         tiene_mediacion = any(k in texto_actuaciones_unido for k in ["ACUERDO DE MEDIACION", "ACTA DE MEDIACION", "MEDIACIÓN"])
         if tiene_mediacion and not tiene_ejecutoria:
-            ultima_etapa = "5 SENTENCIA"
-            ultima_fase = "5.3 SENTENCIA EJECUTORIADA"
+            evidencia = cls._hallazgo_mas_reciente(hallazgos, "4.3 ACUERDO DE MEDIACION")
+            decision = cls._decision_con_evidencia("regla_6_mediacion_sin_ejecutoria", "5 SENTENCIA", "5.3 SENTENCIA EJECUTORIADA", evidencia)
+            regla_aplicada = "regla_6_mediacion_sin_ejecutoria"
 
         # Regla 7: Nombramiento de Perito sin Informe Pericial posterior
         tiene_nombramiento_perito = any(k in texto_actuaciones_unido for k in ["NOMBRAMIENTO DE PERITO", "PERITO LIQUIDADOR NOMBRADO"])
         tiene_informe_perito = any(k in texto_actuaciones_unido for k in ["INFORME PERICIAL", "INFORME DEL PERITO", "INFORME PERITO LIQUIDADOR"])
-        if ultima_fase == "6.1 LIQUIDACION PERITO LIQUIDADOR" and tiene_nombramiento_perito and not tiene_informe_perito:
-            ultima_etapa = "5 SENTENCIA"
-            ultima_fase = "5.3 SENTENCIA EJECUTORIADA"
+        if decision["fase"] == "6.1 LIQUIDACION PERITO LIQUIDADOR" and tiene_nombramiento_perito and not tiene_informe_perito:
+            evidencia = cls._hallazgo_mas_reciente(hallazgos, "6.1 LIQUIDACION PERITO LIQUIDADOR")
+            decision = cls._decision_con_evidencia("regla_7_perito_sin_informe", "5 SENTENCIA", "5.3 SENTENCIA EJECUTORIADA", evidencia)
+            regla_aplicada = "regla_7_perito_sin_informe"
+
+        ultima_etapa = decision["etapa"]
+        ultima_fase = decision["fase"]
+        fecha_fin = decision.get("fecha")
+        actuacion_respaldo = decision.get("actuacion")
 
         # Regla 1: Remate o Congelamiento (no avanzar a siguiente fase)
         mensaje_especial = None
@@ -525,7 +578,11 @@ class MotorInferenciaProcesal:
             fecha_fin=fecha_fin,
             etapa_actual=etapa_actual,
             fase_actual=fase_actual,
-            mensaje_especial=mensaje_especial
+            mensaje_especial=mensaje_especial,
+            actuacion_respaldo=actuacion_respaldo,
+            regla_aplicada=regla_aplicada,
+            fase_original=fase_original,
+            fecha_original=fecha_original
         )
 
 
@@ -634,6 +691,12 @@ class AgenteExtractor:
                         "reason": "inferencia_autonoma",
                         "fase_deducida": fase_inferida,
                         "etapa": etapa_inferida,
+                        "fase_original": res_inf.get("FASE_ORIGINAL"),
+                        "fecha_original": res_inf.get("FECHA_ORIGINAL"),
+                        "fase_final": fase_inferida,
+                        "fecha_final": resultado["FECHA INICIAL FASE ACTUAL"],
+                        "actuacion_respaldo": res_inf.get("ACTUACION_RESPALDO"),
+                        "regla_aplicada": res_inf.get("REGLA_APLICADA"),
                         "fecha_elegida": resultado["FECHA INICIAL FASE ACTUAL"],
                         "num_actuaciones": len(actuaciones)
                     }
