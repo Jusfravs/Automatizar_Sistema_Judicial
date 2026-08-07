@@ -3,33 +3,39 @@ import logging
 import sys
 
 LOG_FILE = "ejecucion_produccion.log"
+_HANDLER_TAG = "_casos_judiciales_handler"
+_FORMAT = "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
+
+
+def configurar_logging(ruta_archivo=LOG_FILE, consola=True, nivel=logging.INFO, reemplazar=False):
+    """Configura logging de proceso de forma explícita y sin efectos al importar."""
+    raiz = logging.getLogger()
+    raiz.setLevel(nivel)
+    propios = [handler for handler in raiz.handlers if getattr(handler, _HANDLER_TAG, False)]
+    if reemplazar:
+        for handler in propios:
+            raiz.removeHandler(handler)
+            handler.close()
+        propios = []
+    if propios:
+        return raiz
+
+    formatter = logging.Formatter(fmt=_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
+    if ruta_archivo:
+        archivo = logging.FileHandler(ruta_archivo, encoding="utf-8")
+        archivo.setLevel(nivel)
+        archivo.setFormatter(formatter)
+        setattr(archivo, _HANDLER_TAG, True)
+        raiz.addHandler(archivo)
+    if consola:
+        salida = logging.StreamHandler(sys.stdout)
+        salida.setLevel(nivel)
+        salida.setFormatter(formatter)
+        setattr(salida, _HANDLER_TAG, True)
+        raiz.addHandler(salida)
+    return raiz
 
 
 def obtener_logger(nombre_modulo):
-    """
-    Configura y devuelve un logger con salida a archivo local ejecucion_produccion.log
-    y consola (StreamHandler) con formato estricto.
-    """
-    logger = logging.getLogger(nombre_modulo)
-    logger.setLevel(logging.INFO)
-
-    if not logger.handlers:
-        # Formato estricto: timestamp, nivel de severidad, módulo de origen, mensaje
-        formatter = logging.Formatter(
-            fmt="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
-        )
-
-        # FileHandler con codificación UTF-8
-        fh = logging.FileHandler(LOG_FILE, encoding="utf-8")
-        fh.setLevel(logging.INFO)
-        fh.setFormatter(formatter)
-        logger.addHandler(fh)
-
-        # ConsoleHandler
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.INFO)
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-
-    return logger
+    """Devuelve un logger nominal; la aplicación decide sus destinos."""
+    return logging.getLogger(nombre_modulo)

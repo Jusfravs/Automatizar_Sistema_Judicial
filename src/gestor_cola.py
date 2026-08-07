@@ -160,13 +160,20 @@ class GestorCola:
                 )
             conn.commit()
 
-    def registrar_resultado_transaccional(self, numero_causa, resultado, origen, ruta_html=None):
+    def registrar_resultado_transaccional(
+        self, numero_causa, resultado, origen, ruta_html=None, estado_final="PROCESADO"
+    ):
         """
-        Persiste el resultado del expediente y marca la reserva como PROCESADO
+        Persiste el resultado del expediente y su estado final
         en una única transacción SQLite con BEGIN IMMEDIATE.
         """
         causa_str = str(numero_causa).strip()
         datos_json = json.dumps(resultado, ensure_ascii=False)
+        estados_validos = {
+            "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR"
+        }
+        if estado_final not in estados_validos:
+            raise ValueError("Estado final SQLite no permitido: %s" % estado_final)
 
         with self._exclusive_transaction() as conn:
             cursor = conn.cursor()
@@ -183,8 +190,8 @@ class GestorCola:
                 (causa_str, origen, datos_json, ruta_html),
             )
             cursor.execute(
-                "UPDATE juicios SET estado = 'PROCESADO', ruta_html = ? WHERE numero_causa = ?",
-                (ruta_html, causa_str),
+                "UPDATE juicios SET estado = ?, ruta_html = ? WHERE numero_causa = ?",
+                (estado_final, ruta_html, causa_str),
             )
             if cursor.rowcount != 1:
                 raise LookupError("No existe una reserva para la causa '%s'." % causa_str)

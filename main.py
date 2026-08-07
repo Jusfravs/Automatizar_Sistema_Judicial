@@ -1,9 +1,10 @@
 import os
 import sys
 
+from src.logger_config import configurar_logging, obtener_logger
+
 from src.gestor_casos import GestorCasos
 from src.gestor_cola import GestorCola
-from src.logger_config import obtener_logger
 from src.motor_busqueda_web import BotJudicial
 
 
@@ -23,6 +24,7 @@ def guardar_casos_fallidos(casos_fallidos, ruta_salida=RUTA_CASOS_FALLIDOS):
 
 
 def main():
+    configurar_logging()
     logger.info("=" * 60)
     logger.info("[RPA JUDICATURA] - SISTEMA ASISTIDO DE CONSULTA MASIVA")
     logger.info("=" * 60)
@@ -86,50 +88,72 @@ def main():
             logger.info("--- CAUSA %s/%s: %s ---", i, total, numero_juicio)
 
             try:
-                if bot.procesar_flujo_judicatura(numero_juicio):
-                    datos = bot.extraer_detalles_juicio()
+                resultado = bot.procesar_flujo_judicatura(numero_juicio)
+                if not isinstance(resultado, dict) or not resultado.get("estado"):
+                    raise RuntimeError("CONTRATO_RESULTADO_INVALIDO")
 
-                    # Guardar en CSV (flujo original)
-                    if repo.actualizar_caso(numero_juicio, datos):
+                estado = resultado["estado"]
+                if estado in {"COMPLETADO", "PARCIAL"}:
+                    datos = resultado.get("datos") or {}
+                    if not repo.actualizar_caso(numero_juicio, datos):
+                        raise RuntimeError("PERSISTENCIA_CSV_RECHAZADA")
+                    repo.guardar()
+                    estado_sqlite = "PROCESADO" if estado == "COMPLETADO" else "PARCIAL"
+                    cola.registrar_resultado_transaccional(
+                        numero_juicio,
+                        resultado,
+                        origen="ESATJE_TRANSACCIONAL",
+                        ruta_html=None,
+                        estado_final=estado_sqlite,
+                    )
+                    if estado == "COMPLETADO":
                         exitosos += 1
-                        logger.info("[+] Juicio %s guardado en CSV.", numero_juicio)
+                        logger.info("[+] Juicio %s completado y persistido.", numero_juicio)
                     else:
-                        logger.error(
-                            "[-] Error al guardar los datos del juicio %s en el repositorio CSV.",
-                            numero_juicio,
-                        )
-                        casos_fallidos.append(numero_juicio)
-                        cola.actualizar_estado(numero_juicio, "ERROR")
-                        continue
-
-                    # Guardar en SQLite (sincronización)
-                    try:
-                        cola.registrar_resultado_transaccional(
-                            numero_juicio,
-                            datos,
-                            origen="ASISTIDO_CSV",
-                            ruta_html=None,
-                        )
-                        logger.info("[+] Juicio %s sincronizado en SQLite.", numero_juicio)
-                    except Exception as e_sqlite:
-                        logger.warning(
-                            "[!] No se pudo sincronizar %s en SQLite: %s",
-                            numero_juicio, e_sqlite
-                        )
-
-                else:
-                    logger.warning("[-] No se pudo procesar el flujo para el juicio %s.", numero_juicio)
+                        logger.warning("[!] Juicio %s persistido como PARCIAL.", numero_juicio)
+                elif estado == "SIN_RESULTADOS":
+                    cola.registrar_resultado_transaccional(
+                        numero_juicio,
+                        resultado,
+                        origen="ESATJE_TRANSACCIONAL",
+                        estado_final="SIN_RESULTADOS",
+                    )
+                    logger.info("[-] Juicio %s sin resultados, estado persistido.", numero_juicio)
+                elif estado in {"EXTRACCION_ERROR", "ERROR_NAVEGACION"}:
+                    detalle = resultado.get("error") or "ERROR_SIN_DETALLE"
+                    cola.registrar_error_extraccion(
+                        numero_juicio, "ESATJE_TRANSACCIONAL", detalle
+                    )
+                    cola.registrar_resultado_transaccional(
+                        numero_juicio,
+                        resultado,
+                        origen="ESATJE_TRANSACCIONAL",
+                        estado_final="ERROR",
+                    )
                     casos_fallidos.append(numero_juicio)
-                    cola.actualizar_estado(numero_juicio, "ERROR")
+                    logger.error(
+                        "[-] Juicio %s terminó como %s: %s", numero_juicio, estado, detalle
+                    )
+                else:
+                    raise RuntimeError("ESTADO_RESULTADO_DESCONOCIDO:%s" % estado)
 
-            except Exception:
-                # Capturamos cualquier error de Playwright o red sin romper el bucle for.
-                logger.exception("[!] Excepción crítica en causa %s.", numero_juicio)
-                casos_fallidos.append(numero_juicio)
+                if not resultado.get("regreso_confirmado"):
+                    raise RuntimeError("REGRESO_AL_BUSCADOR_NO_CONFIRMADO")
+
+            except Exception as exc:
+                logger.exception(
+                    "[!] Fallo no recuperable en causa %s; el lote se detiene.",
+                    numero_juicio,
+                )
+                if numero_juicio not in casos_fallidos:
+                    casos_fallidos.append(numero_juicio)
                 try:
-                    cola.actualizar_estado(numero_juicio, "ERROR")
+                    cola.registrar_error_extraccion(
+                        numero_juicio, "LOTE_DETENIDO", str(exc)
+                    )
                 except Exception:
-                    pass
+                    logger.exception("No se pudo registrar el motivo de detención en SQLite.")
+                raise
 
             # Autoguardado preventivo.
             if i % intervalo_guardado == 0:

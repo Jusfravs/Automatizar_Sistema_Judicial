@@ -8,6 +8,7 @@ RAIZ_PROYECTO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if RAIZ_PROYECTO not in sys.path:
     sys.path.insert(0, RAIZ_PROYECTO)
 
+from src.logger_config import configurar_logging
 from src.motor_busqueda_web import BotJudicial
 
 
@@ -90,6 +91,10 @@ def main():
 
     causa_original = sys.argv[1].strip()
     navegacion = cargar_navegacion()
+    configurar_logging(
+        os.path.join(RAIZ_PROYECTO, "diagnostico_esatje.log"),
+        reemplazar=True,
+    )
     bot = BotJudicial(navegacion["url_portal"], navegacion)
     directorio = os.path.join(RAIZ_PROYECTO, "data", "temp_htmls")
     os.makedirs(directorio, exist_ok=True)

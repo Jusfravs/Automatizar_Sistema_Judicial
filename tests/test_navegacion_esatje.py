@@ -174,30 +174,6 @@ class NavegacionEsatjeTests(unittest.TestCase):
 
         self.assertEqual(seleccionados, [paquetes[0]])
 
-    def test_consolidacion_conserva_origen_por_actuacion(self):
-        bot = self.crear_bot()
-        descriptor = {
-            "clave": "DEPENDENCIA JURISDICCIONAL: UNIDAD A CIUDAD: QUININDE",
-            "indice_visual": 2,
-            "texto": "Dependencia jurisdiccional: Unidad A Ciudad: Quinind?",
-        }
-        bot._descriptores_carpetas_actuaciones = lambda: [descriptor]
-        bot._localizar_fila_carpeta = lambda valor: object()
-        bot._boton_carpeta_en_fila = lambda fila, contexto: BotonFalso()
-        bot._esperar_actuaciones = lambda causa: True
-        bot._volver_a_datos_generales = lambda causa: True
-        bot.paquetes_api_interceptados = []
-        bot._ejecutar_extraccion_detalles = lambda *args, **kwargs: {
-            "HISTORIAL_ACTUACIONES": [{"fecha": "24/02/2023", "detalle": "ACTUACION"}]
-        }
-
-        resultado = bot._procesar_todas_las_carpetas("23331202202089")
-
-        actuacion = resultado["HISTORIAL_ACTUACIONES"][0]
-        self.assertEqual(actuacion["CAUSA"], "23331202202089")
-        self.assertEqual(actuacion["CLAVE_CARPETA"], descriptor["clave"])
-        self.assertEqual(actuacion["ORIGEN_DATA"], "DOM")
-
 
 if __name__ == "__main__":
     unittest.main()

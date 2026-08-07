@@ -18,6 +18,11 @@
         "resultados_timeout_ms": 30000,
         "datos_generales_timeout_ms": 30000,
         "actuaciones_timeout_ms": 30000,
+        "movimientos_timeout_ms": 30000,
+        "pantalla_final_timeout_ms": 30000,
+        "sondeo_estabilidad_ms": 250,
+        "comprobaciones_estables": 3,
+        "quietud_api_ms": 750,
         "max_reintentos_transicion": 2
     },
     "sistema": {

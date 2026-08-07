@@ -1197,3 +1197,1013 @@ class BotJudicial:
         if self.playwright:
             self.playwright.stop()
         logger.info("Navegador cerrado.")
+
+
+class BotJudicialTransaccional(BotJudicial):
+    """Flujo e-SATJE con navegación bloqueada durante cada extracción."""
+
+    ESTADOS_CARPETA_TERMINALES = {
+        "COMPLETA", "PARCIAL_REGISTRADA", "ERROR_REGISTRADO"
+    }
+    TRANSICIONES_VALIDAS = {
+        "PREPARAR_BUSCADOR": {"CAUSA_ESCRITA"},
+        "CAUSA_ESCRITA": {"ESPERAR_FIN_CAPTCHA"},
+        "ESPERAR_FIN_CAPTCHA": {"BUSQUEDA_HABILITADA", "CAPTCHA_TIMEOUT"},
+        "BUSQUEDA_HABILITADA": {"BUSQUEDA_ENVIADA"},
+        "BUSQUEDA_ENVIADA": {"RESULTADOS_LISTOS", "SIN_RESULTADOS", "RESULTADO_AMBIGUO"},
+        "RESULTADOS_LISTOS": {"ABRIENDO_MOVIMIENTOS"},
+        "ABRIENDO_MOVIMIENTOS": {"MOVIMIENTOS_CARGANDO"},
+        "MOVIMIENTOS_CARGANDO": {"MOVIMIENTOS_LISTOS"},
+        "MOVIMIENTOS_LISTOS": {"CARPETAS_DESCUBIERTAS", "CONSOLIDACION_EN_PROGRESO"},
+        "CARPETAS_DESCUBIERTAS": {"ABRIENDO_INFORMACION_PROCESO"},
+        "ABRIENDO_INFORMACION_PROCESO": {"INFORMACION_PROCESO_CARGANDO"},
+        "INFORMACION_PROCESO_CARGANDO": {"INFORMACION_PROCESO_LISTA"},
+        "INFORMACION_PROCESO_LISTA": {"NAVEGACION_BLOQUEADA"},
+        "NAVEGACION_BLOQUEADA": {"EXTRACCION_EN_PROGRESO", "NAVEGACION_REANUDADA"},
+        "EXTRACCION_EN_PROGRESO": {
+            "EXTRACCION_COMPLETA", "EXTRACCION_PARCIAL_REGISTRADA",
+            "EXTRACCION_ERROR_REGISTRADO",
+        },
+        "EXTRACCION_COMPLETA": {"NAVEGACION_REANUDADA"},
+        "EXTRACCION_PARCIAL_REGISTRADA": {"NAVEGACION_REANUDADA"},
+        "EXTRACCION_ERROR_REGISTRADO": {"NAVEGACION_REANUDADA"},
+        "NAVEGACION_REANUDADA": {"RETORNANDO_A_MOVIMIENTOS"},
+        "RETORNANDO_A_MOVIMIENTOS": {"MOVIMIENTOS_CARGANDO"},
+        "CONSOLIDACION_EN_PROGRESO": {"RETORNANDO_AL_BUSCADOR"},
+        "RETORNANDO_AL_BUSCADOR": {
+            "CAUSA_COMPLETADA", "CAUSA_PARCIAL", "CAUSA_ERROR",
+            "CAUSA_SIN_RESULTADOS",
+        },
+        "SIN_RESULTADOS": {"RETORNANDO_AL_BUSCADOR"},
+    }
+
+    def __init__(self, url_portal, navegacion=None):
+        super().__init__(url_portal, navegacion)
+        defaults = {
+            "movimientos_timeout_ms": 30000,
+            "sondeo_estabilidad_ms": 250,
+            "comprobaciones_estables": 3,
+            "quietud_api_ms": 750,
+        }
+        for clave, valor in defaults.items():
+            self.navegacion.setdefault(clave, valor)
+        self._secuencia_api = 0
+        self._ultima_respuesta_api_monotonic = 0.0
+        self._bloqueo_navegacion = None
+        self._intento_actual = None
+        self._claves_extraidas = set()
+        self._resultados_carpeta_actuales = []
+        self._descriptores_actuales = []
+        self._intentos_navegacion_bloqueados = []
+
+    @staticmethod
+    def _ahora_iso():
+        from datetime import datetime, timezone
+        return datetime.now(timezone.utc).isoformat()
+
+    @staticmethod
+    def _ruta_es(url, ruta):
+        from urllib.parse import urlparse
+        try:
+            return urlparse(str(url)).path.rstrip("/") == ruta.rstrip("/")
+        except Exception:
+            return False
+
+    def _es_buscador(self):
+        return any(self._ruta_es(self.page.url, ruta) for ruta in (
+            "/busqueda-filtros", "/busqueda"
+        ))
+
+    def _cambiar_estado_navegacion(self, causa, anterior, siguiente, accion, **extra):
+        estado_real = self.ultimo_estado_navegacion
+        if estado_real is not None and anterior not in (None, estado_real):
+            raise RuntimeError(
+                f"TRANSICION_ORIGEN_INCONSISTENTE:{estado_real}->{siguiente}"
+            )
+        if (
+            estado_real is not None
+            and siguiente not in self.TRANSICIONES_VALIDAS.get(estado_real, set())
+            and siguiente not in {"ERROR_NAVEGACION", "CAUSA_ERROR"}
+        ):
+            raise RuntimeError(f"TRANSICION_NO_PERMITIDA:{estado_real}->{siguiente}")
+        self.ultimo_estado_navegacion = siguiente
+        evento = {
+            "causa": self._causa_canonica(causa),
+            "estado_anterior": estado_real or anterior,
+            "estado_siguiente": siguiente,
+            "accion": accion,
+            "url": self.page.url if self.page and not self.page.is_closed() else None,
+            "intento_id": self._intento_actual,
+            "timestamp": self._ahora_iso(),
+            **extra,
+        }
+        logger.info("[NAVEGACION_ESATJE] %s", json.dumps(evento, ensure_ascii=False, default=str))
+        return evento
+
+    def _interceptar_respuesta_api(self, response):
+        try:
+            url = response.url.lower()
+            if not any(kw in url for kw in ("/api/", "expel", "proceso", "causa", "actuaciones", "catalogo")):
+                return
+            if any(ext in url for ext in (".js", ".css", ".png", ".ico", ".woff", ".svg")):
+                return
+            if response.status not in (200, 201):
+                return
+            if "json" not in response.headers.get("content-type", "").lower():
+                return
+            self._secuencia_api += 1
+            capturado = monotonic()
+            request = getattr(response, "request", None)
+            self.paquetes_api_interceptados.append({
+                "secuencia": self._secuencia_api,
+                "capturado_monotonic": capturado,
+                "url": response.url,
+                "status": response.status,
+                "resource_type": getattr(request, "resource_type", None),
+                "data": response.json(),
+            })
+            self._ultima_respuesta_api_monotonic = capturado
+        except Exception:
+            logger.debug("No se pudo registrar una respuesta API.", exc_info=True)
+
+    def _activar_bloqueo_navegacion(self, causa, descriptor):
+        if self._bloqueo_navegacion and self._bloqueo_navegacion.get("activo"):
+            raise RuntimeError("BLOQUEO_NAVEGACION_YA_ACTIVO")
+        clave = descriptor["clave_carpeta"]
+        token = f"{self._intento_actual or 'sin_intento'}:{clave}"
+        self._bloqueo_navegacion = {
+            "activo": True,
+            "token": token,
+            "motivo": "EXTRACCION_INFORMACION_PROCESO",
+            "causa": self._causa_canonica(causa),
+            "clave_carpeta": clave,
+            "url_inicio": self.page.url,
+            "inicio_monotonic": monotonic(),
+        }
+        self._cambiar_estado_navegacion(
+            causa, self.ultimo_estado_navegacion, "NAVEGACION_BLOQUEADA",
+            "bloquear_navegacion", clave_carpeta=clave,
+            secuencia_api=self._secuencia_api,
+        )
+        return token
+
+    def _asegurar_navegacion_permitida(self, operacion, contexto=None):
+        bloqueo = self._bloqueo_navegacion
+        if not bloqueo or not bloqueo.get("activo"):
+            return
+        intento = {
+            "operacion": operacion,
+            "contexto": contexto,
+            "bloqueo": dict(bloqueo),
+            "timestamp": self._ahora_iso(),
+        }
+        self._intentos_navegacion_bloqueados.append(intento)
+        logger.error("[NAVEGACION_BLOQUEADA] %s", json.dumps(intento, ensure_ascii=False, default=str))
+        raise RuntimeError(f"NAVEGACION_BLOQUEADA:{operacion}")
+
+    def _click_navegacion(self, locator, contexto):
+        self._asegurar_navegacion_permitida("click", contexto)
+        locator.click()
+
+    def _go_back_navegacion(self, contexto):
+        self._asegurar_navegacion_permitida("go_back", contexto)
+        return self.page.go_back()
+
+    def _goto_navegacion(self, url, contexto, **kwargs):
+        self._asegurar_navegacion_permitida("goto", contexto)
+        return self.page.goto(url, **kwargs)
+
+    def _finalizar_bloqueo_navegacion(self, token, manifiesto):
+        bloqueo = self._bloqueo_navegacion
+        if not bloqueo or not bloqueo.get("activo"):
+            raise RuntimeError("BLOQUEO_NAVEGACION_AUSENTE")
+        if bloqueo.get("token") != token:
+            raise RuntimeError("TOKEN_BLOQUEO_INCONSISTENTE")
+        if not manifiesto or not os.path.isfile(manifiesto):
+            raise RuntimeError("RESULTADO_CARPETA_NO_DURABLE")
+        with open(manifiesto, "r", encoding="utf-8") as archivo:
+            resultado = json.load(archivo)
+        if resultado.get("estado") not in self.ESTADOS_CARPETA_TERMINALES:
+            raise RuntimeError("RESULTADO_CARPETA_TERMINAL_INVALIDO")
+        causa = bloqueo["causa"]
+        clave = bloqueo["clave_carpeta"]
+        duracion = monotonic() - bloqueo["inicio_monotonic"]
+        self._bloqueo_navegacion = None
+        self._cambiar_estado_navegacion(
+            causa, self.ultimo_estado_navegacion, "NAVEGACION_REANUDADA",
+            "liberar_navegacion", clave_carpeta=clave,
+            manifiesto=manifiesto, duracion_s=round(duracion, 3),
+        )
+
+    def _enviar_busqueda_una_vez(self, causa, intento_id):
+        clave = (causa, intento_id)
+        if clave in self._busquedas_enviadas:
+            raise RuntimeError("DOBLE_CLICK_BUSCAR_BLOQUEADO")
+        campo = self._input_causa_unico()
+        boton = self._boton_buscar_unico()
+        if self._causa_canonica(campo.input_value()) != causa:
+            raise RuntimeError("CAUSA_CAMBIO_ANTES_DE_BUSCAR")
+        if not self._boton_habilitado(boton):
+            raise RuntimeError("BUSCAR_NO_HABILITADO")
+        self._busquedas_enviadas.add(clave)
+        self._click_navegacion(boton, "buscar_causa")
+        self._cambiar_estado_navegacion(
+            causa, "BUSQUEDA_HABILITADA", "BUSQUEDA_ENVIADA", "click_buscar",
+            intento_id=intento_id, click_numero=1,
+        )
+
+    def _abrir_movimientos_causa(self, causa, resultado):
+        self._cambiar_estado_navegacion(
+            causa, "RESULTADOS_LISTOS", "ABRIENDO_MOVIMIENTOS", "localizar_movimientos"
+        )
+        if self._ruta_es(self.page.url, "/causas"):
+            enlace = self.page.locator(
+                "a[aria-label*='movimientos' i], a[href*='/movimientos']"
+            )
+            candidatos = []
+            for indice in range(enlace.count()):
+                actual = enlace.nth(indice)
+                etiqueta = actual.get_attribute("aria-label") or ""
+                if actual.is_visible() and causa in self._causa_canonica(etiqueta):
+                    candidatos.append(actual)
+            if len(candidatos) != 1:
+                raise RuntimeError("ENLACE_MOVIMIENTOS_AUSENTE_O_AMBIGUO")
+            enlace = candidatos[0]
+        else:
+            if causa not in self._causa_canonica(resultado.inner_text()):
+                raise RuntimeError("FILA_NO_CORRESPONDE_A_CAUSA")
+            enlaces = resultado.locator(
+                "a[aria-label*='movimientos' i], a[href*='/movimientos'], "
+                "a:has(mat-icon:has-text('folder_open'))"
+            )
+            visibles = [enlaces.nth(i) for i in range(enlaces.count()) if enlaces.nth(i).is_visible()]
+            if len(visibles) != 1:
+                raise RuntimeError("ENLACE_MOVIMIENTOS_AUSENTE_O_AMBIGUO")
+            enlace = visibles[0]
+        self._click_navegacion(enlace, "abrir_movimientos_causa")
+        self._cambiar_estado_navegacion(
+            causa, "ABRIENDO_MOVIMIENTOS", "MOVIMIENTOS_CARGANDO", "click_movimientos"
+        )
+        self.page.wait_for_url(
+            re.compile(r"/movimientos(?:[/?#]|$)"),
+            timeout=self.navegacion["movimientos_timeout_ms"],
+        )
+
+    def _hay_carga_visible(self):
+        selectores = (
+            "mat-spinner", "mat-progress-spinner", "[role='progressbar']",
+            ".loading", ".spinner", "text=/^\\s*Buscando\\.\\.\\.\\s*$/i",
+        )
+        for selector in selectores:
+            try:
+                elementos = self.page.locator(selector)
+                for indice in range(elementos.count()):
+                    if elementos.nth(indice).is_visible():
+                        return True
+            except Exception:
+                continue
+        return False
+
+    @staticmethod
+    def _texto_locator(locator):
+        try:
+            return " ".join(locator.inner_text().split())
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _normalizar_texto(texto):
+        import unicodedata
+        return "".join(
+            caracter for caracter in unicodedata.normalize("NFD", str(texto).upper())
+            if unicodedata.category(caracter) != "Mn"
+        )
+
+    def _firma_movimientos(self):
+        dependencias = self.page.locator(".lista-movimientos-causa .movimiento-individual")
+        incidentes = self.page.locator(".lista-movimientos-causa .lista-movimiento-individual")
+        filas = []
+        for indice in range(incidentes.count()):
+            fila = incidentes.nth(indice)
+            try:
+                if not fila.is_visible():
+                    continue
+                enlace = fila.locator("a[href*='/actuaciones']")
+                hrefs = [enlace.nth(i).get_attribute("href") for i in range(enlace.count())]
+                filas.append((self._texto_locator(fila), tuple(hrefs)))
+            except Exception:
+                continue
+        return (dependencias.count(), len(filas), tuple(filas), self._hay_carga_visible())
+
+    def _esperar_movimientos_listos(self, causa):
+        limite = monotonic() + (self.navegacion["movimientos_timeout_ms"] / 1000)
+        estable = 0
+        firma_anterior = None
+        while monotonic() < limite:
+            texto = self.page.inner_text("body")
+            valido = (
+                self._ruta_es(self.page.url, "/movimientos")
+                and not self._hay_carga_visible()
+                and "DATOS GENERALES" in self._normalizar_texto(texto)
+                and "ACTUACIONES JUDICIALES" in self._normalizar_texto(texto)
+                and causa in self._causa_canonica(texto)
+                and self.page.locator(".lista-movimientos-causa").count() == 1
+            )
+            firma = self._firma_movimientos() if valido else None
+            if valido and firma == firma_anterior:
+                estable += 1
+                if estable >= int(self.navegacion["comprobaciones_estables"]):
+                    self._cambiar_estado_navegacion(
+                        causa, "MOVIMIENTOS_CARGANDO", "MOVIMIENTOS_LISTOS",
+                        "validar_movimientos", firma=firma,
+                    )
+                    return firma
+            else:
+                estable = 0
+            firma_anterior = firma
+            self.page.wait_for_timeout(self.navegacion["sondeo_estabilidad_ms"])
+        raise PlaywrightTimeoutError("MOVIMIENTOS_TIMEOUT")
+
+    def _descriptor_incidente(self, causa, dependencia, incidente):
+        import hashlib
+        dependencia_texto = self._texto_locator(dependencia)
+        incidente_texto = self._texto_locator(incidente)
+        enlaces = incidente.locator("a[href*='/actuaciones']")
+        visibles = []
+        for indice in range(enlaces.count()):
+            enlace = enlaces.nth(indice)
+            if enlace.is_visible() and enlace.is_enabled():
+                visibles.append(enlace)
+        if len(visibles) != 1:
+            raise RuntimeError("CARPETA_PROCESAL_AMBIGUA")
+        enlace = visibles[0]
+        href = enlace.get_attribute("href") or ""
+        numero = self._texto_locator(incidente.locator(".numero-incidente").first)
+        fecha = self._texto_locator(incidente.locator(".fecha-ingreso").first)
+        actores = self._texto_locator(incidente.locator(".lista-actores").first)
+        demandados = self._texto_locator(incidente.locator(".lista-demandados").first)
+        dependencia_match = re.search(
+            r"DEPENDENCIA JURISDICCIONAL:\s*(.*?)(?=\s+CIUDAD:|$)",
+            dependencia_texto, re.IGNORECASE,
+        )
+        ciudad_match = re.search(r"CIUDAD:\s*(.*?)(?=\s+\d{1,3}\s+\d{2}/\d{2}/\d{4}|$)", dependencia_texto, re.IGNORECASE)
+        nombre_dependencia = dependencia_match.group(1).strip() if dependencia_match else dependencia_texto
+        ciudad = ciudad_match.group(1).strip() if ciudad_match else None
+        base_clave = "|".join((causa, nombre_dependencia.upper(), numero, fecha, incidente_texto.upper()))
+        digest = hashlib.sha256(base_clave.encode("utf-8")).hexdigest()[:12]
+        clave = self._clave_archivo(f"{causa}_{numero}_{fecha}_{digest}")
+        return {
+            "causa": causa,
+            "dependencia": nombre_dependencia,
+            "ciudad": ciudad,
+            "numero_incidente": numero,
+            "fecha_ingreso": fecha,
+            "actores": actores,
+            "demandados": demandados,
+            "texto_normalizado": incidente_texto,
+            "href_actuaciones": href,
+            "id_api": None,
+            "clave_carpeta": clave,
+        }, enlace
+
+    def _descubrir_carpetas_procesales(self, causa):
+        if not self._ruta_es(self.page.url, "/movimientos"):
+            raise RuntimeError("PANTALLA_MOVIMIENTOS_REQUERIDA")
+        dependencias = self.page.locator(".lista-movimientos-causa .movimiento-individual")
+        descriptores = []
+        claves = set()
+        for indice_dependencia in range(dependencias.count()):
+            dependencia = dependencias.nth(indice_dependencia)
+            if not dependencia.is_visible():
+                continue
+            incidentes = dependencia.locator(".lista-movimiento-individual")
+            for indice_incidente in range(incidentes.count()):
+                incidente = incidentes.nth(indice_incidente)
+                if not incidente.is_visible():
+                    continue
+                descriptor, _ = self._descriptor_incidente(causa, dependencia, incidente)
+                descriptor["indice_visual_dependencia"] = indice_dependencia
+                descriptor["indice_visual_incidente"] = indice_incidente
+                if descriptor["clave_carpeta"] in claves:
+                    raise RuntimeError("CARPETA_PROCESAL_AMBIGUA")
+                claves.add(descriptor["clave_carpeta"])
+                descriptores.append(descriptor)
+        if not descriptores:
+            raise RuntimeError("CARPETA_PROCESAL_AUSENTE")
+        self._cambiar_estado_navegacion(
+            causa, "MOVIMIENTOS_LISTOS", "CARPETAS_DESCUBIERTAS",
+            "descubrir_carpetas", cantidad=len(descriptores),
+            claves=[d["clave_carpeta"] for d in descriptores],
+        )
+        return descriptores
+
+    def _localizar_carpeta_procesal(self, causa, descriptor_buscado):
+        dependencias = self.page.locator(".lista-movimientos-causa .movimiento-individual")
+        coincidencias = []
+        for indice_dependencia in range(dependencias.count()):
+            dependencia = dependencias.nth(indice_dependencia)
+            incidentes = dependencia.locator(".lista-movimiento-individual")
+            for indice_incidente in range(incidentes.count()):
+                incidente = incidentes.nth(indice_incidente)
+                try:
+                    descriptor, enlace = self._descriptor_incidente(causa, dependencia, incidente)
+                    if descriptor["clave_carpeta"] == descriptor_buscado["clave_carpeta"]:
+                        coincidencias.append((incidente, enlace))
+                except RuntimeError:
+                    continue
+        if len(coincidencias) != 1:
+            raise RuntimeError("CARPETA_NO_RELOCALIZABLE")
+        return coincidencias[0]
+
+    def _esperar_informacion_proceso_y_bloquear(self, causa, descriptor):
+        limite = monotonic() + (self.navegacion["actuaciones_timeout_ms"] / 1000)
+        while monotonic() < limite:
+            texto = self.page.inner_text("body")
+            texto_upper = self._normalizar_texto(texto)
+            controles = any(senal in texto_upper for senal in ("EXPORTAR PDF", "AMPLIAR TODO", "CONTRAER TODO"))
+            if (
+                self._ruta_es(self.page.url, "/actuaciones")
+                and "INFORMACION DEL PROCESO" in texto_upper
+                and causa in self._causa_canonica(texto)
+                and controles
+                and not self._hay_carga_visible()
+            ):
+                self._cambiar_estado_navegacion(
+                    causa, "INFORMACION_PROCESO_CARGANDO", "INFORMACION_PROCESO_LISTA",
+                    "validar_informacion_proceso", clave_carpeta=descriptor["clave_carpeta"],
+                )
+                return self._activar_bloqueo_navegacion(causa, descriptor)
+            self.page.wait_for_timeout(self.navegacion["sondeo_estabilidad_ms"])
+        raise PlaywrightTimeoutError("INFORMACION_PROCESO_TIMEOUT")
+
+    def _firma_actuaciones(self, causa):
+        texto = self.page.inner_text("body")
+        filas = self.page.locator(
+            "expel-listado-actuaciones .fila, .lista-actuaciones .mat-expansion-panel, "
+            ".actuacion-item, table tbody tr"
+        )
+        textos = []
+        for indice in range(filas.count()):
+            fila = filas.nth(indice)
+            try:
+                if fila.is_visible():
+                    contenido = self._texto_locator(fila)
+                    if contenido:
+                        textos.append(contenido)
+            except Exception:
+                continue
+        fechas = re.findall(r"\b\d{2}/\d{2}/\d{4}\b", texto)
+        adjuntos = self.page.locator("[mattooltip='Ver archivos'][role='link'], [mattooltip='Ver archivos']")
+        return (
+            causa, len(textos), len(fechas), len(" ".join(texto.split())),
+            textos[0][:160] if textos else None,
+            textos[-1][:160] if textos else None,
+            adjuntos.count(), self._secuencia_api, self._hay_carga_visible(),
+        )
+
+    def _esperar_actuaciones_estables(self, causa):
+        limite = monotonic() + (self.navegacion["pantalla_final_timeout_ms"] / 1000)
+        estable = 0
+        firma_anterior = None
+        while monotonic() < limite:
+            if not self._ruta_es(self.page.url, "/actuaciones"):
+                raise RuntimeError("INFORMACION_PROCESO_URL_CAMBIO_DURANTE_EXTRACCION")
+            firma = self._firma_actuaciones(causa)
+            quietud = (monotonic() - self._ultima_respuesta_api_monotonic) * 1000 >= self.navegacion["quietud_api_ms"]
+            if not firma[-1] and firma == firma_anterior and quietud:
+                estable += 1
+                if estable >= int(self.navegacion["comprobaciones_estables"]):
+                    return firma
+            else:
+                estable = 0
+            firma_anterior = firma
+            self.page.wait_for_timeout(self.navegacion["sondeo_estabilidad_ms"])
+        raise PlaywrightTimeoutError("PANTALLA_ACTUACIONES_NO_ESTABLE")
+
+    def _paquetes_ventana(self, secuencia_inicio, secuencia_fin, causa):
+        paquetes = [
+            paquete for paquete in self.paquetes_api_interceptados
+            if secuencia_inicio < int(paquete.get("secuencia", 0)) <= secuencia_fin
+        ]
+        return self._paquetes_api_de_carpeta(paquetes, causa)
+
+    @staticmethod
+    def _extraer_actuaciones_api(paquetes):
+        actuaciones = []
+        vistos = set()
+
+        def recorrer(valor):
+            if isinstance(valor, list):
+                for item in valor:
+                    recorrer(item)
+                return
+            if not isinstance(valor, dict):
+                return
+            detalle = (
+                valor.get("actuacion") or valor.get("detalle")
+                or valor.get("tipoActuacion") or valor.get("actividad")
+            )
+            fecha = next((valor.get(campo) for campo in (
+                "fecha", "fechaActuacion", "fechaProvidencia", "fechaCrea",
+                "fechaCreacion", "fechaRegistro", "fechaIngreso"
+            ) if valor.get(campo)), None)
+            if detalle:
+                clave = (str(fecha) if fecha else None, str(detalle).strip().upper())
+                if clave not in vistos:
+                    vistos.add(clave)
+                    actuaciones.append({"fecha": clave[0], "detalle": clave[1]})
+            for clave_hija, hijo in valor.items():
+                if clave_hija in {"actuaciones", "listaActuaciones"} or isinstance(hijo, (dict, list)):
+                    recorrer(hijo)
+
+        for paquete in paquetes:
+            recorrer(paquete.get("data"))
+        return actuaciones
+
+    def _ejecutar_extraccion_detalles(self, numero_juicio=None, paquetes_api=None, carpeta=None, contenido_html=None):
+        """Transforma API/DOM sin hacer clic ni navegar."""
+        paquetes = self.paquetes_api_interceptados if paquetes_api is None else paquetes_api
+        datos = {
+            "FECHA INICIO JUICIO": None,
+            "FECHA INICIAL FASE ACTUAL": None,
+            "ETAPA_PROCESAL": None,
+            "FASE_PROCESAL": None,
+            "HISTORIAL_ACTUACIONES": [],
+        }
+        actuaciones_api = self._extraer_actuaciones_api(paquetes)
+        datos_dom = {}
+        if contenido_html:
+            try:
+                datos_dom = self.extractor.procesar_html_string(contenido_html) or {}
+            except Exception as exc:
+                logger.warning("[RUTA RESPALDO DOM] No se pudo transformar HTML: %s", exc)
+        actuaciones_dom = datos_dom.get("HISTORIAL_ACTUACIONES", [])
+        actuaciones = []
+        vistos = set()
+        for actuacion in list(actuaciones_api) + list(actuaciones_dom):
+            clave = (actuacion.get("fecha"), str(actuacion.get("detalle", "")).strip().upper())
+            if clave not in vistos and clave[1]:
+                vistos.add(clave)
+                actuaciones.append(dict(actuacion))
+        datos.update(datos_dom)
+        datos["HISTORIAL_ACTUACIONES"] = actuaciones
+        datos["ORIGEN_DATA"] = "API+DOM" if actuaciones_api and actuaciones_dom else ("API" if actuaciones_api else "DOM")
+        if actuaciones:
+            self._aplicar_inferencia_consolidada(datos)
+        return datos
+
+    @staticmethod
+    def _escribir_json_atomico(ruta, contenido):
+        temporal = f"{ruta}.tmp"
+        with open(temporal, "w", encoding="utf-8") as archivo:
+            json.dump(contenido, archivo, ensure_ascii=False, indent=2, default=str)
+            archivo.flush()
+            os.fsync(archivo.fileno())
+        os.replace(temporal, ruta)
+
+    @staticmethod
+    def _hash_archivo(ruta):
+        import hashlib
+        digest = hashlib.sha256()
+        with open(ruta, "rb") as archivo:
+            for bloque in iter(lambda: archivo.read(65536), b""):
+                digest.update(bloque)
+        return digest.hexdigest()
+
+    def _guardar_artefactos_carpeta(self, causa, descriptor, paquetes, contenido, frames, resultado, diagnostico):
+        intento = self._clave_archivo(self._intento_actual or "sin_intento")
+        clave = self._clave_archivo(descriptor["clave_carpeta"])
+        directorio = os.path.join("data", "temp_htmls", causa, intento, clave)
+        os.makedirs(directorio, exist_ok=True)
+        rutas = {}
+        ruta_html = os.path.join(directorio, "page.html")
+        with open(ruta_html, "w", encoding="utf-8") as archivo:
+            archivo.write(contenido or "")
+        rutas["html"] = ruta_html
+        for indice, frame in enumerate(frames, 1):
+            ruta_frame = os.path.join(directorio, f"frame_{indice:03d}.html")
+            with open(ruta_frame, "w", encoding="utf-8") as archivo:
+                archivo.write(frame)
+            rutas.setdefault("frames", []).append(ruta_frame)
+        ruta_api = os.path.join(directorio, "api.json")
+        self._escribir_json_atomico(ruta_api, paquetes)
+        rutas["api"] = ruta_api
+        ruta_diagnostico = os.path.join(directorio, "diagnostic.json")
+        self._escribir_json_atomico(ruta_diagnostico, diagnostico)
+        rutas["diagnostico"] = ruta_diagnostico
+        ruta_screen = os.path.join(directorio, "screen.png")
+        try:
+            self.page.screenshot(path=ruta_screen, full_page=True)
+            rutas["screenshot"] = ruta_screen
+        except Exception as exc:
+            resultado.setdefault("advertencias", []).append(f"SCREENSHOT_ERROR:{exc}")
+        hashes = {}
+        for nombre, ruta in rutas.items():
+            if isinstance(ruta, list):
+                hashes[nombre] = [self._hash_archivo(item) for item in ruta]
+            else:
+                hashes[nombre] = self._hash_archivo(ruta)
+        resultado["artefactos"] = rutas
+        resultado["hashes"] = hashes
+        ruta_resultado = os.path.join(directorio, "result.json")
+        self._escribir_json_atomico(ruta_resultado, resultado)
+        with open(ruta_resultado, "r", encoding="utf-8") as archivo:
+            json.load(archivo)
+        return ruta_resultado
+
+    def _capturar_dom_frames(self):
+        contenido = self.page.content()
+        frames = []
+        for frame in self.page.frames:
+            try:
+                html = frame.content()
+                if html and html != contenido:
+                    frames.append(html)
+            except Exception:
+                continue
+        return contenido, frames
+
+    def _extraer_informacion_proceso(self, causa, descriptor, secuencia_inicio, token):
+        inicio = monotonic()
+        manifiesto = None
+        resultado = None
+        try:
+            firma = self._esperar_actuaciones_estables(causa)
+            secuencia_fin = self._secuencia_api
+            paquetes = self._paquetes_ventana(secuencia_inicio, secuencia_fin, causa)
+            contenido, frames = self._capturar_dom_frames()
+            datos = self._ejecutar_extraccion_detalles(
+                causa, paquetes_api=paquetes,
+                carpeta=descriptor["clave_carpeta"], contenido_html=contenido,
+            )
+            metadatos = {
+                "CAUSA": causa,
+                "CLAVE_CARPETA": descriptor["clave_carpeta"],
+                "DEPENDENCIA_JURISDICCIONAL": descriptor.get("dependencia"),
+                "CIUDAD_CARPETA": descriptor.get("ciudad"),
+                "INSTANCIA_CARPETA": descriptor.get("numero_incidente"),
+            }
+            for actuacion in datos.get("HISTORIAL_ACTUACIONES", []):
+                actuacion.update(metadatos)
+                actuacion["ORIGEN_CARPETA"] = descriptor["clave_carpeta"]
+                actuacion["ORIGEN_DATA"] = datos.get("ORIGEN_DATA")
+            tiene_actuaciones = bool(datos.get("HISTORIAL_ACTUACIONES"))
+            inferencia_completa = bool(datos.get("ETAPA_PROCESAL") or datos.get("FASE_PROCESAL"))
+            estado = "COMPLETA" if (not tiene_actuaciones or inferencia_completa) else "PARCIAL_REGISTRADA"
+            resultado = {
+                "version_esquema": 1,
+                "estado": estado,
+                "causa": causa,
+                "intento_id": self._intento_actual,
+                "clave_carpeta": descriptor["clave_carpeta"],
+                "descriptor": descriptor,
+                "firma": firma,
+                "secuencia_api_inicio": secuencia_inicio,
+                "secuencia_api_fin": secuencia_fin,
+                "fuente": datos.get("ORIGEN_DATA"),
+                "datos": datos,
+                "advertencias": [],
+                "error": None,
+                "inicio": self._ahora_iso(),
+                "duracion_s": round(monotonic() - inicio, 3),
+            }
+            diagnostico = {
+                "url": self.page.url,
+                "firma": firma,
+                "intentos_navegacion_bloqueados": list(self._intentos_navegacion_bloqueados),
+            }
+            manifiesto = self._guardar_artefactos_carpeta(
+                causa, descriptor, paquetes, contenido, frames, resultado, diagnostico
+            )
+            evento = "EXTRACCION_COMPLETA" if estado == "COMPLETA" else "EXTRACCION_PARCIAL_REGISTRADA"
+            self._cambiar_estado_navegacion(
+                causa, "EXTRACCION_EN_PROGRESO", evento, "persistir_carpeta",
+                clave_carpeta=descriptor["clave_carpeta"], manifiesto=manifiesto,
+                actuaciones=len(datos.get("HISTORIAL_ACTUACIONES", [])),
+            )
+        except Exception as exc:
+            try:
+                contenido, frames = self._capturar_dom_frames()
+                secuencia_fin = self._secuencia_api
+                paquetes = self._paquetes_ventana(secuencia_inicio, secuencia_fin, causa)
+                resultado = {
+                    "version_esquema": 1,
+                    "estado": "ERROR_REGISTRADO",
+                    "causa": causa,
+                    "intento_id": self._intento_actual,
+                    "clave_carpeta": descriptor["clave_carpeta"],
+                    "descriptor": descriptor,
+                    "datos": {"HISTORIAL_ACTUACIONES": []},
+                    "advertencias": [],
+                    "error": str(exc),
+                    "traza": format_exc(),
+                    "duracion_s": round(monotonic() - inicio, 3),
+                }
+                manifiesto = self._guardar_artefactos_carpeta(
+                    causa, descriptor, paquetes, contenido, frames, resultado,
+                    {"url": self.page.url, "error": str(exc)},
+                )
+                self._cambiar_estado_navegacion(
+                    causa, "EXTRACCION_EN_PROGRESO", "EXTRACCION_ERROR_REGISTRADO",
+                    "persistir_error_carpeta", clave_carpeta=descriptor["clave_carpeta"],
+                    error=str(exc), manifiesto=manifiesto,
+                )
+            except Exception as error_artefactos:
+                raise RuntimeError(f"ARTEFACTOS_ERROR:{error_artefactos}") from exc
+        finally:
+            if manifiesto:
+                self._finalizar_bloqueo_navegacion(token, manifiesto)
+        if not manifiesto or resultado is None:
+            raise RuntimeError("RESULTADO_CARPETA_NO_DURABLE")
+        resultado["manifiesto"] = manifiesto
+        return resultado
+
+    def _volver_a_movimientos(self, causa):
+        self._asegurar_navegacion_permitida("volver_movimientos", causa)
+        self._cambiar_estado_navegacion(
+            causa, "NAVEGACION_REANUDADA", "RETORNANDO_A_MOVIMIENTOS",
+            "iniciar_retorno_movimientos",
+        )
+        if self._ruta_es(self.page.url, "/movimientos"):
+            self._cambiar_estado_navegacion(
+                causa, "RETORNANDO_A_MOVIMIENTOS", "MOVIMIENTOS_CARGANDO",
+                "movimientos_ya_visible",
+            )
+            self._esperar_movimientos_listos(causa)
+            return True
+        botones = self.page.locator(
+            "button:has-text('Regresar'), a:has-text('Regresar'), "
+            "button:has-text('Volver'), a:has-text('Volver')"
+        )
+        visibles = [botones.nth(i) for i in range(botones.count()) if botones.nth(i).is_visible()]
+        intento_control = False
+        if len(visibles) == 1:
+            intento_control = True
+            self._click_navegacion(visibles[0], "volver_a_movimientos")
+            try:
+                self.page.wait_for_url(
+                    re.compile(r"/movimientos(?:[/?#]|$)"),
+                    timeout=self.navegacion["movimientos_timeout_ms"],
+                )
+            except PlaywrightTimeoutError:
+                pass
+        if not self._ruta_es(self.page.url, "/movimientos"):
+            if intento_control and self._ruta_es(self.page.url, "/actuaciones"):
+                self._go_back_navegacion("fallback_volver_a_movimientos")
+            elif not intento_control:
+                self._go_back_navegacion("volver_a_movimientos_sin_control")
+            self.page.wait_for_url(
+                re.compile(r"/movimientos(?:[/?#]|$)"),
+                timeout=self.navegacion["movimientos_timeout_ms"],
+            )
+        self._cambiar_estado_navegacion(
+            causa, "RETORNANDO_A_MOVIMIENTOS", "MOVIMIENTOS_CARGANDO", "volver_movimientos"
+        )
+        self._esperar_movimientos_listos(causa)
+        return True
+
+    def _volver_al_buscador(self, causa):
+        self._asegurar_navegacion_permitida("volver_buscador", causa)
+        if self._es_buscador():
+            self._input_causa_unico()
+            return True
+        botones = self.page.locator(
+            "button:has-text('Regresar'), a:has-text('Regresar'), "
+            "button:has-text('Nueva búsqueda'), a:has-text('Nueva búsqueda')"
+        )
+        visibles = [botones.nth(i) for i in range(botones.count()) if botones.nth(i).is_visible()]
+        if len(visibles) == 1:
+            self._click_navegacion(visibles[0], "volver_al_buscador")
+        else:
+            self._go_back_navegacion("volver_al_buscador")
+        self.page.wait_for_url(
+            re.compile(r"/(?:busqueda-filtros|busqueda)(?:[/?#]|$)"),
+            timeout=self.navegacion["movimientos_timeout_ms"],
+        )
+        self._input_causa_unico()
+        return True
+
+    def regresar_al_buscador(self):
+        causa = getattr(self, "ultimo_numero_juicio", None) or "SIN_CAUSA"
+        return self._volver_al_buscador(self._causa_canonica(causa))
+
+    def _consolidar_resultados_carpetas(self, causa, resultados):
+        datos = {
+            "FECHA INICIO JUICIO": None,
+            "FECHA INICIAL FASE ACTUAL": None,
+            "ETAPA_PROCESAL": None,
+            "FASE_PROCESAL": None,
+            "HISTORIAL_ACTUACIONES": [],
+        }
+        advertencias = []
+        vistos = set()
+        for resultado in resultados:
+            advertencias.extend(resultado.get("advertencias", []))
+            datos_carpeta = resultado.get("datos") or {}
+            for actuacion in datos_carpeta.get("HISTORIAL_ACTUACIONES", []):
+                clave = (
+                    actuacion.get("ORIGEN_CARPETA"), actuacion.get("fecha"),
+                    str(actuacion.get("detalle", "")).strip().upper(),
+                )
+                if clave not in vistos:
+                    vistos.add(clave)
+                    datos["HISTORIAL_ACTUACIONES"].append(dict(actuacion))
+        if datos["HISTORIAL_ACTUACIONES"]:
+            self._aplicar_inferencia_consolidada(datos)
+        estados = [resultado.get("estado") for resultado in resultados]
+        if estados and all(estado == "COMPLETA" for estado in estados):
+            estado = "COMPLETADO"
+        elif resultados and any(estado in {"COMPLETA", "PARCIAL_REGISTRADA"} for estado in estados):
+            estado = "PARCIAL"
+        else:
+            estado = "EXTRACCION_ERROR"
+        errores = [
+            resultado.get("error") for resultado in resultados if resultado.get("error")
+        ]
+        artefactos = [
+            resultado.get("manifiesto") for resultado in resultados
+            if resultado.get("manifiesto")
+        ]
+        return {
+            "version_esquema": 1,
+            "estado": estado,
+            "causa": causa,
+            "intento_id": self._intento_actual,
+            "datos": datos,
+            "carpetas": resultados,
+            "resultados_carpetas": resultados,
+            "carpetas_descubiertas": len(self._descriptores_actuales),
+            "carpetas_completas": estados.count("COMPLETA"),
+            "carpetas_parciales": estados.count("PARCIAL_REGISTRADA"),
+            "carpetas_error": estados.count("ERROR_REGISTRADO"),
+            "advertencias": advertencias,
+            "errores": errores,
+            "artefactos": artefactos,
+            "error": None if estado != "EXTRACCION_ERROR" else "TODAS_LAS_CARPETAS_FALLARON",
+        }
+
+    def _procesar_todas_las_carpetas(self, causa):
+        self._esperar_movimientos_listos(causa)
+        descriptores = self._descubrir_carpetas_procesales(causa)
+        self._descriptores_actuales = list(descriptores)
+        resultados = []
+        for indice, descriptor in enumerate(descriptores):
+            if descriptor["clave_carpeta"] in self._claves_extraidas:
+                raise RuntimeError("CARPETA_DUPLICADA_EN_INTENTO")
+            _, enlace = self._localizar_carpeta_procesal(causa, descriptor)
+            secuencia_inicio = self._secuencia_api
+            self._cambiar_estado_navegacion(
+                causa, "CARPETAS_DESCUBIERTAS" if indice == 0 else "MOVIMIENTOS_LISTOS",
+                "ABRIENDO_INFORMACION_PROCESO", "localizar_carpeta",
+                clave_carpeta=descriptor["clave_carpeta"],
+            )
+            self._click_navegacion(enlace, "abrir_informacion_proceso")
+            self._cambiar_estado_navegacion(
+                causa, "ABRIENDO_INFORMACION_PROCESO",
+                "INFORMACION_PROCESO_CARGANDO", "click_carpeta",
+                clave_carpeta=descriptor["clave_carpeta"],
+                secuencia_api_inicio=secuencia_inicio,
+            )
+            self.page.wait_for_url(
+                re.compile(r"/actuaciones(?:[/?#]|$)"),
+                timeout=self.navegacion["actuaciones_timeout_ms"],
+            )
+            token = self._esperar_informacion_proceso_y_bloquear(causa, descriptor)
+            self._cambiar_estado_navegacion(
+                causa, "NAVEGACION_BLOQUEADA", "EXTRACCION_EN_PROGRESO",
+                "iniciar_extraccion", clave_carpeta=descriptor["clave_carpeta"],
+                secuencia_api_inicio=secuencia_inicio,
+            )
+            resultado = self._extraer_informacion_proceso(
+                causa, descriptor, secuencia_inicio, token
+            )
+            resultados.append(resultado)
+            self._resultados_carpeta_actuales = list(resultados)
+            self._claves_extraidas.add(descriptor["clave_carpeta"])
+            self._volver_a_movimientos(causa)
+        self._cambiar_estado_navegacion(
+            causa, "MOVIMIENTOS_LISTOS", "CONSOLIDACION_EN_PROGRESO",
+            "consolidar_carpetas", cantidad=len(resultados),
+        )
+        return self._consolidar_resultados_carpetas(causa, resultados)
+
+    def _resultado_flujo(self, estado, causa, **extra):
+        carpetas = list(extra.pop("carpetas", []))
+        estados = [carpeta.get("estado") for carpeta in carpetas]
+        error = extra.pop("error", None)
+        errores = list(extra.pop("errores", []))
+        if error and error not in errores:
+            errores.append(error)
+        return {
+            "version_esquema": 1,
+            "estado": estado,
+            "causa": causa,
+            "intento_id": self._intento_actual,
+            "datos": extra.pop("datos", {}),
+            "carpetas": carpetas,
+            "resultados_carpetas": carpetas,
+            "carpetas_descubiertas": len(self._descriptores_actuales),
+            "carpetas_completas": estados.count("COMPLETA"),
+            "carpetas_parciales": estados.count("PARCIAL_REGISTRADA"),
+            "carpetas_error": estados.count("ERROR_REGISTRADO"),
+            "advertencias": extra.pop("advertencias", []),
+            "errores": errores,
+            "artefactos": [
+                carpeta.get("manifiesto") for carpeta in carpetas
+                if carpeta.get("manifiesto")
+            ],
+            "error": error,
+            "regreso_confirmado": extra.pop("regreso_confirmado", False),
+            **extra,
+        }
+
+    def _procesar_flujo_autonomo(self, numero_juicio):
+        import uuid
+        causa = self._causa_canonica(numero_juicio)
+        self._intento_actual = f"{causa}-{uuid.uuid4().hex[:12]}"
+        self._claves_extraidas = set()
+        self._resultados_carpeta_actuales = []
+        self._descriptores_actuales = []
+        self._intentos_navegacion_bloqueados = []
+        self.paquetes_api_interceptados.clear()
+        self._secuencia_api = 0
+        self._ultima_respuesta_api_monotonic = 0.0
+        self.ultimo_numero_juicio = causa
+        self.ultimo_estado_navegacion = "PREPARAR_BUSCADOR"
+        try:
+            self._preparar_busqueda(causa)
+            self._cambiar_estado_navegacion(
+                causa, "CAUSA_ESCRITA", "ESPERAR_FIN_CAPTCHA", "esperar_buscar_habilitado"
+            )
+            self._esperar_busqueda_habilitada(causa)
+            self._enviar_busqueda_una_vez(causa, self._intento_actual)
+            resultado_busqueda = self._esperar_resultados(causa)
+            if resultado_busqueda == "SIN_RESULTADOS":
+                self._cambiar_estado_navegacion(
+                    causa, "SIN_RESULTADOS", "RETORNANDO_AL_BUSCADOR",
+                    "iniciar_retorno_buscador",
+                )
+                regreso = self._volver_al_buscador(causa)
+                self._cambiar_estado_navegacion(
+                    causa, "RETORNANDO_AL_BUSCADOR", "CAUSA_SIN_RESULTADOS",
+                    "finalizar_causa_sin_resultados",
+                )
+                return self._resultado_flujo(
+                    "SIN_RESULTADOS", causa, regreso_confirmado=regreso
+                )
+            self._abrir_movimientos_causa(causa, resultado_busqueda)
+            consolidado = self._procesar_todas_las_carpetas(causa)
+            if not self._ruta_es(self.page.url, "/movimientos"):
+                raise RuntimeError("CONSOLIDACION_FUERA_DE_MOVIMIENTOS")
+            self._cambiar_estado_navegacion(
+                causa, "CONSOLIDACION_EN_PROGRESO", "RETORNANDO_AL_BUSCADOR",
+                "iniciar_retorno_buscador",
+            )
+            regreso = self._volver_al_buscador(causa)
+            consolidado["regreso_confirmado"] = regreso
+            estado_terminal = {
+                "COMPLETADO": "CAUSA_COMPLETADA",
+                "PARCIAL": "CAUSA_PARCIAL",
+                "EXTRACCION_ERROR": "CAUSA_ERROR",
+            }[consolidado["estado"]]
+            self._cambiar_estado_navegacion(
+                causa, "RETORNANDO_AL_BUSCADOR", estado_terminal, "finalizar_causa"
+            )
+            return consolidado
+        except Exception as exc:
+            logger.error("Flujo transaccional fallido para %s: %s", causa, exc, exc_info=True)
+            regreso = False
+            if not (self._bloqueo_navegacion and self._bloqueo_navegacion.get("activo")):
+                try:
+                    regreso = self._volver_al_buscador(causa)
+                except Exception:
+                    logger.error("No se pudo confirmar el regreso al buscador.", exc_info=True)
+            if self._resultados_carpeta_actuales:
+                parcial = self._consolidar_resultados_carpetas(
+                    causa, self._resultados_carpeta_actuales
+                )
+                parcial["estado"] = "PARCIAL"
+                parcial["error"] = str(exc)
+                parcial["errores"] = list(parcial.get("errores", [])) + [str(exc)]
+                parcial["regreso_confirmado"] = regreso
+                return parcial
+            return self._resultado_flujo(
+                "ERROR_NAVEGACION", causa, carpetas=list(self._resultados_carpeta_actuales),
+                error=str(exc), regreso_confirmado=regreso,
+                navegacion_bloqueada=bool(
+                    self._bloqueo_navegacion and self._bloqueo_navegacion.get("activo")
+                ),
+            )
+
+    def procesar_flujo_judicatura(self, numero_juicio):
+        return self._procesar_flujo_autonomo(numero_juicio)
+
+    def extraer_detalles_juicio(self, numero_juicio=None):
+        causa = numero_juicio or getattr(self, "ultimo_numero_juicio", None)
+        if not causa:
+            raise ValueError("NUMERO_JUICIO_REQUERIDO")
+        return self._procesar_flujo_autonomo(causa)
+
+
+BotJudicialLegacy = BotJudicial
+BotJudicial = BotJudicialTransaccional

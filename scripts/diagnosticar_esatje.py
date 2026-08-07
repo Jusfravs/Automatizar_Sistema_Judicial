@@ -7,6 +7,7 @@ RAIZ_PROYECTO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if RAIZ_PROYECTO not in sys.path:
     sys.path.insert(0, RAIZ_PROYECTO)
 
+from src.logger_config import configurar_logging
 from src.motor_busqueda_web import BotJudicial
 
 
@@ -23,14 +24,24 @@ def main():
 
     numero_causa = sys.argv[1].strip()
     navegacion = cargar_navegacion()
+    configurar_logging(
+        os.path.join(RAIZ_PROYECTO, "diagnostico_esatje.log"),
+        reemplazar=True,
+    )
     bot = BotJudicial(navegacion["url_portal"], navegacion)
 
     try:
         bot.iniciar_navegador(modo_visible=True)
-        completado = bot.procesar_flujo_judicatura(numero_causa)
-        estado = (bot.datos_extraidos or {}).get("ESTADO_NAVEGACION", "SIN_ESTADO")
-        print(f"RESULTADO_DIAGNOSTICO causa={numero_causa} completado={completado} estado={estado}")
-        return 0 if completado else 1
+        resultado = bot.procesar_flujo_judicatura(numero_causa)
+        print(
+            "RESULTADO_DIAGNOSTICO "
+            + json.dumps(resultado, ensure_ascii=False, default=str)
+        )
+        estados_confirmados = {"COMPLETADO", "PARCIAL", "SIN_RESULTADOS"}
+        return 0 if (
+            resultado.get("estado") in estados_confirmados
+            and resultado.get("regreso_confirmado")
+        ) else 1
     finally:
         bot.cerrar_navegador()
 
