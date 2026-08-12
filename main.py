@@ -23,13 +23,95 @@ def guardar_casos_fallidos(casos_fallidos, ruta_salida=RUTA_CASOS_FALLIDOS):
             archivo_fallidos.write(f"{numero_juicio}\n")
 
 
-def main():
+def actualizar_casos_fallidos_piloto(
+    casos_procesados, casos_fallidos, ruta_salida=RUTA_CASOS_FALLIDOS
+):
+    """Actualiza solo las causas del piloto y conserva los fallos ajenos."""
+    existentes = []
+    if os.path.isfile(ruta_salida):
+        with open(ruta_salida, "r", encoding="utf-8") as archivo:
+            existentes = [linea.strip() for linea in archivo if linea.strip()]
+    objetivos = {_causa_comparable(causa) for causa in casos_procesados}
+    resultado = [
+        causa for causa in existentes if _causa_comparable(causa) not in objetivos
+    ]
+    vistos = {_causa_comparable(causa) for causa in resultado}
+    for causa in casos_fallidos:
+        comparable = _causa_comparable(causa)
+        if comparable and comparable not in vistos:
+            resultado.append(causa)
+            vistos.add(comparable)
+    guardar_casos_fallidos(resultado, ruta_salida)
+    return resultado
+
+
+def _causa_comparable(valor):
+    return str(valor or "").replace("-", "").strip()
+
+
+def seleccionar_casos(casos, argumentos):
+    """Aplica modos acotados o el inicio legado sin ampliar silenciosamente el lote."""
+    argumentos = list(argumentos or [])
+    if not argumentos:
+        return list(casos)
+    if argumentos[0] == "--solo":
+        if len(argumentos) != 2 or not argumentos[1].strip():
+            raise ValueError("USO_INVALIDO: --solo <causa>")
+        objetivo = _causa_comparable(argumentos[1])
+        coincidencia = next(
+            (causa for causa in casos if _causa_comparable(causa) == objetivo), None
+        )
+        if coincidencia is None:
+            raise ValueError(f"CAUSA_SOLO_NO_ENCONTRADA:{argumentos[1]}")
+        return [coincidencia]
+    if argumentos[0] == "--reprocesar-filtro":
+        if len(argumentos) != 1:
+            raise ValueError("USO_INVALIDO: --reprocesar-filtro")
+        resultado = []
+        vistos = set()
+        for causa in casos:
+            comparable = _causa_comparable(causa)
+            if comparable and comparable not in vistos:
+                vistos.add(comparable)
+                resultado.append(causa)
+        return resultado
+    if argumentos[0] == "--lote":
+        if len(argumentos) != 2:
+            raise ValueError("USO_INVALIDO: --lote <cantidad 2..10>")
+        try:
+            cantidad = int(argumentos[1])
+        except (TypeError, ValueError) as exc:
+            raise ValueError("USO_INVALIDO: --lote <cantidad 2..10>") from exc
+        if cantidad < 2 or cantidad > 10:
+            raise ValueError("LOTE_FUERA_DE_RANGO:2..10")
+        return list(casos)[:cantidad]
+    if argumentos[0].startswith("--") or len(argumentos) != 1:
+        raise ValueError("ARGUMENTOS_INVALIDOS")
+    objetivo = _causa_comparable(argumentos[0])
+    indice = next(
+        (i for i, causa in enumerate(casos) if _causa_comparable(causa) == objetivo),
+        None,
+    )
+    return list(casos) if indice is None else list(casos[indice:])
+
+
+def guardar_csv_o_fallar(repo):
+    if not repo.guardar():
+        raise RuntimeError("PERSISTENCIA_ERROR:CSV")
+
+
+def main(argv=None):
     configurar_logging()
+    argumentos = list(sys.argv[1:] if argv is None else argv)
     logger.info("=" * 60)
     logger.info("[RPA JUDICATURA] - SISTEMA ASISTIDO DE CONSULTA MASIVA")
     logger.info("=" * 60)
 
     repo = GestorCasos("config.json")
+    modo_limitado = argumentos[:1] in (
+        ["--solo"], ["--lote"], ["--reprocesar-filtro"])
+    if modo_limitado:
+        repo.filtros["inicio_desde_juicio"] = None
     casos = repo.obtener_casos_pendientes()
 
     # --- Integración con SQLite (GestorCola) ---
@@ -48,22 +130,39 @@ def main():
     if huerfanos_recuperados > 0:
         logger.info("Se recuperaron %s registros huérfanos.", huerfanos_recuperados)
 
-    # Poblar la cola SQLite con los casos del CSV (INSERT OR IGNORE)
-    cola.poblar_cola(casos)
+    if argumentos[:1] == ["--lote"]:
+        total_candidatos = len(casos)
+        casos = cola.filtrar_causas_pendientes(casos)
+        logger.info(
+            "[LOTE LIMITADO] Se omitieron %s causas no pendientes según SQLite.",
+            total_candidatos - len(casos),
+        )
 
-    # Permitir iniciar procesamiento desde un número de juicio específico pasado como argumento.
-    if len(sys.argv) > 1:
-        start_num = sys.argv[1]
-        if start_num in casos:
-            start_idx = casos.index(start_num)
-            logger.info("[+] Iniciando procesamiento desde el número de juicio especificado: %s", start_num)
-            casos = casos[start_idx:]
-        else:
-            logger.warning(
-                "[!] Número de juicio '%s' no encontrado en la lista de casos pendientes. "
-                "Se procesarán todos los casos.",
-                start_num,
-            )
+    casos_antes_seleccion = list(casos)
+    casos = seleccionar_casos(casos, argumentos)
+    if argumentos[:1] == ["--solo"]:
+        logger.info("[MODO PILOTO] Se procesará únicamente la causa: %s", casos[0])
+    elif argumentos[:1] == ["--lote"]:
+        logger.info(
+            "[LOTE LIMITADO] Se procesarán %s causas consecutivas: %s",
+            len(casos), casos,
+        )
+    elif argumentos[:1] == ["--reprocesar-filtro"]:
+        logger.info(
+            "[REPROCESO FILTRO] %s filas representan %s causas unicas.",
+            len(casos_antes_seleccion),
+            len(casos),
+        )
+    elif argumentos and casos == casos_antes_seleccion:
+        logger.warning(
+            "[!] Causa inicial '%s' no encontrada; se conserva el lote completo.",
+            argumentos[0],
+        )
+    elif argumentos:
+        logger.info("[+] Iniciando procesamiento desde la causa: %s", casos[0])
+
+    # Poblar SQLite solo con el conjunto que este proceso puede recorrer.
+    cola.poblar_cola(casos)
 
     total = len(casos)
     if total == 0:
@@ -76,6 +175,7 @@ def main():
     bot = BotJudicial(
         repo.config["navegacion"]["url_portal"],
         repo.config.get("navegacion", {}),
+        captcha=repo.config.get("captcha", {}),
     )
     intervalo_guardado = repo.config.get("sistema", {}).get("intervalo_autoguardado", 5)
     exitosos = 0
@@ -97,7 +197,7 @@ def main():
                     datos = resultado.get("datos") or {}
                     if not repo.actualizar_caso(numero_juicio, datos):
                         raise RuntimeError("PERSISTENCIA_CSV_RECHAZADA")
-                    repo.guardar()
+                    guardar_csv_o_fallar(repo)
                     estado_sqlite = "PROCESADO" if estado == "COMPLETADO" else "PARCIAL"
                     cola.registrar_resultado_transaccional(
                         numero_juicio,
@@ -119,8 +219,19 @@ def main():
                         estado_final="SIN_RESULTADOS",
                     )
                     logger.info("[-] Juicio %s sin resultados, estado persistido.", numero_juicio)
-                elif estado in {"EXTRACCION_ERROR", "ERROR_NAVEGACION"}:
+                elif estado in {
+                    "EXTRACCION_ERROR",
+                    "ERROR_NAVEGACION",
+                    "ERROR_VERIFICACION_MANUAL",
+                }:
                     detalle = resultado.get("error") or "ERROR_SIN_DETALLE"
+                    if estado == "ERROR_VERIFICACION_MANUAL":
+                        comentario = f"ERROR: {detalle}"
+                        if not repo.actualizar_caso(
+                            numero_juicio, {"COMENTARIO_ULTIMO": comentario}
+                        ):
+                            raise RuntimeError("PERSISTENCIA_CSV_RECHAZADA")
+                        guardar_csv_o_fallar(repo)
                     cola.registrar_error_extraccion(
                         numero_juicio, "ESATJE_TRANSACCIONAL", detalle
                     )
@@ -158,13 +269,14 @@ def main():
             # Autoguardado preventivo.
             if i % intervalo_guardado == 0:
                 logger.info("[!] Autoguardado preventivo de seguridad (%s/%s)...", i, total)
-                repo.guardar()
+                guardar_csv_o_fallar(repo)
 
     finally:
         # Estas persistencias deben ejecutarse incluso ante una interrupción o excepción.
         logger.info("[!] Finalizando: guardando y exportando informe...")
         try:
-            repo.guardar()
+            if not repo.guardar():
+                logger.error("No se pudo guardar el CSV final.")
         except Exception:
             logger.exception("No se pudo guardar el CSV final.")
 
@@ -174,8 +286,17 @@ def main():
             logger.exception("No se pudo exportar el informe final a Excel.")
 
         try:
-            guardar_casos_fallidos(casos_fallidos)
+            if modo_limitado:
+                fallidos_persistidos = actualizar_casos_fallidos_piloto(
+                    casos, casos_fallidos
+                )
+            else:
+                guardar_casos_fallidos(casos_fallidos)
+                fallidos_persistidos = casos_fallidos
             logger.info("Listado de causas fallidas guardado en: %s", RUTA_CASOS_FALLIDOS)
+            logger.info(
+                "Causas fallidas persistidas: %s", fallidos_persistidos
+            )
         except Exception:
             logger.exception("No se pudo persistir el listado de causas fallidas.")
 

@@ -122,6 +122,22 @@ class TestPoblarCola(unittest.TestCase):
 
         self.assertEqual(total, 2)
 
+    def test_filtrar_causas_pendientes_excluye_estados_ya_atendidos(self):
+        causas = [
+            "CAUSA-PENDIENTE", "CAUSA-PROCESADA", "CAUSA-ERROR",
+            "CAUSA-SIN-RESULTADOS", "CAUSA-NUEVA", "CAUSA-PENDIENTE",
+        ]
+        self.cola.poblar_cola(causas[:-1])
+        self.cola.actualizar_estado("CAUSA-PROCESADA", "PROCESADO")
+        self.cola.actualizar_estado("CAUSA-ERROR", "ERROR")
+        self.cola.actualizar_estado("CAUSA-SIN-RESULTADOS", "SIN_RESULTADOS")
+
+        resultado = self.cola.filtrar_causas_pendientes(causas)
+
+        self.assertEqual(
+            resultado, ["CAUSA-PENDIENTE", "CAUSA-NUEVA"]
+        )
+
     def test_obtener_siguiente_atomico(self):
         """obtener_siguiente() debe cambiar el estado a EN_PROCESO."""
         self.cola.poblar_cola(["CAUSA-001", "CAUSA-002"])

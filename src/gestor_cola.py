@@ -113,6 +113,24 @@ class GestorCola:
             conn.commit()
             logger.info("Cola poblada/actualizada. Total de causas procesadas en inserción: %s", len(registros))
 
+    def filtrar_causas_pendientes(self, causas):
+        """Conserva causas PENDIENTE o todavía ausentes de SQLite, respetando el orden."""
+        causas = [str(causa).strip() for causa in causas if causa]
+        with self._connection() as conn:
+            estados = {
+                numero: estado
+                for numero, estado in conn.execute(
+                    "SELECT numero_causa, estado FROM juicios"
+                )
+            }
+        resultado = []
+        vistos = set()
+        for causa in causas:
+            if causa not in vistos and estados.get(causa) in (None, "PENDIENTE"):
+                vistos.add(causa)
+                resultado.append(causa)
+        return resultado
+
     def obtener_siguiente(self):
         """
         Método transaccional atómico:

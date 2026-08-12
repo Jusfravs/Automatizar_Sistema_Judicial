@@ -161,7 +161,6 @@ class GestorCasos:
             == numero_juicio_normalizado
         )
         if mask.any():
-            idx = self.df[mask].index[0]
             for col, val in datos.items():
                 if val is not None:
                     if col not in self.df.columns:
@@ -171,7 +170,7 @@ class GestorCasos:
                     if isinstance(val, (list, dict)):
                         val = json.dumps(val, ensure_ascii=False)
 
-                    self.df.at[idx, col] = val
+                    self.df.loc[mask, col] = val
             return True
         return False
 

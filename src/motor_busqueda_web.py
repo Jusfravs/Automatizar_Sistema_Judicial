@@ -2,12 +2,17 @@
 import os
 import re
 import json
+from datetime import datetime
 from time import monotonic
 from traceback import format_exc
 import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 from src.agente_extractor import AgenteExtractor, NavegadorArbolContenido
 from src.logger_config import obtener_logger
+from src.servicio_captcha import (
+    CaptchaConfiguracionError, CaptchaDesafio, CaptchaError,
+    CaptchaProveedorError, Proveedor2Captcha,
+)
 
 # Intentar soporte opcional de YAML para keywords configurables
 try:
@@ -71,7 +76,7 @@ class BotJudicial:
     2. Ruta de Respaldo (Sincronización DOM): Freno de ejecución con wait_for_selector('text="Actor/Ofendido:"')
        para asegurar inyección en Angular antes de enviar el HTML a BeautifulSoup4.
     """
-    def __init__(self, url_portal, navegacion=None):
+    def __init__(self, url_portal, navegacion=None, captcha=None, proveedor_captcha=None):
         self.url_portal = url_portal
         self.playwright = None
         self.browser = None
@@ -92,6 +97,33 @@ class BotJudicial:
             "max_reintentos_transicion": 2,
         }
         self.navegacion.update(navegacion or {})
+        self.captcha_config = {
+            "modo": "manual",
+            "proveedor": "2captcha",
+            "api_key_env": "AUTOCAPTCHA_API_KEY",
+            "http_timeout_ms": 10000,
+            "max_intentos_red": 3,
+            "reintento_red_ms": 1000,
+            "resolucion_timeout_ms": 300000,
+            "sondeo_ms": 5000,
+            "confirmacion_inyeccion_timeout_ms": 10000,
+            "espera_post_solucion_ms": 10000,
+            "max_tareas_por_causa": 2,
+            "max_errores_consecutivos": 3,
+            "saldo_minimo_usd": 0.01,
+            "fallback_manual": True,
+            "reportar_incorrecta": True,
+            "reportar_correcta": True,
+        }
+        self.captcha_config.update(captcha or {})
+        self.proveedor_captcha = proveedor_captcha
+        self._captcha_disponibilidad_verificada = False
+        self._captcha_tareas_por_causa = {}
+        self._captcha_tareas_activas = set()
+        self._captcha_errores_consecutivos = 0
+        self._captcha_circuito_abierto = False
+        self._captcha_solucion_actual = None
+        self._captcha_reinicio_buscador_pendiente = False
         self.ultimo_estado_navegacion = None
         self._busquedas_enviadas = set()
 
@@ -118,6 +150,78 @@ class BotJudicial:
             window.navigator.chrome = { runtime: {} };
             Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
             Object.defineProperty(navigator, 'languages', { get: () => ['es-EC', 'es', 'en-US', 'en'] });
+        """)
+        self.context.add_init_script("""
+            (() => {
+                if (window.__botCaptchaHookInstalado) return;
+                window.__botCaptchaHookInstalado = true;
+                window.__botCaptchaCallbacks = {};
+                const instalar = () => {
+                    const api = window.grecaptcha;
+                    if (!api || typeof api.render !== 'function' || api.render.__botEnvuelto) {
+                        return;
+                    }
+                    const renderOriginal = api.render.bind(api);
+                    const renderEnvuelto = function(contenedor, parametros, heredar) {
+                        const opciones = Object.assign({}, parametros || {});
+                        const callbackOriginal = opciones.callback;
+                        let widgetId = null;
+                        const resolverCallback = () => {
+                            if (typeof callbackOriginal === 'function') return callbackOriginal;
+                            if (typeof callbackOriginal === 'string' &&
+                                typeof window[callbackOriginal] === 'function') {
+                                return window[callbackOriginal];
+                            }
+                            return null;
+                        };
+                        opciones.callback = function(token) {
+                            const registro = window.__botCaptchaCallbacks[String(widgetId)];
+                            if (registro) registro.ultimaRespuesta = Date.now();
+                            const callback = resolverCallback();
+                            if (callback) return callback.apply(this, arguments);
+                        };
+                        widgetId = renderOriginal(contenedor, opciones, heredar);
+                        const contenedorId = typeof contenedor === 'string'
+                            ? contenedor
+                            : ((contenedor && contenedor.id) || null);
+                        window.__botCaptchaCallbacks[String(widgetId)] = {
+                            widgetId: String(widgetId),
+                            contenedorId: contenedorId,
+                            sitekey: String(opciones.sitekey || ''),
+                            callback: opciones.callback,
+                            callbackOriginalDisponible: Boolean(resolverCallback()),
+                            inyectadoPorBot: false,
+                            ultimaRespuesta: null
+                        };
+                        return widgetId;
+                    };
+                    renderEnvuelto.__botEnvuelto = true;
+                    api.render = renderEnvuelto;
+                };
+                let callbackCarga = null;
+                try {
+                    const callbackPrevio = window.ngx_captcha_onload_callback;
+                    if (typeof callbackPrevio === 'function') callbackCarga = callbackPrevio;
+                    Object.defineProperty(window, 'ngx_captcha_onload_callback', {
+                        configurable: true,
+                        get: () => {
+                            if (typeof callbackCarga !== 'function') return callbackCarga;
+                            return function() {
+                                instalar();
+                                return callbackCarga.apply(this, arguments);
+                            };
+                        },
+                        set: (valor) => {
+                            callbackCarga = valor;
+                        }
+                    });
+                } catch (_) {
+                    // El sondeo inferior permanece como respaldo si el host no permite el descriptor.
+                }
+                instalar();
+                const temporizador = window.setInterval(instalar, 10);
+                window.addEventListener('beforeunload', () => window.clearInterval(temporizador));
+            })();
         """)
         self.page = self.context.new_page()
         
@@ -239,14 +343,40 @@ class BotJudicial:
         """Normaliza el numero de causa para comparar portal y archivo de origen."""
         return re.sub(r"\D", "", str(numero_juicio or ""))
 
+    @classmethod
+    def _texto_contiene_causa_numerica_exacta(cls, texto, causa):
+        """Busca una causa numérica completa sin aceptar sufijos alfanuméricos."""
+        objetivo = cls._causa_canonica(causa)
+        patron = re.compile(
+            r"(?<![0-9A-Za-z])\d{5}(?:[\s-]?\d){8,}(?![0-9A-Za-z])"
+        )
+        return any(
+            cls._causa_canonica(coincidencia.group(0)) == objetivo
+            for coincidencia in patron.finditer(str(texto or ""))
+        )
+
+    @classmethod
+    def _fila_corresponde_causa(cls, fila, causa):
+        """Valida primero la columna de proceso y conserva cualquier sufijo."""
+        try:
+            columnas = fila.locator(".numero-proceso")
+            if columnas.count() == 1:
+                valor = columnas.nth(0).inner_text().strip()
+                return bool(re.fullmatch(r"[\d\s-]+", valor)) and (
+                    cls._causa_canonica(valor) == cls._causa_canonica(causa)
+                )
+        except Exception:
+            pass
+        return cls._texto_contiene_causa_numerica_exacta(fila.inner_text(), causa)
+
     @staticmethod
     def _causa_para_formulario(numero_juicio):
         """Conserva el formato que exige la m?scara de e-SATJE al escribir la causa."""
         valor = str(numero_juicio or "").strip()
-        if re.fullmatch(r"\d{5}-\d{4}-\d{5,}", valor):
+        if re.fullmatch(r"\d{5}-\d{4}-\d{4,}", valor):
             return valor
         causa = BotJudicial._causa_canonica(valor)
-        if len(causa) >= 14:
+        if len(causa) >= 13:
             return f"{causa[:5]}-{causa[5:9]}-{causa[9:]}"
         return valor
 
@@ -318,6 +448,21 @@ class BotJudicial:
             and "deshabilitado" not in etiqueta.lower()
         )
 
+    def _reiniciar_buscador_si_fallo_captcha(self, causa):
+        if not self._captcha_reinicio_buscador_pendiente:
+            return False
+        logger.warning(
+            "[CAPTCHA] Reiniciando el formulario antes de la siguiente causa."
+        )
+        self._reload_navegacion(
+            "reiniciar_formulario_tras_fallo_captcha",
+            wait_until="domcontentloaded",
+            timeout=self.navegacion["retorno_buscador_timeout_ms"],
+        )
+        self._esperar_buscador_listo(causa)
+        self._captcha_reinicio_buscador_pendiente = False
+        return True
+
     def _preparar_busqueda(self, numero_juicio):
         causa = self._causa_canonica(numero_juicio)
         if not causa:
@@ -325,6 +470,7 @@ class BotJudicial:
 
         if not self.regresar_al_buscador():
             raise RuntimeError("NO_SE_PUDO_VOLVER_AL_BUSCADOR")
+        self._reiniciar_buscador_si_fallo_captcha(causa)
 
         campo = self._input_causa_unico()
         campo.fill("")
@@ -347,6 +493,7 @@ class BotJudicial:
         estable = 0
         captcha_renderizado = False
         causa_reescrita = False
+        estado_espera = self.ultimo_estado_navegacion or "CAPTCHA_SOLICITADO"
         while monotonic() < limite:
             campo = self._input_causa_unico()
             boton = self._boton_buscar_unico()
@@ -367,13 +514,19 @@ class BotJudicial:
             if not esperando_renderizado and causa_correcta and habilitado:
                 estable += 1
                 if estable >= 2:
-                    self._cambiar_estado_navegacion(causa, "ESPERAR_FIN_CAPTCHA", "BUSQUEDA_HABILITADA", "captcha_finalizado")
+                    self._cambiar_estado_navegacion(
+                        causa, estado_espera, "BUSQUEDA_HABILITADA",
+                        "captcha_finalizado",
+                    )
                     return boton
             else:
                 estable = 0
             self.page.wait_for_timeout(250)
 
-        self._cambiar_estado_navegacion(causa, "ESPERAR_FIN_CAPTCHA", "CAPTCHA_TIMEOUT", "espera_pasiva_timeout")
+        self._captcha_reinicio_buscador_pendiente = True
+        self._cambiar_estado_navegacion(
+            causa, estado_espera, "CAPTCHA_TIMEOUT", "espera_pasiva_timeout"
+        )
         raise PlaywrightTimeoutError("CAPTCHA_TIMEOUT: BUSCAR no quedo habilitado")
 
     def _enviar_busqueda_una_vez(self, causa, intento_id):
@@ -401,12 +554,16 @@ class BotJudicial:
 
     def _filas_resultado_coincidentes(self, causa):
         causa = self._causa_canonica(causa)
-        filas = self.page.locator("table tbody tr, table tr, mat-row, [role='grid'] [role='row'], [role='row']")
+        filas = self.page.locator(
+            "section.causas .cuerpo .causa-individual, "
+            ".cuerpo .causa-individual, table tbody tr, table tr, mat-row, "
+            "[role='grid'] [role='row'], [role='row']"
+        )
         coincidencias = []
         for indice in range(filas.count()):
             fila = filas.nth(indice)
             try:
-                if fila.is_visible() and causa in self._causa_canonica(fila.inner_text()):
+                if fila.is_visible() and self._fila_corresponde_causa(fila, causa):
                     coincidencias.append(fila)
             except Exception:
                 continue
@@ -415,17 +572,28 @@ class BotJudicial:
     def _esperar_resultados(self, causa):
         limite = monotonic() + (self.navegacion["resultados_timeout_ms"] / 1000)
         while monotonic() < limite:
-            if "/causas" in self.page.url.lower():
-                enlaces_movimientos = self.page.locator(
-                    "a[aria-label*='movimientos' i], a:has(mat-icon:has-text('folder_open'))"
+            texto = self.page.inner_text("body")
+            texto_normalizado = re.sub(r"\s+", " ", texto).strip().upper()
+            if re.search(
+                r"\bLA CONSULTA NO DEVOLVI(?:O|\u00D3) RESULTADOS\b",
+                texto_normalizado,
+            ):
+                self._cambiar_estado_navegacion(
+                    causa,
+                    "BUSQUEDA_ENVIADA",
+                    "VERIFICACION_MANUAL",
+                    "notificacion_sin_resultados",
                 )
-                if enlaces_movimientos.count() == 1 and enlaces_movimientos.first.is_visible():
-                    self._cambiar_estado_navegacion(
-                        causa, "BUSQUEDA_ENVIADA", "RESULTADOS_LISTOS", "validar_vista_causas"
-                    )
-                    return enlaces_movimientos.first
-            texto = self.page.inner_text("body").upper()
-            if "REGISTROS ENCONTRADOS: 0" in texto or "NO SE ENCONTRARON RESULTADOS" in texto:
+                return "VERIFICACION_MANUAL_SIN_RESULTADOS"
+            if self._motivo_rechazo_formulario(texto_normalizado):
+                self._cambiar_estado_navegacion(
+                    causa, "BUSQUEDA_ENVIADA", "BUSQUEDA_RECHAZADA",
+                    "validar_rechazo_formulario",
+                )
+                raise RuntimeError("BUSQUEDA_RECHAZADA_FORMULARIO")
+            if re.search(r"REGISTROS\s+ENCONTRADOS\s*:\s*0", texto_normalizado) or (
+                "NO SE ENCONTRARON RESULTADOS" in texto_normalizado
+            ):
                 self._cambiar_estado_navegacion(causa, "BUSQUEDA_ENVIADA", "SIN_RESULTADOS", "validar_resultados")
                 return "SIN_RESULTADOS"
 
@@ -439,6 +607,14 @@ class BotJudicial:
             self.page.wait_for_timeout(250)
 
         raise PlaywrightTimeoutError("RESULTADOS_TIMEOUT")
+
+    @staticmethod
+    def _motivo_rechazo_formulario(texto):
+        """Reconoce rechazos explícitos de Angular después de pulsar BUSCAR."""
+        texto = re.sub(r"\s+", " ", str(texto or "")).strip().upper()
+        if "EL FORMULARIO CONTIENE ERRORES" in texto or "REVISE LOS CAMPOS MARCADOS" in texto:
+            return "FORMULARIO_CONTIENE_ERRORES"
+        return None
 
     def _boton_carpeta_en_fila(self, fila, contexto):
         selectores = (
@@ -476,15 +652,22 @@ class BotJudicial:
         return candidatos[0]
 
     def _abrir_detalle_causa(self, causa, fila):
+        causa = self._causa_canonica(causa)
+        if not self._fila_corresponde_causa(fila, causa):
+            raise RuntimeError("FILA_NO_CORRESPONDE_A_CAUSA")
+
         if "/causas" in self.page.url.lower():
-            enlace_movimientos = self.page.locator(
+            enlace_movimientos = fila.locator(
                 "a[aria-label*='movimientos' i], a:has(mat-icon:has-text('folder_open'))"
             )
             if enlace_movimientos.count() != 1:
-                raise RuntimeError("ENLACE_MOVIMIENTOS_AUSENTE_O_AMBIGUO")
+                raise RuntimeError("ENLACE_MOVIMIENTOS_FILA_AUSENTE_O_AMBIGUO")
             etiqueta = enlace_movimientos.first.get_attribute("aria-label") or ""
-            if causa not in self._causa_canonica(etiqueta):
+            if not self._texto_contiene_causa_numerica_exacta(etiqueta, causa):
                 raise RuntimeError("ENLACE_MOVIMIENTOS_NO_CORRESPONDE_A_CAUSA")
+            enlace_movimientos.first.scroll_into_view_if_needed()
+            if not enlace_movimientos.first.is_visible() or not enlace_movimientos.first.is_enabled():
+                raise RuntimeError("ENLACE_MOVIMIENTOS_NO_ACCIONABLE")
             enlace_movimientos.first.click()
             self.page.wait_for_url(
                 re.compile(r"/movimientos(?:[/?#]|$)"),
@@ -505,8 +688,6 @@ class BotJudicial:
                 causa, "RESULTADOS_LISTOS", "DETALLE_CAUSA_ABIERTO", "click_movimientos_y_detalle"
             )
             return
-        if causa not in self._causa_canonica(fila.inner_text()):
-            raise RuntimeError("FILA_NO_CORRESPONDE_A_CAUSA")
         carpeta = self._boton_carpeta_en_fila(fila, "detalle")
         carpeta.scroll_into_view_if_needed()
         if not carpeta.is_visible() or not carpeta.is_enabled():
@@ -522,7 +703,7 @@ class BotJudicial:
             if (
                 "DATOS GENERALES" in texto_normalizado
                 and "NUMERO DE PROCESO" in texto_normalizado
-                and causa in self._causa_canonica(texto)
+                and self._texto_contiene_causa_numerica_exacta(texto, causa)
             ):
                 self._cambiar_estado_navegacion(causa, "DETALLE_CAUSA_ABIERTO", "DATOS_GENERALES_LISTOS", "validar_datos_generales")
                 return True
@@ -1208,13 +1389,22 @@ class BotJudicialTransaccional(BotJudicial):
     TRANSICIONES_VALIDAS = {
         "PREPARAR_BUSCADOR": {"CAUSA_ESCRITA"},
         "CAUSA_ESCRITA": {"ESPERAR_FIN_CAPTCHA"},
-        "ESPERAR_FIN_CAPTCHA": {"BUSQUEDA_HABILITADA", "CAPTCHA_TIMEOUT"},
+        "ESPERAR_FIN_CAPTCHA": {"CAPTCHA_SOLICITADO", "CAPTCHA_TIMEOUT"},
+        "CAPTCHA_SOLICITADO": {"BUSQUEDA_HABILITADA", "CAPTCHA_TIMEOUT"},
         "BUSQUEDA_HABILITADA": {"BUSQUEDA_ENVIADA"},
-        "BUSQUEDA_ENVIADA": {"RESULTADOS_LISTOS", "SIN_RESULTADOS", "RESULTADO_AMBIGUO"},
+        "BUSQUEDA_ENVIADA": {
+            "RESULTADOS_LISTOS", "SIN_RESULTADOS", "RESULTADO_AMBIGUO",
+            "BUSQUEDA_RECHAZADA", "BUSQUEDA_TIMEOUT", "VERIFICACION_MANUAL",
+        },
+        "BUSQUEDA_RECHAZADA": {"PREPARAR_BUSCADOR"},
+        "BUSQUEDA_TIMEOUT": {"PREPARAR_BUSCADOR"},
         "RESULTADOS_LISTOS": {"ABRIENDO_MOVIMIENTOS"},
         "ABRIENDO_MOVIMIENTOS": {"MOVIMIENTOS_CARGANDO"},
         "MOVIMIENTOS_CARGANDO": {"MOVIMIENTOS_LISTOS"},
-        "MOVIMIENTOS_LISTOS": {"CARPETAS_DESCUBIERTAS", "CONSOLIDACION_EN_PROGRESO"},
+        "MOVIMIENTOS_LISTOS": {
+            "CARPETAS_DESCUBIERTAS", "ABRIENDO_INFORMACION_PROCESO",
+            "CONSOLIDACION_EN_PROGRESO",
+        },
         "CARPETAS_DESCUBIERTAS": {"ABRIENDO_INFORMACION_PROCESO"},
         "ABRIENDO_INFORMACION_PROCESO": {"INFORMACION_PROCESO_CARGANDO"},
         "INFORMACION_PROCESO_CARGANDO": {"INFORMACION_PROCESO_LISTA"},
@@ -1235,11 +1425,13 @@ class BotJudicialTransaccional(BotJudicial):
             "CAUSA_SIN_RESULTADOS",
         },
         "SIN_RESULTADOS": {"RETORNANDO_AL_BUSCADOR"},
+        "VERIFICACION_MANUAL": {"RETORNANDO_AL_BUSCADOR"},
     }
 
-    def __init__(self, url_portal, navegacion=None):
-        super().__init__(url_portal, navegacion)
+    def __init__(self, url_portal, navegacion=None, captcha=None, proveedor_captcha=None):
+        super().__init__(url_portal, navegacion, captcha, proveedor_captcha)
         defaults = {
+            "retorno_buscador_timeout_ms": 15000,
             "movimientos_timeout_ms": 30000,
             "sondeo_estabilidad_ms": 250,
             "comprobaciones_estables": 3,
@@ -1255,6 +1447,8 @@ class BotJudicialTransaccional(BotJudicial):
         self._resultados_carpeta_actuales = []
         self._descriptores_actuales = []
         self._intentos_navegacion_bloqueados = []
+        self._retorno_buscador_actual = None
+        self._retorno_buscador_preparacion = None
 
     @staticmethod
     def _ahora_iso():
@@ -1373,6 +1567,10 @@ class BotJudicialTransaccional(BotJudicial):
         self._asegurar_navegacion_permitida("goto", contexto)
         return self.page.goto(url, **kwargs)
 
+    def _reload_navegacion(self, contexto, **kwargs):
+        self._asegurar_navegacion_permitida("reload", contexto)
+        return self.page.reload(**kwargs)
+
     def _finalizar_bloqueo_navegacion(self, token, manifiesto):
         bloqueo = self._bloqueo_navegacion
         if not bloqueo or not bloqueo.get("activo"):
@@ -1412,34 +1610,471 @@ class BotJudicialTransaccional(BotJudicial):
             intento_id=intento_id, click_numero=1,
         )
 
+    def _esperar_boton_buscar_habilitado(self, causa):
+        """Espera la habilitación asíncrona del botón antes del clic inicial."""
+        limite = monotonic() + (
+            self.navegacion.get("captcha_render_timeout_ms", 15000) / 1000
+        )
+        while monotonic() < limite:
+            campo = self._input_causa_unico()
+            boton = self._boton_buscar_unico()
+            if self._causa_canonica(campo.input_value()) != causa:
+                raise RuntimeError("CAUSA_CAMBIO_ANTES_DEL_CLICK_INICIAL_CAPTCHA")
+            if self._boton_habilitado(boton):
+                return boton
+            self.page.wait_for_timeout(250)
+        raise PlaywrightTimeoutError("BUSCAR_INICIAL_TIMEOUT_HABILITACION")
+    def _activar_captcha_con_click_inicial(self, causa, intento_id):
+        """Pulsa BUSCAR para que el portal monte/despliegue el CAPTCHA."""
+        if self.page is None:
+            return
+        campo = self._input_causa_unico()
+        boton = self._boton_buscar_unico()
+        if self._causa_canonica(campo.input_value()) != causa:
+            raise RuntimeError("CAUSA_CAMBIO_ANTES_DEL_CLICK_INICIAL_CAPTCHA")
+        limite = monotonic() + (
+            self.navegacion.get("captcha_render_timeout_ms", 15000) / 1000
+        )
+        while not self._boton_habilitado(boton) and monotonic() < limite:
+            self.page.wait_for_timeout(250)
+            boton = self._boton_buscar_unico()
+        if not self._boton_habilitado(boton):
+            self._captcha_reinicio_buscador_pendiente = True
+            self._cambiar_estado_navegacion(
+                causa, "ESPERAR_FIN_CAPTCHA", "CAPTCHA_TIMEOUT",
+                "timeout_habilitacion_click_inicial", intento_id=intento_id,
+            )
+            raise PlaywrightTimeoutError("BUSCAR_INICIAL_TIMEOUT_HABILITACION")
+        self._click_navegacion(boton, "activar_captcha")
+        self._cambiar_estado_navegacion(
+            causa, "ESPERAR_FIN_CAPTCHA", "CAPTCHA_SOLICITADO",
+            "click_inicial_buscar", intento_id=intento_id, click_numero=1,
+        )
+    def _obtener_proveedor_captcha(self):
+        if self.proveedor_captcha is not None:
+            return self.proveedor_captcha
+        variable = str(
+            self.captcha_config.get("api_key_env") or "AUTOCAPTCHA_API_KEY"
+        ).strip()
+        api_key = os.environ.get(variable, "").strip()
+        if not api_key:
+            raise CaptchaConfiguracionError(
+                "CAPTCHA_API_KEY_AUSENTE", recuperable=True
+            )
+        if str(self.captcha_config.get("proveedor", "2captcha")).lower() != "2captcha":
+            raise CaptchaConfiguracionError(
+                "CAPTCHA_PROVEEDOR_NO_SOPORTADO", recuperable=False
+            )
+        self.proveedor_captcha = Proveedor2Captcha(api_key, self.captcha_config)
+        return self.proveedor_captcha
+
+    def _diagnosticar_captcha(self):
+        return self.page.evaluate("""
+            () => {
+                const sitekeys = new Set();
+                document.querySelectorAll('[data-sitekey]').forEach((elemento) => {
+                    const valor = String(elemento.getAttribute('data-sitekey') || '').trim();
+                    if (valor) sitekeys.add(valor);
+                });
+                document.querySelectorAll("iframe[src*='recaptcha']").forEach((iframe) => {
+                    try {
+                        const valor = new URL(iframe.src, location.href).searchParams.get('k');
+                        if (valor) sitekeys.add(valor);
+                    } catch (_) {}
+                });
+                const registros = Object.values(window.__botCaptchaCallbacks || {}).filter(
+                    (registro) => {
+                        if (!registro.contenedorId) return true;
+                        const id = String(registro.contenedorId).replace(/^#/, '');
+                        const contenedor = document.getElementById(id);
+                        return Boolean(contenedor && contenedor.isConnected);
+                    }
+                );
+                registros.forEach((registro) => {
+                    if (registro.sitekey) sitekeys.add(registro.sitekey);
+                });
+                const texto = String(document.body && document.body.innerText || '').toUpperCase();
+                const f5 = /REQUEST REJECTED|THE REQUESTED URL WAS REJECTED|F5 NETWORKS|TSPD/.test(texto);
+                const invisibles = Array.from(document.querySelectorAll('[data-size]'))
+                    .some((elemento) => String(elemento.getAttribute('data-size')).toLowerCase() === 'invisible');
+                return {
+                    renderizado: Boolean(document.querySelector(
+                        "ngx-recaptcha2, .g-recaptcha, iframe[src*='recaptcha'], textarea[name='g-recaptcha-response']"
+                    )),
+                    sitekeys: Array.from(sitekeys),
+                    widget_ids: registros.map((registro) => String(registro.widgetId)),
+                    callbacks_disponibles: registros.filter(
+                        (registro) => typeof registro.callback === 'function' &&
+                            registro.callbackOriginalDisponible
+                    ).length,
+                    invisible: invisibles,
+                    token_presente: Array.from(document.querySelectorAll(
+                        "textarea[name='g-recaptcha-response']"
+                    )).some((campo) => Boolean(String(campo.value || campo.textContent || '').trim())),
+                    f5_tspd_detectado: f5,
+                    url: location.href
+                };
+            }
+        """)
+
+    def _obtener_desafio_captcha(self, causa):
+        limite = monotonic() + (
+            float(self.navegacion.get("captcha_render_timeout_ms", 15000)) / 1000
+        )
+        ultimo = None
+        while monotonic() < limite:
+            ultimo = self._diagnosticar_captcha()
+            if ultimo.get("f5_tspd_detectado"):
+                raise CaptchaConfiguracionError(
+                    "CAPTCHA_F5_TSPD_FUERA_DE_ALCANCE", recuperable=False
+                )
+            sitekeys = ultimo.get("sitekeys") or []
+            widgets = ultimo.get("widget_ids") or []
+            if (
+                ultimo.get("renderizado") and len(sitekeys) == 1
+                and len(widgets) == 1 and ultimo.get("callbacks_disponibles") == 1
+            ):
+                desafio = CaptchaDesafio(
+                    tipo="recaptcha_v2",
+                    website_url=ultimo.get("url") or self.page.url,
+                    sitekey=sitekeys[0],
+                    widget_id=widgets[0],
+                    invisible=bool(ultimo.get("invisible")),
+                )
+                import hashlib
+                huella = hashlib.sha256(
+                    f"{desafio.website_url}|{desafio.sitekey}|{desafio.widget_id}".encode("utf-8")
+                ).hexdigest()[:16]
+                logger.info(
+                    "[CAPTCHA] Desafío diagnosticado para %s: tipo=%s widget_hash=%s",
+                    causa, desafio.tipo, huella,
+                )
+                return desafio, huella
+            self.page.wait_for_timeout(250)
+        raise CaptchaConfiguracionError(
+            "CAPTCHA_DESCRIPTOR_O_CALLBACK_INVALIDO", recuperable=True
+        )
+
+    def _aplicar_solucion_captcha(self, causa, desafio, solucion):
+        resultado = self.page.evaluate("""
+            ({token, widgetId}) => {
+                const registros = window.__botCaptchaCallbacks || {};
+                const registro = registros[String(widgetId)];
+                if (!registro || typeof registro.callback !== 'function' ||
+                    !registro.callbackOriginalDisponible) {
+                    return {aplicado: false, motivo: 'CALLBACK_AUSENTE'};
+                }
+                if (registro.inyectadoPorBot) {
+                    return {aplicado: false, motivo: 'TOKEN_YA_INYECTADO'};
+                }
+                const campos = Array.from(document.querySelectorAll(
+                    "textarea[name='g-recaptcha-response']"
+                ));
+                if (!campos.length) {
+                    return {aplicado: false, motivo: 'CAMPO_RESPUESTA_AUSENTE'};
+                }
+                const descriptor = Object.getOwnPropertyDescriptor(
+                    HTMLTextAreaElement.prototype, 'value'
+                );
+                campos.forEach((campo) => {
+                    if (descriptor && descriptor.set) descriptor.set.call(campo, token);
+                    else campo.value = token;
+                    campo.textContent = token;
+                    campo.dispatchEvent(new Event('input', {bubbles: true}));
+                    campo.dispatchEvent(new Event('change', {bubbles: true}));
+                });
+                registro.inyectadoPorBot = true;
+                registro.callback(token);
+                return {
+                    aplicado: true,
+                    callback_invocado: true,
+                    campos_actualizados: campos.length,
+                    widget_id: String(widgetId)
+                };
+            }
+        """, {"token": solucion.token, "widgetId": desafio.widget_id})
+        if not resultado.get("aplicado") or not resultado.get("callback_invocado"):
+            raise CaptchaProveedorError(
+                "CAPTCHA_INYECCION_NO_CONFIRMADA:%s" % resultado.get("motivo", "DESCONOCIDO"),
+                recuperable=True,
+            )
+        if self._causa_canonica(self._input_causa_unico().input_value()) != causa:
+            raise CaptchaProveedorError(
+                "CAPTCHA_CAUSA_CAMBIO_DURANTE_INYECCION", recuperable=True
+            )
+        logger.info(
+            "[CAPTCHA] Token entregado a Angular para %s: task_id=%s widget_id=%s",
+            causa, solucion.task_id, desafio.widget_id,
+        )
+        return resultado
+
+    def _registrar_error_proveedor_captcha(self):
+        self._captcha_errores_consecutivos += 1
+        maximo = max(1, int(self.captcha_config.get("max_errores_consecutivos", 3)))
+        if self._captcha_errores_consecutivos >= maximo:
+            self._captcha_circuito_abierto = True
+
+    def _resolver_o_esperar_captcha(self, causa, intento_id):
+        modo = str(self.captcha_config.get("modo", "manual")).strip().lower()
+        self._captcha_solucion_actual = None
+        logger.info(
+            "[CAPTCHA] Inicio de resolucion para %s: modo=%s proveedor=%s.",
+            causa, modo, self.captcha_config.get("proveedor", "2captcha"),
+        )
+        if modo == "manual":
+            return self._esperar_busqueda_habilitada(causa)
+        try:
+            if self._captcha_circuito_abierto:
+                raise CaptchaProveedorError(
+                    "CAPTCHA_CIRCUITO_ABIERTO", recuperable=False
+                )
+            proveedor = self._obtener_proveedor_captcha()
+            if not self._captcha_disponibilidad_verificada:
+                proveedor.comprobar_disponibilidad()
+                self._captcha_disponibilidad_verificada = True
+                logger.info("[CAPTCHA] Proveedor 2Captcha disponible; credencial validada.")
+            desafio, huella = self._obtener_desafio_captcha(causa)
+            tareas = self._captcha_tareas_por_causa.get(causa, 0)
+            maximo = max(1, int(self.captcha_config.get("max_tareas_por_causa", 2)))
+            if tareas >= maximo:
+                raise CaptchaProveedorError(
+                    "CAPTCHA_PRESUPUESTO_CAUSA_AGOTADO", recuperable=False
+                )
+            if huella in self._captcha_tareas_activas:
+                raise CaptchaProveedorError(
+                    "CAPTCHA_TAREA_DUPLICADA_BLOQUEADA", recuperable=False
+                )
+            self._captcha_tareas_por_causa[causa] = tareas + 1
+            self._captcha_tareas_activas.add(huella)
+            try:
+                solucion = proveedor.resolver(
+                    desafio, {"intento_id": intento_id, "tarea_numero": tareas + 1}
+                )
+            finally:
+                self._captcha_tareas_activas.discard(huella)
+            self._aplicar_solucion_captcha(causa, desafio, solucion)
+            self._captcha_solucion_actual = solucion
+            boton = self._esperar_busqueda_habilitada(causa)
+            self._captcha_errores_consecutivos = 0
+            logger.info(
+                "[CAPTCHA] Solución confirmada para %s: task_id=%s latencia_ms=%s costo_usd=%s",
+                causa, solucion.task_id, solucion.latencia_ms, solucion.costo_usd,
+            )
+            return boton
+        except CaptchaError as exc:
+            self._captcha_reinicio_buscador_pendiente = True
+            if not isinstance(exc, CaptchaConfiguracionError):
+                self._registrar_error_proveedor_captcha()
+            fallback = (
+                modo == "api_con_fallback_manual"
+                and bool(self.captcha_config.get("fallback_manual", True))
+                and exc.recuperable
+            )
+            logger.warning(
+                "[CAPTCHA] Fallo controlado para %s: %s; fallback_manual=%s",
+                causa, exc.codigo, fallback,
+            )
+            if fallback:
+                self._captcha_solucion_actual = None
+                return self._esperar_busqueda_habilitada(causa)
+            raise
+
+    def _esperar_despues_captcha(self, causa):
+        espera_ms = max(0, int(self.captcha_config.get("espera_post_solucion_ms", 10000)))
+        if espera_ms:
+            logger.info(
+                "[CAPTCHA] Esperando %s segundos antes de BUSCAR para %s.",
+                espera_ms / 1000, causa,
+            )
+            self.page.wait_for_timeout(espera_ms)
+        campo = self._input_causa_unico()
+        boton = self._boton_buscar_unico()
+        if self._causa_canonica(campo.input_value()) != causa:
+            raise RuntimeError("CAUSA_CAMBIO_DURANTE_ESPERA_POST_CAPTCHA")
+        if not self._boton_habilitado(boton):
+            if self._captcha_visible():
+                raise RuntimeError("CAPTCHA_PERDIDO_DURANTE_ESPERA_POST_SOLUCION")
+            raise RuntimeError("BUSCAR_SE_DESHABILITO_DURANTE_ESPERA_POST_CAPTCHA")
+        if self._captcha_solucion_actual is None and self._captcha_visible():
+            raise RuntimeError("CAPTCHA_PERDIDO_DURANTE_ESPERA_POST_SOLUCION")
+        return boton
+
+    def _reportar_solucion_captcha(self, correcta, rechazo_confirmado=False):
+        solucion = self._captcha_solucion_actual
+        self._captcha_solucion_actual = None
+        if solucion is None or self.proveedor_captcha is None:
+            return False
+        if not correcta and not rechazo_confirmado:
+            return False
+        habilitado = self.captcha_config.get(
+            "reportar_correcta" if correcta else "reportar_incorrecta", True
+        )
+        if not habilitado:
+            return False
+        try:
+            metodo = (
+                self.proveedor_captcha.reportar_correcta
+                if correcta else self.proveedor_captcha.reportar_incorrecta
+            )
+            reportado = metodo(solucion.task_id)
+            logger.info(
+                "[CAPTCHA] Resultado reportado: task_id=%s correcta=%s reportado=%s",
+                solucion.task_id, correcta, reportado,
+            )
+            return reportado
+        except CaptchaError as exc:
+            logger.warning(
+                "[CAPTCHA] No se pudo reportar task_id=%s: %s",
+                solucion.task_id, exc.codigo,
+            )
+            return False
+
+    def _diagnostico_busqueda(self, causa, intento_numero, error):
+        diagnostico = {
+            "causa": self._causa_canonica(causa),
+            "intento_global": self._intento_actual,
+            "intento_busqueda": intento_numero,
+            "estado_navegacion": self.ultimo_estado_navegacion,
+            "error": str(error),
+            "url": None,
+            "valor_campo": None,
+            "texto_portal": None,
+            "timestamp": self._ahora_iso(),
+        }
+        try:
+            diagnostico["url"] = self.page.url
+        except Exception:
+            pass
+        try:
+            diagnostico["valor_campo"] = self._input_causa_unico().input_value()
+        except Exception:
+            pass
+        try:
+            texto = re.sub(r"\s+", " ", self.page.inner_text("body")).strip()
+            diagnostico["texto_portal"] = texto[:4000]
+            diagnostico["motivo_rechazo"] = self._motivo_rechazo_formulario(texto)
+        except Exception:
+            pass
+        return diagnostico
+
+    def _guardar_evidencia_busqueda(self, causa, intento_numero, error):
+        """Persiste el estado de cada rechazo/timeout sin alterar la navegación."""
+        try:
+            intento = self._clave_archivo(self._intento_actual or "sin_intento")
+            directorio = os.path.join(
+                "data", "temp_htmls", self._causa_canonica(causa), intento,
+                f"busqueda_{intento_numero:02d}",
+            )
+            os.makedirs(directorio, exist_ok=True)
+            rutas = {}
+            diagnostico = self._diagnostico_busqueda(causa, intento_numero, error)
+            ruta_json = os.path.join(directorio, "diagnostic.json")
+            self._escribir_json_atomico(ruta_json, diagnostico)
+            rutas["diagnostico"] = ruta_json
+            if self.page and not self.page.is_closed():
+                try:
+                    ruta_html = os.path.join(directorio, "page.html")
+                    contenido = self.page.content()
+                    contenido = re.sub(
+                        r"(<textarea[^>]*name=['\"]g-recaptcha-response['\"][^>]*>).*?(</textarea>)",
+                        r"\1&lt;redactado&gt;\2", contenido,
+                        flags=re.IGNORECASE | re.DOTALL,
+                    )
+                    with open(ruta_html, "w", encoding="utf-8") as archivo:
+                        archivo.write(contenido)
+                    rutas["html"] = ruta_html
+                except Exception:
+                    logger.debug("No se pudo guardar HTML de búsqueda.", exc_info=True)
+                try:
+                    ruta_screen = os.path.join(directorio, "screen.png")
+                    self.page.screenshot(path=ruta_screen, full_page=True)
+                    rutas["screenshot"] = ruta_screen
+                except Exception:
+                    logger.debug("No se pudo guardar captura de búsqueda.", exc_info=True)
+            return rutas
+        except Exception:
+            logger.warning("No se pudo guardar evidencia de búsqueda.", exc_info=True)
+            return {}
+
+    def _buscar_resultado_con_reintentos(self, causa_original, causa):
+        max_intentos = max(1, int(self.navegacion["max_reintentos_transicion"]))
+        ultimo_error = None
+        for intento_numero in range(1, max_intentos + 1):
+            if intento_numero > 1:
+                estado = self.ultimo_estado_navegacion
+                self._cambiar_estado_navegacion(
+                    causa, estado, "PREPARAR_BUSCADOR", "reintentar_busqueda",
+                    intento_busqueda=intento_numero,
+                    error_anterior=str(ultimo_error),
+                )
+            self._preparar_busqueda(causa_original)
+            self._cambiar_estado_navegacion(
+                causa, "CAUSA_ESCRITA", "ESPERAR_FIN_CAPTCHA",
+                "esperar_buscar_habilitado", intento_busqueda=intento_numero,
+            )
+            intento_id = f"{self._intento_actual}:busqueda-{intento_numero}"
+            self._activar_captcha_con_click_inicial(causa, intento_id)
+            self._resolver_o_esperar_captcha(causa, intento_id)
+            self._esperar_despues_captcha(causa)
+            self._enviar_busqueda_una_vez(causa, intento_id)
+            try:
+                resultado = self._esperar_resultados(causa)
+                self._reportar_solucion_captcha(correcta=True)
+                return resultado
+            except (PlaywrightTimeoutError, RuntimeError) as exc:
+                reintentable = str(exc) in {
+                    "RESULTADOS_TIMEOUT", "BUSQUEDA_RECHAZADA_FORMULARIO",
+                }
+                if not reintentable:
+                    raise
+                ultimo_error = exc
+                if str(exc) == "BUSQUEDA_RECHAZADA_FORMULARIO":
+                    try:
+                        rechazo_confirmado = self._captcha_visible()
+                    except Exception:
+                        rechazo_confirmado = False
+                    self._reportar_solucion_captcha(
+                        correcta=False, rechazo_confirmado=rechazo_confirmado
+                    )
+                else:
+                    self._captcha_solucion_actual = None
+                if str(exc) == "RESULTADOS_TIMEOUT" and self.ultimo_estado_navegacion == "BUSQUEDA_ENVIADA":
+                    self._cambiar_estado_navegacion(
+                        causa, "BUSQUEDA_ENVIADA", "BUSQUEDA_TIMEOUT",
+                        "timeout_resultados", intento_busqueda=intento_numero,
+                    )
+                evidencia = self._guardar_evidencia_busqueda(
+                    causa, intento_numero, exc
+                )
+                logger.warning(
+                    "[NAVEGACION_ESATJE] Búsqueda %s/%s rechazada para %s: %s. Evidencia: %s",
+                    intento_numero, max_intentos, causa, exc, evidencia,
+                )
+                if intento_numero >= max_intentos:
+                    raise
+        raise ultimo_error or RuntimeError("BUSQUEDA_SIN_RESULTADO")
+
     def _abrir_movimientos_causa(self, causa, resultado):
         self._cambiar_estado_navegacion(
             causa, "RESULTADOS_LISTOS", "ABRIENDO_MOVIMIENTOS", "localizar_movimientos"
         )
-        if self._ruta_es(self.page.url, "/causas"):
-            enlace = self.page.locator(
-                "a[aria-label*='movimientos' i], a[href*='/movimientos']"
-            )
-            candidatos = []
-            for indice in range(enlace.count()):
-                actual = enlace.nth(indice)
-                etiqueta = actual.get_attribute("aria-label") or ""
-                if actual.is_visible() and causa in self._causa_canonica(etiqueta):
-                    candidatos.append(actual)
-            if len(candidatos) != 1:
-                raise RuntimeError("ENLACE_MOVIMIENTOS_AUSENTE_O_AMBIGUO")
-            enlace = candidatos[0]
-        else:
-            if causa not in self._causa_canonica(resultado.inner_text()):
-                raise RuntimeError("FILA_NO_CORRESPONDE_A_CAUSA")
-            enlaces = resultado.locator(
-                "a[aria-label*='movimientos' i], a[href*='/movimientos'], "
-                "a:has(mat-icon:has-text('folder_open'))"
-            )
-            visibles = [enlaces.nth(i) for i in range(enlaces.count()) if enlaces.nth(i).is_visible()]
-            if len(visibles) != 1:
-                raise RuntimeError("ENLACE_MOVIMIENTOS_AUSENTE_O_AMBIGUO")
-            enlace = visibles[0]
+        causa = self._causa_canonica(causa)
+        if not self._fila_corresponde_causa(resultado, causa):
+            raise RuntimeError("FILA_NO_CORRESPONDE_A_CAUSA")
+        enlaces = resultado.locator(
+            "a[aria-label*='movimientos' i], a[href*='/movimientos'], "
+            "a:has(mat-icon:has-text('folder_open'))"
+        )
+        visibles = [
+            enlaces.nth(indice) for indice in range(enlaces.count())
+            if enlaces.nth(indice).is_visible()
+        ]
+        if len(visibles) != 1:
+            raise RuntimeError("ENLACE_MOVIMIENTOS_FILA_AUSENTE_O_AMBIGUO")
+        enlace = visibles[0]
+        etiqueta = enlace.get_attribute("aria-label") or ""
+        if etiqueta and not self._texto_contiene_causa_numerica_exacta(etiqueta, causa):
+            raise RuntimeError("ENLACE_MOVIMIENTOS_NO_CORRESPONDE_A_CAUSA")
         self._click_navegacion(enlace, "abrir_movimientos_causa")
         self._cambiar_estado_navegacion(
             causa, "ABRIENDO_MOVIMIENTOS", "MOVIMIENTOS_CARGANDO", "click_movimientos"
@@ -1962,30 +2597,291 @@ class BotJudicialTransaccional(BotJudicial):
         self._esperar_movimientos_listos(causa)
         return True
 
+    @staticmethod
+    def _locators_visibles(locator):
+        visibles = []
+        for indice in range(locator.count()):
+            candidato = locator.nth(indice)
+            try:
+                if candidato.is_visible():
+                    visibles.append(candidato)
+            except Exception:
+                continue
+        return visibles
+
+    def _diagnosticar_buscador(self):
+        """Inspecciona el buscador sin provocar navegación ni modificar la página."""
+        diagnostico = {
+            "url": None,
+            "ruta_valida": False,
+            "campos_causa": 0,
+            "campo_visible": False,
+            "campo_habilitado": False,
+            "movimientos_visibles": False,
+            "actuaciones_visibles": False,
+            "listo": False,
+        }
+        if not self.page or self.page.is_closed():
+            diagnostico["error"] = "PAGINA_NO_DISPONIBLE"
+            return diagnostico
+        diagnostico["url"] = self.page.url
+        diagnostico["ruta_valida"] = self._es_buscador()
+        try:
+            selector_causa = (
+                "input[formcontrolname='numeroCausa'], "
+                "input[formcontrolname='numeroJuicio'], "
+                "input[placeholder*='Dependencia' i], "
+                "input[placeholder*='causa' i]"
+            )
+            campos = self.page.locator(selector_causa)
+            diagnostico["campos_causa"] = campos.count()
+            if diagnostico["campos_causa"] == 1:
+                campo = campos.nth(0)
+                diagnostico["campo_visible"] = bool(campo.is_visible())
+                try:
+                    diagnostico["campo_habilitado"] = bool(campo.is_editable())
+                except Exception:
+                    diagnostico["campo_habilitado"] = bool(campo.is_enabled())
+            movimientos = self.page.locator(
+                "app-lista-movimientos, app-movimientos, .lista-movimientos-causa"
+            )
+            actuaciones = self.page.locator(
+                "app-actuaciones, app-informacion-proceso, .lista-actuaciones"
+            )
+            diagnostico["movimientos_visibles"] = bool(
+                self._locators_visibles(movimientos)
+            )
+            diagnostico["actuaciones_visibles"] = bool(
+                self._locators_visibles(actuaciones)
+            )
+        except Exception as exc:
+            diagnostico["error"] = f"DIAGNOSTICO_DOM_ERROR:{exc}"
+        diagnostico["listo"] = bool(
+            diagnostico["ruta_valida"]
+            and diagnostico["campos_causa"] == 1
+            and diagnostico["campo_visible"]
+            and diagnostico["campo_habilitado"]
+            and not diagnostico["movimientos_visibles"]
+            and not diagnostico["actuaciones_visibles"]
+        )
+        return diagnostico
+
+    def _esperar_buscador_listo(self, causa, timeout_ms=None):
+        """Confirma por estado visible dos observaciones estables del buscador SPA."""
+        timeout_ms = (
+            self.navegacion["retorno_buscador_timeout_ms"]
+            if timeout_ms is None else max(0, timeout_ms)
+        )
+        limite = monotonic() + (timeout_ms / 1000)
+        consecutivas = 0
+        ultimo = self._diagnosticar_buscador()
+        while True:
+            consecutivas = consecutivas + 1 if ultimo.get("listo") else 0
+            if consecutivas >= 2:
+                return ultimo
+            if monotonic() >= limite:
+                break
+            self.page.wait_for_timeout(self.navegacion["sondeo_estabilidad_ms"])
+            ultimo = self._diagnosticar_buscador()
+        raise PlaywrightTimeoutError(
+            "RETORNO_BUSCADOR_TIMEOUT:%s" % json.dumps(
+                ultimo, ensure_ascii=False, default=str
+            )
+        )
+
+    @staticmethod
+    def _atributos_control_retorno(control):
+        atributos = {}
+        for nombre in ("id", "class", "href", "routerlink", "aria-label", "title"):
+            try:
+                valor = control.get_attribute(nombre)
+                if valor:
+                    atributos[nombre] = valor
+            except Exception:
+                continue
+        try:
+            atributos["texto"] = control.inner_text().strip()
+        except Exception:
+            pass
+        return atributos
+
+    def _guardar_evidencia_retorno(self, causa, contexto):
+        """Guarda evidencia best-effort sin intentar una nueva navegación."""
+        intento = self._clave_archivo(self._intento_actual or "sin_intento")
+        directorio = os.path.join(
+            "data", "temp_htmls", causa, intento, "retorno_buscador"
+        )
+        rutas = {}
+        try:
+            os.makedirs(directorio, exist_ok=True)
+            ruta_json = os.path.join(directorio, "return_diagnostic.json")
+            self._escribir_json_atomico(ruta_json, contexto)
+            rutas["diagnostico"] = ruta_json
+            ruta_html = os.path.join(directorio, "return_page.html")
+            with open(ruta_html, "w", encoding="utf-8") as archivo:
+                archivo.write(self.page.content())
+            rutas["html"] = ruta_html
+            ruta_screen = os.path.join(directorio, "return_screen.png")
+            self.page.screenshot(path=ruta_screen, full_page=True)
+            rutas["screenshot"] = ruta_screen
+        except Exception as exc:
+            contexto.setdefault("errores_evidencia", []).append(str(exc))
+            logger.exception("No se pudo completar la evidencia del retorno al buscador.")
+        contexto["evidencia"] = rutas
+        return rutas
+
     def _volver_al_buscador(self, causa):
         self._asegurar_navegacion_permitida("volver_buscador", causa)
-        if self._es_buscador():
-            self._input_causa_unico()
+        contexto = self._retorno_buscador_actual
+        if contexto is not None:
+            diagnostico = self._diagnosticar_buscador()
+            contexto.update({
+                "diagnostico_final": diagnostico,
+                "url_final": diagnostico.get("url"),
+            })
+            if diagnostico.get("listo"):
+                contexto.update({"confirmado": True, "finalizado": True})
+                return True
+            raise RuntimeError("RETORNO_BUSCADOR_YA_INTENTADO")
+        contexto = {
+            "iniciado": True, "finalizado": False, "confirmado": False,
+            "clicks": 0, "go_back": 0, "recargas": 0, "estrategia": None,
+            "url_inicial": self.page.url, "url_final": self.page.url,
+            "candidatos": [],
+        }
+        self._retorno_buscador_actual = contexto
+        diagnostico = self._diagnosticar_buscador()
+        contexto["diagnostico_inicial"] = diagnostico
+        if diagnostico.get("listo"):
+            contexto.update({
+                "finalizado": True, "confirmado": True,
+                "estrategia": "ya_visible", "diagnostico_final": diagnostico,
+            })
             return True
-        botones = self.page.locator(
-            "button:has-text('Regresar'), a:has-text('Regresar'), "
-            "button:has-text('Nueva búsqueda'), a:has-text('Nueva búsqueda')"
+        if self._es_buscador():
+            contexto["estrategia"] = "ruta_busqueda_pendiente"
+            try:
+                diagnostico = self._esperar_buscador_listo(causa)
+                contexto.update({
+                    "finalizado": True,
+                    "confirmado": True,
+                    "url_final": diagnostico.get("url"),
+                    "diagnostico_final": diagnostico,
+                })
+                return True
+            except Exception as exc:
+                diagnostico = self._diagnosticar_buscador()
+                buscador_vacio = bool(
+                    diagnostico.get("ruta_valida")
+                    and diagnostico.get("campos_causa") == 0
+                    and not diagnostico.get("movimientos_visibles")
+                    and not diagnostico.get("actuaciones_visibles")
+                )
+                if buscador_vacio:
+                    contexto.update({
+                        "estrategia": "ruta_busqueda_recarga",
+                        "recargas": 1,
+                        "error_espera_inicial": str(exc),
+                    })
+                    try:
+                        self._reload_navegacion(
+                            "recuperar_buscador_vacio",
+                            wait_until="domcontentloaded",
+                            timeout=self.navegacion["retorno_buscador_timeout_ms"],
+                        )
+                        diagnostico = self._esperar_buscador_listo(causa)
+                        contexto.update({
+                            "finalizado": True,
+                            "confirmado": True,
+                            "url_final": diagnostico.get("url"),
+                            "diagnostico_final": diagnostico,
+                        })
+                        return True
+                    except Exception as exc_recarga:
+                        contexto["error_recarga"] = str(exc_recarga)
+                diagnostico = self._diagnosticar_buscador()
+                contexto.update({
+                    "finalizado": True,
+                    "url_final": diagnostico.get("url"),
+                    "diagnostico_final": diagnostico,
+                    "error": f"RETORNO_BUSCADOR_FORMULARIO_NO_LISTO:{exc}",
+                })
+                self._guardar_evidencia_retorno(causa, contexto)
+                raise RuntimeError("RETORNO_BUSCADOR_ERROR") from exc
+        origen_movimientos = self._ruta_es(self.page.url, "/movimientos")
+        origen_causas = self._ruta_es(self.page.url, "/causas")
+        if not (origen_movimientos or origen_causas):
+            contexto.update({
+                "finalizado": True,
+                "error": "RETORNO_BUSCADOR_ORIGEN_NO_VALIDO",
+                "diagnostico_final": diagnostico,
+            })
+            self._guardar_evidencia_retorno(causa, contexto)
+            raise RuntimeError(contexto["error"])
+        controles_directos = self.page.locator(
+            "a[href='/busqueda-filtros'], a[href$='/busqueda-filtros'], "
+            "button[routerlink='/busqueda-filtros'], "
+            "a[routerlink='/busqueda-filtros']"
         )
-        visibles = [botones.nth(i) for i in range(botones.count()) if botones.nth(i).is_visible()]
-        if len(visibles) == 1:
-            self._click_navegacion(visibles[0], "volver_al_buscador")
+        directos_visibles = self._locators_visibles(controles_directos)
+        if directos_visibles:
+            visibles = directos_visibles
+            contexto["tipo_control"] = "buscador_directo"
         else:
-            self._go_back_navegacion("volver_al_buscador")
-        self.page.wait_for_url(
-            re.compile(r"/(?:busqueda-filtros|busqueda)(?:[/?#]|$)"),
-            timeout=self.navegacion["movimientos_timeout_ms"],
-        )
-        self._input_causa_unico()
-        return True
+            botones_regreso = self.page.locator(
+                "button:has-text('Regresar'), a:has-text('Regresar'), "
+                "button:has-text('Nueva búsqueda'), a:has-text('Nueva búsqueda')"
+            )
+            visibles = self._locators_visibles(botones_regreso)
+            contexto["tipo_control"] = "regreso"
+        contexto["candidatos"] = [
+            self._atributos_control_retorno(control) for control in visibles
+        ]
+        if len(visibles) == 1:
+            contexto.update({"clicks": 1, "estrategia": "control"})
+            try:
+                self._click_navegacion(visibles[0], "volver_al_buscador")
+                diagnostico = self._esperar_buscador_listo(causa)
+                contexto.update({"finalizado": True, "confirmado": True,
+                                 "url_final": diagnostico.get("url"),
+                                 "diagnostico_final": diagnostico})
+                return True
+            except Exception as exc:
+                contexto["error_control"] = str(exc)
+                diagnostico = self._diagnosticar_buscador()
+                if diagnostico.get("listo"):
+                    contexto.update({"finalizado": True, "confirmado": True,
+                                     "url_final": diagnostico.get("url"),
+                                     "diagnostico_final": diagnostico})
+                    return True
+        else:
+            contexto["error_control"] = "CONTROL_RETORNO_AMBIGUO_O_AUSENTE"
+        if origen_movimientos and self._ruta_es(self.page.url, "/movimientos"):
+            contexto.update({"go_back": 1,
+                             "estrategia": "control+go_back" if contexto["clicks"] else "go_back"})
+            try:
+                self._go_back_navegacion("fallback_volver_al_buscador")
+                diagnostico = self._esperar_buscador_listo(causa)
+                contexto.update({"finalizado": True, "confirmado": True,
+                                 "url_final": diagnostico.get("url"),
+                                 "diagnostico_final": diagnostico})
+                return True
+            except Exception as exc:
+                contexto["error_go_back"] = str(exc)
+        diagnostico = self._diagnosticar_buscador()
+        contexto.update({"finalizado": True, "url_final": diagnostico.get("url"),
+                         "diagnostico_final": diagnostico,
+                         "error": "RETORNO_BUSCADOR_ERROR"})
+        self._guardar_evidencia_retorno(causa, contexto)
+        raise RuntimeError("RETORNO_BUSCADOR_ERROR")
 
     def regresar_al_buscador(self):
         causa = getattr(self, "ultimo_numero_juicio", None) or "SIN_CAUSA"
-        return self._volver_al_buscador(self._causa_canonica(causa))
+        resultado = self._volver_al_buscador(self._causa_canonica(causa))
+        if resultado and self.ultimo_estado_navegacion == "PREPARAR_BUSCADOR":
+            self._retorno_buscador_preparacion = self._retorno_buscador_actual
+            self._retorno_buscador_actual = None
+        return resultado
 
     def _consolidar_resultados_carpetas(self, causa, resultados):
         datos = {
@@ -1997,9 +2893,23 @@ class BotJudicialTransaccional(BotJudicial):
         }
         advertencias = []
         vistos = set()
+        fechas_inicio = []
         for resultado in resultados:
             advertencias.extend(resultado.get("advertencias", []))
             datos_carpeta = resultado.get("datos") or {}
+            descriptor = resultado.get("descriptor") or {}
+            fecha_inicio = (
+                descriptor.get("fecha_ingreso")
+                or datos_carpeta.get("FECHA INICIO JUICIO")
+            )
+            if fecha_inicio:
+                texto_fecha = str(fecha_inicio).strip()
+                for formato in ("%d/%m/%Y %H:%M", "%d/%m/%Y"):
+                    try:
+                        fechas_inicio.append(datetime.strptime(texto_fecha, formato).date())
+                        break
+                    except ValueError:
+                        continue
             for actuacion in datos_carpeta.get("HISTORIAL_ACTUACIONES", []):
                 clave = (
                     actuacion.get("ORIGEN_CARPETA"), actuacion.get("fecha"),
@@ -2010,6 +2920,8 @@ class BotJudicialTransaccional(BotJudicial):
                     datos["HISTORIAL_ACTUACIONES"].append(dict(actuacion))
         if datos["HISTORIAL_ACTUACIONES"]:
             self._aplicar_inferencia_consolidada(datos)
+        if fechas_inicio:
+            datos["FECHA INICIO JUICIO"] = min(fechas_inicio).strftime("%d/%m/%Y")
         estados = [resultado.get("estado") for resultado in resultados]
         if estados and all(estado == "COMPLETA" for estado in estados):
             estado = "COMPLETADO"
@@ -2064,10 +2976,6 @@ class BotJudicialTransaccional(BotJudicial):
                 clave_carpeta=descriptor["clave_carpeta"],
                 secuencia_api_inicio=secuencia_inicio,
             )
-            self.page.wait_for_url(
-                re.compile(r"/actuaciones(?:[/?#]|$)"),
-                timeout=self.navegacion["actuaciones_timeout_ms"],
-            )
             token = self._esperar_informacion_proceso_y_bloquear(causa, descriptor)
             self._cambiar_estado_navegacion(
                 causa, "NAVEGACION_BLOQUEADA", "EXTRACCION_EN_PROGRESO",
@@ -2119,25 +3027,42 @@ class BotJudicialTransaccional(BotJudicial):
 
     def _procesar_flujo_autonomo(self, numero_juicio):
         import uuid
-        causa = self._causa_canonica(numero_juicio)
+        causa_original = str(numero_juicio or "").strip()
+        causa = self._causa_canonica(causa_original)
+        self._busquedas_enviadas.clear()
         self._intento_actual = f"{causa}-{uuid.uuid4().hex[:12]}"
         self._claves_extraidas = set()
         self._resultados_carpeta_actuales = []
         self._descriptores_actuales = []
         self._intentos_navegacion_bloqueados = []
+        self._retorno_buscador_actual = None
+        self._retorno_buscador_preparacion = None
         self.paquetes_api_interceptados.clear()
         self._secuencia_api = 0
         self._ultima_respuesta_api_monotonic = 0.0
         self.ultimo_numero_juicio = causa
         self.ultimo_estado_navegacion = "PREPARAR_BUSCADOR"
         try:
-            self._preparar_busqueda(causa)
-            self._cambiar_estado_navegacion(
-                causa, "CAUSA_ESCRITA", "ESPERAR_FIN_CAPTCHA", "esperar_buscar_habilitado"
+            resultado_busqueda = self._buscar_resultado_con_reintentos(
+                causa_original, causa
             )
-            self._esperar_busqueda_habilitada(causa)
-            self._enviar_busqueda_una_vez(causa, self._intento_actual)
-            resultado_busqueda = self._esperar_resultados(causa)
+            if resultado_busqueda == "VERIFICACION_MANUAL_SIN_RESULTADOS":
+                detalle = "Verificar manualmente (La consulta no devolvi\u00f3 resultados)"
+                self._cambiar_estado_navegacion(
+                    causa, "VERIFICACION_MANUAL", "RETORNANDO_AL_BUSCADOR",
+                    "iniciar_retorno_buscador",
+                )
+                regreso = self._volver_al_buscador(causa)
+                self._cambiar_estado_navegacion(
+                    causa, "RETORNANDO_AL_BUSCADOR", "CAUSA_ERROR",
+                    "finalizar_causa_verificacion_manual",
+                )
+                return self._resultado_flujo(
+                    "ERROR_VERIFICACION_MANUAL", causa,
+                    error=detalle, regreso_confirmado=regreso,
+                    requiere_reintento=False,
+                    retorno_buscador=self._retorno_buscador_actual,
+                )
             if resultado_busqueda == "SIN_RESULTADOS":
                 self._cambiar_estado_navegacion(
                     causa, "SIN_RESULTADOS", "RETORNANDO_AL_BUSCADOR",
@@ -2149,7 +3074,9 @@ class BotJudicialTransaccional(BotJudicial):
                     "finalizar_causa_sin_resultados",
                 )
                 return self._resultado_flujo(
-                    "SIN_RESULTADOS", causa, regreso_confirmado=regreso
+                    "SIN_RESULTADOS", causa,
+                    regreso_confirmado=regreso,
+                    retorno_buscador=self._retorno_buscador_actual,
                 )
             self._abrir_movimientos_causa(causa, resultado_busqueda)
             consolidado = self._procesar_todas_las_carpetas(causa)
@@ -2161,6 +3088,7 @@ class BotJudicialTransaccional(BotJudicial):
             )
             regreso = self._volver_al_buscador(causa)
             consolidado["regreso_confirmado"] = regreso
+            consolidado["retorno_buscador"] = self._retorno_buscador_actual
             estado_terminal = {
                 "COMPLETADO": "CAUSA_COMPLETADA",
                 "PARCIAL": "CAUSA_PARCIAL",
@@ -2173,23 +3101,55 @@ class BotJudicialTransaccional(BotJudicial):
         except Exception as exc:
             logger.error("Flujo transaccional fallido para %s: %s", causa, exc, exc_info=True)
             regreso = False
+            diagnostico_retorno = None
             if not (self._bloqueo_navegacion and self._bloqueo_navegacion.get("activo")):
-                try:
-                    regreso = self._volver_al_buscador(causa)
-                except Exception:
-                    logger.error("No se pudo confirmar el regreso al buscador.", exc_info=True)
+                diagnostico_retorno = self._diagnosticar_buscador()
+                regreso = bool(diagnostico_retorno.get("listo"))
+                if regreso and self._retorno_buscador_actual is not None:
+                    self._retorno_buscador_actual.update({
+                        "finalizado": True,
+                        "confirmado": True,
+                        "url_final": diagnostico_retorno.get("url"),
+                        "diagnostico_final": diagnostico_retorno,
+                        "confirmacion_tardia": True,
+                    })
+                elif self._retorno_buscador_actual is None:
+                    try:
+                        regreso = self._volver_al_buscador(causa)
+                    except Exception:
+                        logger.error(
+                            "No se pudo confirmar el regreso al buscador.",
+                            exc_info=True,
+                        )
             if self._resultados_carpeta_actuales:
-                parcial = self._consolidar_resultados_carpetas(
+                resultado = self._consolidar_resultados_carpetas(
                     causa, self._resultados_carpeta_actuales
                 )
-                parcial["estado"] = "PARCIAL"
-                parcial["error"] = str(exc)
-                parcial["errores"] = list(parcial.get("errores", [])) + [str(exc)]
-                parcial["regreso_confirmado"] = regreso
-                return parcial
+                estado_extraccion = resultado["estado"]
+                descubiertas = len(self._descriptores_actuales)
+                recorridas = len(self._resultados_carpeta_actuales)
+                recorrido_completo = descubiertas > 0 and recorridas == descubiertas
+                resultado["estado_extraccion"] = estado_extraccion
+                resultado["regreso_confirmado"] = regreso
+                resultado["retorno_buscador"] = self._retorno_buscador_actual
+                if regreso and recorrido_completo:
+                    resultado["requiere_reintento"] = False
+                    resultado.setdefault("advertencias", []).append(
+                        f"EXCEPCION_RECUPERADA_CON_RETORNO_CONFIRMADO:{exc}"
+                    )
+                    return resultado
+                resultado["estado"] = "ERROR_NAVEGACION"
+                resultado["requiere_reintento"] = True
+                resultado["error"] = str(exc)
+                resultado["errores"] = list(resultado.get("errores", [])) + [str(exc)]
+                return resultado
             return self._resultado_flujo(
                 "ERROR_NAVEGACION", causa, carpetas=list(self._resultados_carpeta_actuales),
                 error=str(exc), regreso_confirmado=regreso,
+                estado_extraccion=None,
+                requiere_reintento=True,
+                retorno_buscador=self._retorno_buscador_actual,
+                diagnostico_retorno=diagnostico_retorno,
                 navegacion_bloqueada=bool(
                     self._bloqueo_navegacion and self._bloqueo_navegacion.get("activo")
                 ),

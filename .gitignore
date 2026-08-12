@@ -22,6 +22,11 @@ temp_htmls/
 logs/
 scratch/
 network_capture*.json
+# Secretos locales (nunca versionar claves de proveedores)
+.env
+.env.*
+!.env.example
+
 
 # VS Code / IDE
 .vscode/
