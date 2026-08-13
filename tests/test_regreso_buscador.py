@@ -5,6 +5,7 @@ import unittest
 from main import (
     actualizar_casos_fallidos_piloto,
     guardar_casos_fallidos,
+    extraer_ruta_config,
     guardar_csv_o_fallar,
     seleccionar_casos,
 )
@@ -374,6 +375,14 @@ class RetornoBuscadorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "USO_INVALIDO"):
             seleccionar_casos(casos, ["--solo", casos[0], casos[1]])
 
+    def test_config_se_extrae_sin_interferir_con_el_modo(self):
+        ruta, argumentos = extraer_ruta_config([
+            "--config", "config_santo_domingo.json", "--lote", "5"
+        ])
+
+        self.assertEqual(ruta, "config_santo_domingo.json")
+        self.assertEqual(argumentos, ["--lote", "5"])
+
     def test_lote_limitado_se_restringe_entre_dos_y_diez(self):
         casos = [
             "23331-2022-02089",
@@ -397,6 +406,14 @@ class RetornoBuscadorTests(unittest.TestCase):
             seleccionar_casos(casos, ["--lote", "11"])
         with self.assertRaisesRegex(ValueError, "USO_INVALIDO"):
             seleccionar_casos(casos, ["--lote", "tres"])
+
+    def test_modo_pendientes_conserva_el_conjunto_ya_filtrado(self):
+        casos = ["CAUSA-001", "CAUSA-002"]
+
+        self.assertEqual(seleccionar_casos(casos, ["--pendientes"]), casos)
+        with self.assertRaisesRegex(ValueError, "USO_INVALIDO"):
+            seleccionar_casos(casos, ["--pendientes", "extra"])
+
     def test_reprocesar_filtro_deduplica_sin_consultar_sqlite(self):
         casos = [
             "23331-2022-02089",

@@ -1,4 +1,5 @@
 # src/agente_extractor.py
+import html
 import os
 import re
 import json
@@ -8,6 +9,18 @@ from bs4 import BeautifulSoup
 from src.logger_config import obtener_logger
 
 logger = obtener_logger("AgenteExtractor")
+
+
+def _decodificar_entidades_satje(texto):
+    """Convierte entidades no estandar de SATJE solo para reglas contextuales."""
+    texto_satje = str(texto or "")
+    texto_satje = re.sub(
+        r"&([A-Z])(?:ACUTE|GRAVE|UML|CIRC|TILDE);", r"\1", texto_satje
+    )
+    texto_satje = re.sub(r"&NBSP;|&#160;", " ", texto_satje)
+    texto_satje = re.sub(r"&(?:LDQUO|RDQUO|LSQUO|RSQUO);", '"', texto_satje)
+    texto_satje = re.sub(r"&AMP;", "&", texto_satje)
+    return html.unescape(texto_satje)
 
 
 def normalizar_texto(texto):
@@ -152,7 +165,9 @@ class MotorInferenciaProcesal:
                 "RETENCION BANCARIA", "INMOVILIZACION DE FONDOS",
                 "SUPERINTENDENCIA DE BANCOS", "OFICIO EMITIDO POR EL BANCO",
                 "OFICIO EMITIDO POR BANCO", "AGREGUESE EL OFICIO EMITIDO POR EL BANCO",
-                "AGREGUESE OFICIO EMITIDO POR EL BANCO", "OFICIO BANCO", "CIERRE DE PROCESO BANCARIO"
+                "AGREGUESE OFICIO EMITIDO POR EL BANCO", "OFICIO BANCO", "CIERRE DE PROCESO BANCARIO",
+                "CONGELADA", "CONGELADAS", "RETENIDOS", "RETENIDAS",
+                "TRANSFIERA", "TRANSFIERAN", "TRANSFERENCIA DE VALORES"
             ]
         ),
         (
@@ -160,7 +175,8 @@ class MotorInferenciaProcesal:
             [
                 "REMATE", "SUBASTA", "POSTURA", "CONVOCATORIA A REMATE",
                 "AVALUO DE BIEN", "FECHA DE REMATE", "OFERTA DE REMATE",
-                "PUBLICACION REMATE", "FECHA DE PUBLICACION REMATE"
+                "PUBLICACION REMATE", "FECHA DE PUBLICACION REMATE",
+                "AUTO DE ADJUDICACION", "ADJUDICACION"
             ]
         ),
         (
@@ -302,6 +318,405 @@ class MotorInferenciaProcesal:
         return -1
 
     @classmethod
+    def _termino_procesal_presente(cls, texto_normalizado, termino):
+        """Evita que conectores linguisticos activen fases procesales."""
+        termino_norm = normalizar_texto(termino)
+        texto_evaluable = str(texto_normalizado or "")
+        texto_limpio = re.sub(r"<[^>]+>", " ", texto_evaluable)
+        texto_limpio = re.sub(r"\s+", " ", texto_limpio).strip()
+        es_rotulo_breve = len(texto_limpio) <= 220
+        texto_contextual = _decodificar_entidades_satje(texto_evaluable)
+        texto_contextual = re.sub(r"<[^>]+>", " ", texto_contextual)
+        texto_contextual = re.sub(r"\s+", " ", texto_contextual).strip()
+
+        if termino_norm in {"NOTIFICAR", "NOTIFIQUESE", "CITAR", "CITESE", "CITAR AL DEMANDADO", "SE CITA"}:
+            # Son ordenes futuras o notificaciones ordinarias, no constancia de
+            # que la citacion de la demanda ya se haya practicado.
+            return False
+
+        if termino_norm == "SORTEO":
+            # El acta de sorteo identifica la radicacion inicial, pero no es
+            # evidencia suficiente de una fase procesal sustantiva.
+            return False
+
+        if termino_norm == "CITACION":
+            if re.search(
+                r"\b(?:SE\s+)?(?:ORDENA|DISPONE)\b.{0,45}\bCITACION\b",
+                texto_limpio,
+            ):
+                # Ordenar la diligencia no demuestra que ya fue practicada.
+                return False
+            if termino_norm not in texto_evaluable:
+                return False
+            marcadores_citacion = (
+                "CITACION REALIZADA",
+                "CITACION NO REALIZADA",
+                "RAZON DE CITACION",
+                "RAZON ENVIO A CITACIONES",
+                "ACTA DE CITACION",
+                "DILIGENCIA DE CITACION",
+                "BOLETA DE CITACION",
+                "GESTION REALIZADA POR EL CITADOR",
+                "LEGALMENTE CITADA",
+                "LEGALMENTE CITADO",
+            )
+            return es_rotulo_breve or any(
+                marcador in texto_evaluable for marcador in marcadores_citacion
+            )
+
+        if termino_norm in {"BOLETA", "BOLETAS"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            return any(
+                marcador in texto_evaluable
+                for marcador in (
+                    "BOLETA DE CITACION",
+                    "BOLETAS DE CITACION",
+                    "BOLETA FIJADA",
+                    "RAZON ENVIO A CITACIONES",
+                    "GESTION REALIZADA POR EL CITADOR",
+                )
+            )
+
+        if termino_norm == "CITADO":
+            if termino_norm not in texto_evaluable:
+                return False
+            return any(
+                marcador in texto_evaluable
+                for marcador in (
+                    "LEGALMENTE CITADO",
+                    "HA SIDO CITADO",
+                    "SE ENCUENTRA CITADO",
+                    "CITADO Y NOTIFICADO",
+                )
+            )
+
+        if termino_norm == "ORDEN DE PAGO":
+            # En las sentencias cambiarias se describe doctrinalmente que el
+            # titulo valor "contiene una orden de pago". Eso no es el auto de
+            # mandamiento previsto en el art. 372 del COGEP.
+            if re.search(
+                r"\bTITULO\s+VALOR\b.{0,90}\b(?:CONTIENE|CONSTITUYE)\b"
+                r".{0,40}\bORDEN\s+DE\s+PAGO\b",
+                texto_contextual,
+            ):
+                return False
+            es_rotulo_orden = es_rotulo_breve and bool(re.match(
+                r"^(?:ORDEN DE PAGO|AUTO DE EJECUCION)\b", texto_contextual
+            ))
+            orden_explicita = bool(re.search(
+                r"\b(?:DICTA|EMITE|EXPIDE|NOTIFICA)\b.{0,80}\bORDEN DE PAGO\b",
+                texto_contextual,
+            ))
+            mandato_art_372 = bool(
+                re.search(r"\bARTICULO\s+372\b", texto_contextual)
+                and re.search(
+                    r"\bSE\s+ORDENA\b.{0,180}\b(?:PAGUE|PAGUEN|CANCELE|CANCELEN)\b",
+                    texto_contextual,
+                )
+            )
+            mandato_pago_cinco_dias = bool(
+                re.search(
+                    r"\bSE\s+ORDENA\b.{0,220}\b(?:PAGUE|PAGUEN|CANCELE|CANCELEN)\b",
+                    texto_contextual,
+                )
+                and re.search(r"\bTERMINO\s+DE\s+(?:CINCO|5)\s+DIAS\b", texto_contextual)
+            )
+            return es_rotulo_orden or orden_explicita or mandato_art_372 or mandato_pago_cinco_dias
+
+        if termino_norm in {"MANDAMIENTO", "MANDAMIENTO DE EJECUCION"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            # Una razon de incumplimiento menciona el mandamiento anterior,
+            # pero no debe reemplazar la fecha en que este fue dictado.
+            if (
+                "INCUMPLIMIENTO DE MANDAMIENTO" in texto_evaluable
+                or re.search(
+                    r"\b(?:PUBLICA|PUBLIQUE|PUBLICACION)\b.{0,110}"
+                    r"\bMANDAMIENTO(?: DE EJECUCION)?\b",
+                    texto_contextual,
+                )
+                or re.search(
+                    r"\bSI\b.{0,90}\b(?:DIO|HA\s+DADO|DADO)\b.{0,50}"
+                    r"\bCUMPLIMIENTO\b.{0,100}\bMANDAMIENTO\b",
+                    texto_contextual,
+                )
+                or re.search(
+                    r"\bNO\s+HA\s+PAGADO\b.{0,180}\bMANDAMIENTO\b",
+                    texto_contextual,
+                )
+                or re.search(
+                    r"\bTERMINO\s+CONCEDIDO\b.{0,100}\bMANDAMIENTO\b",
+                    texto_contextual,
+                )
+            ):
+                return False
+            es_rotulo_mandamiento = es_rotulo_breve and bool(re.match(
+                r"^(?:MANDAMIENTO(?: DE EJECUCION)?|AUTO (?:DE|QUE DICTA) EJECUCION|NOTIFICACION DE MANDAMIENTO)\b",
+                texto_limpio,
+            ))
+            encabezado_mandamiento = bool(
+                re.search(r"\bMANDAMIENTO DE EJECUCION\s*:", texto_limpio)
+                and re.search(
+                    r"\b(?:PAGUE|PAGUEN|CANCELE|CANCELEN)\b",
+                    texto_limpio,
+                )
+            )
+            accion_mandamiento = bool(re.search(
+                r"\b(?:DICTA|EMITE|ORDENA|DISPONE|NOTIFICA|EXPIDE)\b.{0,90}"
+                r"\bMANDAMIENTO(?: DE EJECUCION)?\b",
+                texto_limpio,
+            ))
+            return es_rotulo_mandamiento or encabezado_mandamiento or accion_mandamiento
+
+        terminos_bancarios = {
+            "CONGELAMIENTO", "CONGELAMIENTO DE CUENTAS", "RETENCION DE CUENTAS",
+            "BLOQUEO DE CUENTAS", "OFICIO RETENCION", "MEDIDA CAUTELAR BANCARIA",
+            "RETENCION BANCARIA", "INMOVILIZACION DE FONDOS",
+            "SUPERINTENDENCIA DE BANCOS", "OFICIO EMITIDO POR EL BANCO",
+            "OFICIO EMITIDO POR BANCO", "AGREGUESE EL OFICIO EMITIDO POR EL BANCO",
+            "AGREGUESE OFICIO EMITIDO POR EL BANCO", "OFICIO BANCO",
+            "CIERRE DE PROCESO BANCARIO",
+            "CONGELADA", "CONGELADAS", "RETENIDOS", "RETENIDAS",
+            "TRANSFIERA", "TRANSFIERAN", "TRANSFERENCIA DE VALORES",
+        }
+        if termino_norm in terminos_bancarios:
+            if termino_norm not in texto_evaluable:
+                return False
+            # Pedir que se certifique la existencia de cuentas solo localiza
+            # activos; no prueba retencion, congelamiento ni recuperacion.
+            cuenta_afectada = bool(
+                re.search(
+                    r"\bCUENTAS?\b.{0,140}\b(?:CONGELAD[AO]S?|RETENID[AO]S?|"
+                    r"BLOQUEAD[AO]S?|INMOVILIZAD[AO]S?)\b",
+                    texto_contextual,
+                )
+                or re.search(
+                    r"\b(?:CONGELAD[AO]S?|RETENID[AO]S?|BLOQUEAD[AO]S?|"
+                    r"INMOVILIZAD[AO]S?)\b.{0,140}\b(?:CUENTAS?|FONDOS?|VALORES?)\b",
+                    texto_contextual,
+                )
+            )
+            transferencia_valores = bool(
+                re.search(
+                    r"\b(?:TRANSFIER[AE]N?|TRANSFERENCIAS?|TRANSFERID[AO]S?)\b"
+                    r".{0,180}\b(?:VALORES?|FONDOS?|DINERO|MONTOS?|CUENTA JUDICIAL)\b",
+                    texto_contextual,
+                )
+                or re.search(
+                    r"\b(?:VALORES?|FONDOS?|DINERO|MONTOS?)\b.{0,180}"
+                    r"\b(?:TRANSFIER[AE]N?|TRANSFERENCIAS?|TRANSFERID[AO]S?)\b",
+                    texto_contextual,
+                )
+            )
+            es_rotulo_ejecutado = es_rotulo_breve and bool(re.match(
+                r"^(?:CONGELAMIENTO|RETENCION|BLOQUEO|INMOVILIZACION) DE (?:CUENTAS|FONDOS)\b",
+                texto_contextual,
+            ))
+            return es_rotulo_ejecutado or cuenta_afectada or transferencia_valores
+
+        if termino_norm in {"LIQUIDACION", "LIQUIDADOR"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            # "Liquidacion" aparece con frecuencia en la descripcion inicial
+            # del tipo de juicio. Solo es fase 6.1 cuando la actuacion es un
+            # rotulo procesal breve o contiene una gestion pericial concreta.
+            marcadores_liquidacion = (
+                "PERITO LIQUIDADOR",
+                "LIQUIDACION PERITO LIQUIDADOR",
+                "INFORME DE LIQUIDACION",
+                "INFORME PERICIAL DE LIQUIDACION",
+                "LIQUIDACION DE CAPITAL E INTERESES",
+                "NOMBRAMIENTO DE PERITO",
+                "INFORME DEL PERITO",
+                "APRUEBA LA LIQUIDACION",
+                "APROBACION DE LIQUIDACION",
+                "PRACTIQUE LA LIQUIDACION",
+                "PRACTICAR LA LIQUIDACION",
+                "PRESENTA LA LIQUIDACION",
+                "TRASLADO CON LA LIQUIDACION",
+            )
+            es_rotulo_liquidacion = es_rotulo_breve and bool(re.match(
+                r"^(?:LIQUIDACION|LIQUIDADOR|PERITO|NOMBRAMIENTO|INFORME)\b",
+                texto_limpio,
+            ))
+            return es_rotulo_liquidacion or any(
+                marcador in texto_evaluable for marcador in marcadores_liquidacion
+            )
+
+        if termino_norm in {
+            "EJECUTORIA", "EJECUTORIADA", "SENTENCIA EJECUTORIADA",
+            "AUTO FIRME", "SENTENCIA EN FIRME", "CERTIFICO EJECUTORIA",
+        }:
+            if termino_norm not in texto_evaluable:
+                return False
+            # La formula "ejecutoriado que sea el presente auto" anuncia una
+            # condicion futura y no acredita que la sentencia ya este firme.
+            texto_sin_condicion_futura = re.sub(
+                r"\b(?:UNA VEZ\s+)?EJECUTORIAD[OA]\s+QUE\s+SEA\s+EL\s+PRESENTE\s+AUTO\b",
+                " ",
+                texto_limpio,
+            )
+            if termino_norm not in texto_sin_condicion_futura:
+                return False
+            marcadores_ejecutoria = (
+                "RAZON DE EJECUTORIA",
+                "RAZON DE EJECUTORIADA",
+                "SENTENCIA EJECUTORIADA",
+                "SENTENCIA SE ENCUENTRA EJECUTORIADA",
+                "SENTENCIA EN FIRME",
+                "AUTO FIRME",
+                "CERTIFICO EJECUTORIA",
+                "HA CAUSADO EJECUTORIA",
+                "DECLARA EJECUTORIADA",
+                "EFECTO DE SENTENCIA EJECUTORIADA",
+            )
+            es_rotulo_ejecutoria = es_rotulo_breve and bool(re.match(
+                r"^(?:RAZON DE )?(?:SENTENCIA )?EJECUTORIAD[AO]?\b",
+                texto_sin_condicion_futura,
+            ))
+            sentencia_declarada_ejecutoriada = bool(re.search(
+                r"\bSENTENCIA\b.{0,120}\bSE\s+ENCUENTRA\b.{0,50}"
+                r"\bEJECUTORIADA\b",
+                texto_sin_condicion_futura,
+            ))
+            return es_rotulo_ejecutoria or sentencia_declarada_ejecutoriada or any(
+                marcador in texto_sin_condicion_futura for marcador in marcadores_ejecutoria
+            )
+
+        if termino_norm in {"CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            marcadores_respuesta = (
+                "CONTESTACION A LA DEMANDA",
+                "ESCRITO DE CONTESTACION",
+                "PRESENTA CONTESTACION",
+                "CONTESTA LA DEMANDA",
+                "SE DA POR CONTESTADA",
+                "OPONE EXCEPCIONES",
+                "PRESENTA EXCEPCIONES",
+            )
+            es_rotulo_contestacion = es_rotulo_breve and bool(re.match(
+                r"^(?:CONTESTACION|ESCRITO DE CONTESTACION|EXCEPCIONES|ALLANAMIENTO)\b",
+                texto_limpio,
+            ))
+            return es_rotulo_contestacion or any(
+                marcador in texto_evaluable for marcador in marcadores_respuesta
+            )
+
+        if termino_norm == "SENTENCIA":
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(
+                r"\b(?:PRONUNCIARA|DICTARA|EMITIRA)\b.{0,50}\bSENTENCIA\b",
+                texto_limpio,
+            ):
+                return False
+            marcadores_sentencia_emitida = (
+                "SENTENCIA QUE ANTECEDE",
+                "SENTENCIA SE ENCUENTRA",
+                "SENTENCIA EMITIDA",
+                "DICTA SENTENCIA",
+                "EMITE SENTENCIA",
+                "SENTENCIA ORAL",
+            )
+            return es_rotulo_breve or any(
+                marcador in texto_evaluable for marcador in marcadores_sentencia_emitida
+            )
+
+        if termino_norm in {"RESOLUCION", "FALLO"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            return es_rotulo_breve or bool(
+                re.search(r"\b(?:PARTE RESOLUTIVA|RESUELVE|FALLA)\b", texto_evaluable)
+            )
+
+        terminos_remate = {
+            "REMATE", "SUBASTA", "POSTURA", "CONVOCATORIA A REMATE",
+            "AVALUO DE BIEN", "FECHA DE REMATE", "OFERTA DE REMATE",
+            "PUBLICACION REMATE", "FECHA DE PUBLICACION REMATE",
+            "AUTO DE ADJUDICACION", "ADJUDICACION",
+        }
+        if termino_norm in terminos_remate:
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(
+                r"\b(?:NO\s+SE\s+HA\s+REALIZADO|NO\s+SE\s+REALIZO|SE\s+NIEGA|"
+                r"PREVIO\s+A\s+SENALAR)\b.{0,100}\bREMATE\b",
+                texto_contextual,
+            ):
+                return False
+            es_acta_ejecutada = es_rotulo_breve and bool(re.match(
+                r"^(?:ACTA DE REMATE|AUTO DE ADJUDICACION|ADJUDICACION)\b",
+                texto_contextual,
+            ))
+            resultado_remate = bool(
+                re.search(
+                    r"\b(?:SE\s+)?(?:REALIZO|PRACTICO|CONCLUYO|CERRO)\b.{0,100}\bREMATE\b",
+                    texto_contextual,
+                )
+                or re.search(
+                    r"\bREMATE\b.{0,140}\b(?:REALIZADO|CONCLUIDO|CERRADO|ADJUDICAD[AO]|"
+                    r"MEJOR POSTURA|POSTOR GANADOR)\b",
+                    texto_contextual,
+                )
+                or re.search(r"\b(?:AUTO DE )?ADJUDICACION\b", texto_contextual)
+                or re.search(
+                    r"\b(?:VALORES?|FONDOS?|PRODUCTO)\b.{0,140}\bREMATE\b.{0,180}"
+                    r"\b(?:TRANSFIER|ENTREG|PAG)\w*\b",
+                    texto_contextual,
+                )
+            )
+            return es_acta_ejecutada or resultado_remate
+
+        if termino_norm == "EMBARGO":
+            if termino_norm not in texto_evaluable:
+                return False
+            texto_sin_conector = re.sub(
+                r"\bSIN(?:\s|&NBSP;|&#160;|<[^>]+>)+EMBARGO\b",
+                " ",
+                texto_limpio,
+                flags=re.IGNORECASE,
+            )
+            if not re.search(r"\bEMBARGO\b", texto_sin_conector):
+                return False
+            if re.search(
+                r"\bNO\s+SE\s+HA\s+ORDENADO\b.{0,35}\bEMBARGO\b",
+                texto_sin_conector,
+            ):
+                return False
+            if re.search(
+                r"\b(?:NO\s+PUEDE\s+EJECUTAR|SE\s+(?:LO\s+|LA\s+)?NIEGA)\b",
+                texto_sin_conector,
+            ):
+                # Una solicitud de embargo expresamente rechazada no es una
+                # orden, aunque la providencia empiece con "se dispone".
+                return False
+            if (
+                "PONE EN CONOCIMIENTO" in texto_sin_conector
+                and re.search(
+                    r"\bDENTRO DE LA CAUSA\b.{0,180}\bORDENAD[OA]\b"
+                    r".{0,50}\bEMBARGO\b",
+                    texto_sin_conector,
+                )
+            ):
+                return False
+            # Una cita doctrinal, una peticion, una referencia normativa o una
+            # negativa expresa no equivalen a que el juzgado decrete embargo.
+            es_rotulo_embargo = es_rotulo_breve and bool(re.match(
+                r"^(?:EMBARGO|ACTA DE EMBARGO|INSCRIPCION DE EMBARGO)\b",
+                texto_sin_conector,
+            ))
+            accion_embargo = bool(re.search(
+                r"\b(?:ORDENA|ORDENAD[OA]|DISPONE|DECRETA|TRABA|PRACTICA|INSCRIBE|EJECUTA|REALIZA)\b"
+                r".{0,100}\bEMBARGO\b",
+                texto_sin_conector,
+            ))
+            return es_rotulo_embargo or accion_embargo
+
+        return termino_norm in texto_evaluable
+
+    @classmethod
     def calcular_siguiente_fase(cls, fase_actual):
         """
         Dada la fase actual encontrada, retorna la siguiente fase y etapa según ORDEN_FASES.
@@ -341,6 +756,93 @@ class MotorInferenciaProcesal:
             return None
         return max(enumerate(candidatos), key=lambda item: (cls._fecha_ordenable(item[1]["fecha"]), item[0]))[1]
 
+    @classmethod
+    def _hallazgos_fase_en_actuaciones(cls, actuaciones, fase):
+        """Reune la evidencia fechada de una fase en todo el historial disponible."""
+        candidatos = []
+        for etapa, fase_taxonomia, terminos in cls.TAXONOMIA_COMPLETA:
+            if fase_taxonomia != fase:
+                continue
+            for act in actuaciones:
+                norm = normalizar_texto(act.get("detalle", ""))
+                if any(cls._termino_procesal_presente(norm, termino) for termino in terminos):
+                    candidatos.append({
+                        "etapa": etapa,
+                        "fase": fase,
+                        "fecha": act.get("fecha"),
+                        "prioridad": cls.obtener_indice_fase(fase),
+                        "actuacion": norm,
+                    })
+            break
+        return candidatos
+
+    @classmethod
+    def _hallazgo_fase_en_actuaciones(cls, actuaciones, fase):
+        """Busca la evidencia fechada mas reciente de una fase en todo el historial."""
+        return cls._hallazgo_mas_reciente(
+            cls._hallazgos_fase_en_actuaciones(actuaciones, fase), fase
+        )
+
+    @classmethod
+    def _hallazgo_calificacion_principal(cls, hallazgos):
+        """Prioriza el acto de calificacion, no menciones incidentales posteriores."""
+        candidatos = [
+            hallazgo
+            for hallazgo in hallazgos
+            if hallazgo.get("fase") == "1.3 CALIFICACION" and hallazgo.get("fecha")
+        ]
+        if not candidatos:
+            return None
+
+        marcadores_explicitos = (
+            "CALIFICACION DE SOLICITUD",
+            "CALIFICACION DE DEMANDA",
+            "AUTO DE CALIFICACION",
+            "CALIFICA LA DEMANDA",
+            "DEMANDA Y CALIFICACION",
+            "ACEPTA A TRAMITE",
+            "ADMITE A TRAMITE",
+            "AUTO INICIAL",
+        )
+        explicitos = [
+            hallazgo
+            for hallazgo in candidatos
+            if any(marcador in hallazgo.get("actuacion", "") for marcador in marcadores_explicitos)
+        ]
+        return cls._hallazgo_mas_reciente(
+            explicitos or candidatos, "1.3 CALIFICACION"
+        )
+
+    @staticmethod
+    def _es_citacion_fallida(texto_normalizado):
+        return bool(
+            re.search(r"\bCITACION\W*NO\s+REALIZADA\b", texto_normalizado)
+            or "REENVIO CITACION" in texto_normalizado
+            or "RAZON ENVIO A CITACIONES" in texto_normalizado
+            or "RAZON DE NO CITACION" in texto_normalizado
+        )
+
+    @staticmethod
+    def _es_citacion_fallida_explicita(texto_normalizado):
+        return bool(
+            re.search(r"\bCITACION\W*NO\s+REALIZADA\b", texto_normalizado)
+            or "REENVIO CITACION" in texto_normalizado
+            or "RAZON DE NO CITACION" in texto_normalizado
+            or "NULIDAD POR FALTA DE CITACION" in texto_normalizado
+        )
+
+    @staticmethod
+    def _es_citacion_exitosa(texto_normalizado):
+        if MotorInferenciaProcesal._es_citacion_fallida_explicita(texto_normalizado):
+            return False
+        return bool(
+            re.search(r"\bCITACION\W*REALIZADA\b", texto_normalizado)
+            or "BOLETA DE CITACION NOTIFICADA" in texto_normalizado
+            or "CITADO Y NOTIFICADO" in texto_normalizado
+            or "LEGALMENTE CITADO" in texto_normalizado
+            or "LEGALMENTE CITADA" in texto_normalizado
+            or "ACTA DE CITACION" in texto_normalizado
+        )
 
     @classmethod
     def _decision_con_evidencia(cls, regla, etapa, fase, evidencia):
@@ -364,14 +866,33 @@ class MotorInferenciaProcesal:
         for act in actuaciones:
             detalle = act.get("detalle", "")
             norm = normalizar_texto(detalle)
+            detalle_limpio = re.sub(r"<[^>]+>", " ", norm)
+            detalle_limpio = re.sub(r"\s+", " ", detalle_limpio).strip()
+            es_rotulo_estructural = len(detalle_limpio) <= 300
+            contexto_organo = normalizar_texto(" ".join(
+                str(act.get(campo, "") or "")
+                for campo in (
+                    "DEPENDENCIA_JURISDICCIONAL",
+                    "DEPENDENCIA",
+                    "ORGANO_JURISDICCIONAL",
+                )
+            ))
             
             # Detectar cambio de instancia o rama en el árbol de actuaciones
-            if any(k in norm for k in ["CORTE PROVINCIAL", "SEGUNDA INSTANCIA", "SALA ESPECIALIZADA", "TRIBUNAL DE ALZADA"]):
-                instancia_actual = "SEGUNDA INSTANCIA"
+            marcadores_segunda = ["CORTE PROVINCIAL", "SEGUNDA INSTANCIA", "SALA ESPECIALIZADA", "TRIBUNAL DE ALZADA"]
+            marcadores_casacion = ["CORTE NACIONAL", "CASACION", "SALA DE LO CONTENCIOSO"]
+            es_segunda = any(k in contexto_organo for k in marcadores_segunda) or (
+                es_rotulo_estructural and any(k in norm for k in marcadores_segunda)
+            )
+            es_casacion = any(k in contexto_organo for k in marcadores_casacion) or (
+                es_rotulo_estructural and any(k in norm for k in marcadores_casacion)
+            )
+            if es_casacion:
+                instancia_actual = "CASACION"
                 if instancia_actual not in instancias:
                     instancias[instancia_actual] = []
-            elif any(k in norm for k in ["CORTE NACIONAL", "CASACION", "SALA DE LO CONTENCIOSO"]):
-                instancia_actual = "CASACION"
+            elif es_segunda:
+                instancia_actual = "SEGUNDA INSTANCIA"
                 if instancia_actual not in instancias:
                     instancias[instancia_actual] = []
             elif "INSTANCIA" in act and act["INSTANCIA"]:
@@ -455,19 +976,10 @@ class MotorInferenciaProcesal:
                     "actuacion": norm
                 })
 
-            if any(k in norm for k in ["SUPERINTENDENCIA DE BANCOS", "AGREGUESE OFICIO EMITIDO POR BANCO", "AGREGUESE EL OFICIO EMITIDO POR EL BANCO"]):
-                hallazgos.append({
-                    "etapa": "6 LIQUIDACION Y EMBARGO",
-                    "fase": "6.5 CONGELAMIENTO DE CUENTAS / CIERRE",
-                    "fecha": fecha,
-                    "prioridad": cls.obtener_indice_fase("6.5 CONGELAMIENTO DE CUENTAS / CIERRE"),
-                    "actuacion": norm
-                })
-
             for etapa, fase, terminos in cls.TAXONOMIA_COMPLETA:
                 for term in terminos:
                     term_norm = normalizar_texto(term)
-                    if term_norm in norm:
+                    if cls._termino_procesal_presente(norm, term_norm):
                         prioridad = cls.obtener_indice_fase(fase)
                         hallazgos.append({
                             "etapa": etapa,
@@ -493,7 +1005,7 @@ class MotorInferenciaProcesal:
             for etapa, fase, terminos in cls.TAXONOMIA_COMPLETA:
                 for term in terminos:
                     term_norm = normalizar_texto(term)
-                    if term_norm in norm_global:
+                    if cls._termino_procesal_presente(norm_global, term_norm):
                         prioridad = cls.obtener_indice_fase(fase)
                         fecha_ref = actuaciones_evaluar[0]["fecha"] if actuaciones_evaluar else None
                         hallazgos.append({
@@ -510,7 +1022,10 @@ class MotorInferenciaProcesal:
 
         # PASO 4: Emitir clasificación respetando el avance en la rama activa.
         hallazgos_ordenados = sorted(hallazgos, key=lambda x: x["prioridad"], reverse=True)
-        mejor = hallazgos_ordenados[0]
+        fase_mas_avanzada = hallazgos_ordenados[0]["fase"]
+        mejor = cls._hallazgo_mas_reciente(hallazgos, fase_mas_avanzada)
+        if mejor is None:
+            mejor = hallazgos_ordenados[0]
 
         decision = dict(mejor)
         fase_original = decision["fase"]
@@ -520,14 +1035,40 @@ class MotorInferenciaProcesal:
         # --- APLICACIÓN DE LAS 7 REGLAS DE NEGOCIO DEL MOLDE ---
         texto_actuaciones_unido = " ".join([normalizar_texto(a.get("detalle", "")) for a in actuaciones_evaluar])
 
-        # Regla 2: Citación no realizada / reenvío citación sin citación realizada posterior
-        tiene_citacion_fallida = (
-            any(k in texto_actuaciones_unido for k in ["CITACION NO REALIZADA", "REENVIO CITACION", "RAZON ENVIO A CITACIONES", "RAZON DE NO CITACION"])
-            or ("CITACION" in texto_actuaciones_unido and "NO REALIZADA" in texto_actuaciones_unido)
+        # Regla 2: citación no realizada sin una citación exitosa posterior.
+        actuaciones_normalizadas = [
+            (act, normalizar_texto(act.get("detalle", "")))
+            for act in actuaciones_evaluar
+        ]
+        citaciones_fallidas = [act for act, norm in actuaciones_normalizadas if cls._es_citacion_fallida_explicita(norm)]
+        citaciones_pendientes = [
+            act for act, norm in actuaciones_normalizadas
+            if "RAZON ENVIO A CITACIONES" in norm
+            and not cls._es_citacion_fallida_explicita(norm)
+        ]
+        citaciones_exitosas = [act for act, norm in actuaciones_normalizadas if cls._es_citacion_exitosa(norm)]
+        fecha_ultimo_fallo = max(
+            (cls._fecha_ordenable(act.get("fecha")) for act in citaciones_fallidas),
+            default=datetime.min,
         )
-        tiene_citacion_exitosa = any(k in texto_actuaciones_unido for k in ["CITACION REALIZADA", "BOLETA DE CITACION NOTIFICADA", "ACTA DE CITACION", "CITADO Y NOTIFICADO"])
-        if tiene_citacion_fallida and not tiene_citacion_exitosa:
-            evidencia = cls._hallazgo_mas_reciente(hallazgos, "1.3 CALIFICACION")
+        fecha_ultimo_exito = max(
+            (cls._fecha_ordenable(act.get("fecha")) for act in citaciones_exitosas),
+            default=datetime.min,
+        )
+        fallo_sin_exito_posterior = bool(citaciones_fallidas) and (
+            not citaciones_exitosas or fecha_ultimo_fallo >= fecha_ultimo_exito
+        )
+        pendiente_sin_exito = bool(citaciones_pendientes) and not citaciones_exitosas
+        fase_hasta_citacion = cls.obtener_indice_fase("2.2 CITACION POR PRENSA")
+        evidencia_posterior_a_citacion = (
+            decision.get("prioridad", -1) > fase_hasta_citacion
+        )
+        if (fallo_sin_exito_posterior or pendiente_sin_exito) and not evidencia_posterior_a_citacion:
+            evidencia = cls._hallazgo_calificacion_principal(
+                cls._hallazgos_fase_en_actuaciones(
+                    actuaciones, "1.3 CALIFICACION"
+                )
+            )
             decision = cls._decision_con_evidencia("regla_2_citacion_fallida", "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION", evidencia)
             regla_aplicada = "regla_2_citacion_fallida"
 
@@ -535,7 +1076,11 @@ class MotorInferenciaProcesal:
         tiene_abandono = "ABANDONO POR FALTA DE IMPULSO PROCESAL" in texto_actuaciones_unido
         tiene_ejecutoria = any(k in texto_actuaciones_unido for k in ["RAZON DE EJECUTORIA", "EJECUTORIADA"])
         if tiene_abandono and tiene_ejecutoria:
-            evidencia = cls._hallazgo_mas_reciente(hallazgos, "1.3 CALIFICACION")
+            evidencia = cls._hallazgo_calificacion_principal(
+                cls._hallazgos_fase_en_actuaciones(
+                    actuaciones, "1.3 CALIFICACION"
+                )
+            )
             decision = cls._decision_con_evidencia("regla_5_abandono_ejecutoria", "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION", evidencia)
             regla_aplicada = "regla_5_abandono_ejecutoria"
 
@@ -550,8 +1095,18 @@ class MotorInferenciaProcesal:
         tiene_nombramiento_perito = any(k in texto_actuaciones_unido for k in ["NOMBRAMIENTO DE PERITO", "PERITO LIQUIDADOR NOMBRADO"])
         tiene_informe_perito = any(k in texto_actuaciones_unido for k in ["INFORME PERICIAL", "INFORME DEL PERITO", "INFORME PERITO LIQUIDADOR"])
         if decision["fase"] == "6.1 LIQUIDACION PERITO LIQUIDADOR" and tiene_nombramiento_perito and not tiene_informe_perito:
-            evidencia = cls._hallazgo_mas_reciente(hallazgos, "6.1 LIQUIDACION PERITO LIQUIDADOR")
-            decision = cls._decision_con_evidencia("regla_7_perito_sin_informe", "5 SENTENCIA", "5.3 SENTENCIA EJECUTORIADA", evidencia)
+            evidencia_ejecutoria = cls._hallazgo_mas_reciente(
+                hallazgos, "5.3 SENTENCIA EJECUTORIADA"
+            )
+            # Si el historial contiene la razon de ejecutoria, su fecha es la
+            # evidencia correcta. En expedientes parciales que solo exponen el
+            # nombramiento se conserva el respaldo historico usado hasta ahora,
+            # evitando convertir el inicio de 6.1 en una fase ya terminada.
+            evidencia = evidencia_ejecutoria or decision
+            decision = cls._decision_con_evidencia(
+                "regla_7_perito_sin_informe", "5 SENTENCIA",
+                "5.3 SENTENCIA EJECUTORIADA", evidencia,
+            )
             regla_aplicada = "regla_7_perito_sin_informe"
 
         ultima_etapa = decision["etapa"]
@@ -607,7 +1162,9 @@ class AgenteExtractor:
         for etapa, fase, terminos in self.TAXONOMIA_COMPLETA:
             for term in terminos:
                 term_norm = normalizar_texto(term)
-                if term_norm in texto_norm:
+                if MotorInferenciaProcesal._termino_procesal_presente(
+                    texto_norm, term_norm
+                ):
                     return etapa, fase, 1.0
 
                 palabras_term = [p for p in term_norm.split() if len(p) > 3]

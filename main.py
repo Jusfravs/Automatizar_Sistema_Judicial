@@ -11,6 +11,22 @@ from src.motor_busqueda_web import BotJudicial
 logger = obtener_logger("Main")
 RUTA_CASOS_FALLIDOS = os.path.join("data", "casos_fallidos.txt")
 
+def extraer_ruta_config(argumentos):
+    """Extrae --config <ruta> sin alterar los modos de seleccion existentes."""
+    argumentos = list(argumentos or [])
+    ruta_config = "config.json"
+    if "--config" not in argumentos:
+        return ruta_config, argumentos
+
+    indice = argumentos.index("--config")
+    if indice + 1 >= len(argumentos) or not argumentos[indice + 1].strip():
+        raise ValueError("USO_INVALIDO: --config <ruta>")
+    ruta_config = argumentos[indice + 1]
+    restantes = argumentos[:indice] + argumentos[indice + 2:]
+    if "--config" in restantes:
+        raise ValueError("USO_INVALIDO: --config solo puede indicarse una vez")
+    return ruta_config, restantes
+
 
 def guardar_casos_fallidos(casos_fallidos, ruta_salida=RUTA_CASOS_FALLIDOS):
     """Persiste una causa fallida por línea para facilitar su reanudación."""
@@ -64,6 +80,10 @@ def seleccionar_casos(casos, argumentos):
         if coincidencia is None:
             raise ValueError(f"CAUSA_SOLO_NO_ENCONTRADA:{argumentos[1]}")
         return [coincidencia]
+    if argumentos[0] == "--pendientes":
+        if len(argumentos) != 1:
+            raise ValueError("USO_INVALIDO: --pendientes")
+        return list(casos)
     if argumentos[0] == "--reprocesar-filtro":
         if len(argumentos) != 1:
             raise ValueError("USO_INVALIDO: --reprocesar-filtro")
@@ -103,19 +123,27 @@ def guardar_csv_o_fallar(repo):
 def main(argv=None):
     configurar_logging()
     argumentos = list(sys.argv[1:] if argv is None else argv)
+    ruta_config, argumentos = extraer_ruta_config(argumentos)
     logger.info("=" * 60)
     logger.info("[RPA JUDICATURA] - SISTEMA ASISTIDO DE CONSULTA MASIVA")
     logger.info("=" * 60)
 
-    repo = GestorCasos("config.json")
+    repo = GestorCasos(ruta_config)
+    rutas_config = repo.config.get("rutas", {})
+    ruta_db = rutas_config.get("archivo_db", "estado_casos.db")
+    ruta_casos_fallidos = rutas_config.get(
+        "archivo_casos_fallidos", RUTA_CASOS_FALLIDOS
+    )
     modo_limitado = argumentos[:1] in (
-        ["--solo"], ["--lote"], ["--reprocesar-filtro"])
+        ["--solo"], ["--lote"], ["--pendientes"],
+        ["--reprocesar-filtro"],
+    )
     if modo_limitado:
         repo.filtros["inicio_desde_juicio"] = None
     casos = repo.obtener_casos_pendientes()
 
     # --- Integración con SQLite (GestorCola) ---
-    cola = GestorCola(ruta_db="estado_casos.db")
+    cola = GestorCola(ruta_db=ruta_db)
 
     # Verificar esquema de la base de datos
     if not cola.verificar_esquema():
@@ -130,7 +158,7 @@ def main(argv=None):
     if huerfanos_recuperados > 0:
         logger.info("Se recuperaron %s registros huérfanos.", huerfanos_recuperados)
 
-    if argumentos[:1] == ["--lote"]:
+    if argumentos[:1] in (["--lote"], ["--pendientes"]):
         total_candidatos = len(casos)
         casos = cola.filtrar_causas_pendientes(casos)
         logger.info(
@@ -146,6 +174,11 @@ def main(argv=None):
         logger.info(
             "[LOTE LIMITADO] Se procesarán %s causas consecutivas: %s",
             len(casos), casos,
+        )
+    elif argumentos[:1] == ["--pendientes"]:
+        logger.info(
+            "[PENDIENTES] Se procesaran %s causas unicas pendientes.",
+            len(casos),
         )
     elif argumentos[:1] == ["--reprocesar-filtro"]:
         logger.info(
@@ -167,7 +200,7 @@ def main(argv=None):
     total = len(casos)
     if total == 0:
         logger.info("[-] No existen juicios pendientes para procesar.")
-        guardar_casos_fallidos([])
+        guardar_casos_fallidos([], ruta_casos_fallidos)
         return
 
     logger.info("[*] Total de causas a procesar: %s", total)
@@ -288,12 +321,14 @@ def main(argv=None):
         try:
             if modo_limitado:
                 fallidos_persistidos = actualizar_casos_fallidos_piloto(
-                    casos, casos_fallidos
+                    casos, casos_fallidos, ruta_casos_fallidos
                 )
             else:
-                guardar_casos_fallidos(casos_fallidos)
+                guardar_casos_fallidos(casos_fallidos, ruta_casos_fallidos)
                 fallidos_persistidos = casos_fallidos
-            logger.info("Listado de causas fallidas guardado en: %s", RUTA_CASOS_FALLIDOS)
+            logger.info(
+                "Listado de causas fallidas guardado en: %s", ruta_casos_fallidos
+            )
             logger.info(
                 "Causas fallidas persistidas: %s", fallidos_persistidos
             )

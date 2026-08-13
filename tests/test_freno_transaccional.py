@@ -4,6 +4,7 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from datetime import datetime
 from unittest.mock import patch
 
 import pandas as pd
@@ -11,6 +12,7 @@ import pandas as pd
 from src.gestor_casos import GestorCasos
 from src.gestor_cola import GestorCola
 from src.motor_busqueda_web import BotJudicial
+from scripts.reclasificar_desde_sqlite import _causas_por_sucursal
 
 
 class BotonFalso:
@@ -276,6 +278,149 @@ class FrenoNavegacionTests(unittest.TestCase):
         )
         self.assertIsNone(gestor.df.loc[2, "ULTIMA ETAPA"])
 
+    def test_obtener_casos_pendientes_filtra_por_usuario(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "SUCURSAL": ["SANTO DOMINGO", "SANTO DOMINGO", "SANTO DOMINGO"],
+            "OFICINA": ["TSACHILAS", "TSACHILAS", "OTRA"],
+            "USUARIO": ["LSTODOMINGO", "OTRO", "LSTODOMINGO"],
+            "ESTADO": ["ACTIVO", "ACTIVO", "ACTIVO"],
+            "NUMERO_JUICIO": ["CAUSA-001", "CAUSA-002", "CAUSA-003"],
+        })
+        gestor.filtros = {
+            "sucursal": "", "oficina": "TSACHILAS",
+            "usuario": "LSTODOMINGO", "estado_judicial": "ACTIVO",
+            "columna_estado_judicial": "ESTADO",
+        }
+
+        self.assertEqual(gestor.obtener_casos_pendientes(), ["CAUSA-001"])
+
+    def test_columnas_molde_respetan_orden_solicitado(self):
+        columnas = GestorCasos.COLUMNAS_MOLDE_EXPORTACION
+
+        self.assertLess(
+            columnas.index("FECHA INICIO FASE ACTUAL"),
+            columnas.index("ETAPA ACTUAL"),
+        )
+        self.assertEqual(
+            columnas[-3:],
+            ["ETAPA ACTUAL", "FASE ACTUAL", "DIAS TRANSCURRIDOS"],
+        )
+
+    def test_normaliza_timestamp_iso_a_fecha_del_reporte(self):
+        self.assertEqual(
+            GestorCasos._normalizar_fecha_reporte(
+                "2017-07-05T16:05:00.000+00:00"
+            ),
+            "05/07/2017",
+        )
+    def test_dias_transcurridos_usa_diferencia_de_dias_calendario(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "FECHA FIN ULTIMA FASE": ["08/10/2025"],
+        })
+
+        gestor.calcular_dias_transcurridos(datetime(2026, 8, 12))
+
+        self.assertEqual(gestor.df.loc[0, "DIAS TRANSCURRIDOS"], 308)
+
+
+    def test_exportacion_termina_en_fase_actual_y_dias_transcurridos(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "NUMERO_JUICIO": ["CAUSA-001"],
+            "COMENTARIO_ULTIMO": [""],
+            "HISTORIAL_ACTUACIONES": ["[]"],
+            "UNNAMED: 39": [""],
+            "FECHA FIN ULTIMA FASE": [
+                "2017-07-05T16:05:00.000+00:00"
+            ],
+            "FECHA INICIO FASE ACTUAL": [None],
+            "ETAPA ACTUAL": ["6 LIQUIDACION Y EMBARGO"],
+            "FASE ACTUAL": ["6.3 EMBARGO"],
+        })
+        gestor.hoja = "migrado"
+
+        with tempfile.TemporaryDirectory() as temporal:
+            gestor.ruta_final = os.path.join(temporal, "reporte.xlsx")
+            gestor.exportar_excel()
+            exportado = pd.read_excel(gestor.ruta_final, dtype=str)
+
+        self.assertEqual(
+            exportado.columns[-4:].tolist(),
+            [
+                "FECHA INICIO FASE ACTUAL",
+                "ETAPA ACTUAL",
+                "FASE ACTUAL",
+                "DIAS TRANSCURRIDOS",
+            ],
+        )
+        self.assertEqual(exportado.loc[0, "FECHA FIN ULTIMA FASE"], "05/07/2017")
+
+        self.assertEqual(
+            exportado.loc[0, "FECHA INICIO FASE ACTUAL"], "05/07/2017"
+        )
+
+    def test_exportacion_acorta_etiquetas_de_citacion_y_congelamiento(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "NUMERO_JUICIO": ["CAUSA-001", "CAUSA-002"],
+            "COMENTARIO_ULTIMO": ["", ""],
+            "FECHA FIN ULTIMA FASE": ["01/01/2026", "02/01/2026"],
+            "FECHA INICIO FASE ACTUAL": ["01/01/2026", "02/01/2026"],
+            "ULTIMA FASE": [
+                "2.1 CITACION (PERSONA/BOLETA)",
+                "6.5 CONGELAMIENTO DE CUENTAS / CIERRE",
+            ],
+            "FASE ACTUAL": [
+                "2.1 CITACION (PERSONA/BOLETA)",
+                "6.5 CONGELAMIENTO DE CUENTAS / CIERRE",
+            ],
+        })
+        gestor.hoja = "migrado"
+
+        with tempfile.TemporaryDirectory() as temporal:
+            gestor.ruta_final = os.path.join(temporal, "reporte.xlsx")
+            gestor.exportar_excel()
+            exportado = pd.read_excel(gestor.ruta_final, dtype=str)
+
+        esperadas = [
+            "2.1 CITACION",
+            "6.5 CONGELAMIENTO DE CUENTAS",
+        ]
+        self.assertEqual(exportado["ULTIMA FASE"].tolist(), esperadas)
+        self.assertEqual(exportado["FASE ACTUAL"].tolist(), esperadas)
+        self.assertEqual(
+            gestor.df["ULTIMA FASE"].tolist(),
+            [
+                "2.1 CITACION (PERSONA/BOLETA)",
+                "6.5 CONGELAMIENTO DE CUENTAS / CIERRE",
+            ],
+        )
+
+    def test_reclasificacion_puede_limitarse_a_sucursal_y_estado_activo(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "SUCURSAL": ["QUITO", "QUITO", "LOS RIOS", " quito "],
+            "ESTADO.1": ["ACTIVO", "FIN", "ACTIVO", " activo "],
+            "NUMERO_JUICIO": [
+                "17230-2020-00001",
+                "17230-2020-00002",
+                "12331-2020-00003",
+                " 17230-2020-00004 ",
+            ],
+        })
+        gestor.config = {
+            "filtros_activos": {
+                "columna_estado_judicial": "ESTADO.1",
+                "estado_judicial": "ACTIVO",
+            }
+        }
+
+        self.assertEqual(
+            _causas_por_sucursal(gestor, "quito"),
+            {"17230202000001", "17230202000004"},
+        )
 
 class PersistenciaTransaccionalTests(unittest.TestCase):
     def test_estado_final_parcial_se_confirma_en_misma_transaccion(self):

@@ -14,6 +14,61 @@ class GestorCasos:
     """
     Repositorio CRUD de datos para la lectura, actualización y persistencia del reporte.
     """
+    COLUMNAS_MOLDE_EXPORTACION = [
+        'FECHA INICIO JUICIO',
+        'FECHA FIN ULTIMA FASE',
+        'ULTIMA ETAPA',
+        'ULTIMA FASE',
+        'FECHA INICIO FASE ACTUAL',
+        'ETAPA ACTUAL',
+        'FASE ACTUAL',
+        'DIAS TRANSCURRIDOS',
+    ]
+    COLUMNAS_FECHA_PROCESAL = {
+        'FECHA FIN ULTIMA FASE',
+        'FECHA INICIO FASE ACTUAL',
+    }
+    COLUMNAS_FASE_EXPORTACION = ('ULTIMA FASE', 'FASE ACTUAL')
+    ETIQUETAS_FASE_EXCEL = {
+        '2.1 CITACION (PERSONA/BOLETA)': '2.1 CITACION',
+        '6.5 CONGELAMIENTO DE CUENTAS / CIERRE': (
+            '6.5 CONGELAMIENTO DE CUENTAS'
+        ),
+    }
+
+    @staticmethod
+    def _parsear_fecha_reporte(valor):
+        """Interpreta fechas del portal, incluidas marcas ISO con zona horaria."""
+        if valor is None or pd.isna(valor) or str(valor).strip() == "":
+            return None
+        if isinstance(valor, pd.Timestamp):
+            return valor.to_pydatetime()
+        if isinstance(valor, datetime):
+            return valor
+
+        fecha_str = str(valor).strip()
+        for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+            try:
+                return datetime.strptime(fecha_str[:10], fmt)
+            except ValueError:
+                continue
+        try:
+            return datetime.fromisoformat(fecha_str.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    @classmethod
+    def _normalizar_fecha_reporte(cls, valor):
+        fecha = cls._parsear_fecha_reporte(valor)
+        return fecha.strftime("%d/%m/%Y") if fecha else valor
+
+    @classmethod
+    def _normalizar_fase_exportacion(cls, valor):
+        """Acorta etiquetas únicamente para la presentación del Excel."""
+        if valor is None or pd.isna(valor):
+            return valor
+        return cls.ETIQUETAS_FASE_EXCEL.get(str(valor).strip(), valor)
+
     def __init__(self, ruta_config="config.json"):
         with open(ruta_config, 'r', encoding='utf-8') as f:
             self.config = json.load(f)
@@ -43,8 +98,13 @@ class GestorCasos:
             self.df = pd.read_csv(self.ruta_csv, low_memory=False)
             self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
 
-        # Si faltan columnas esenciales o filas incompletas, sincronizar una sola vez
-        if ('SUCURSAL' not in self.df.columns or len(self.df) < 1000) and os.path.exists(self.ruta_excel):
+        # Comparar contra el total del reporte; otros archivos validos pueden
+        # contener menos de 1000 filas.
+        total_esperado = self.config.get('auditoria', {}).get('total_esperado')
+        csv_incompleto = (
+            total_esperado is not None and len(self.df) < int(total_esperado)
+        )
+        if ('SUCURSAL' not in self.df.columns or csv_incompleto) and os.path.exists(self.ruta_excel):
             logger.info("El CSV tiene %s registros. Sincronizando datos con el Excel completo...", len(self.df))
             self._inicializar_csv(forzar=True)
             self.df = pd.read_csv(self.ruta_csv, low_memory=False)
@@ -133,6 +193,14 @@ class GestorCasos:
         ofi = str(self.filtros.get('oficina', '') or '').strip().upper()
         if ofi and ofi not in ('TODAS', 'TODOS', 'ALL', 'NONE'):
             mask &= (self.df['OFICINA'].astype(str).str.strip().str.upper() == ofi)
+        usuario = str(self.filtros.get('usuario', '') or '').strip().upper()
+
+        if usuario and usuario not in ('TODAS', 'TODOS', 'ALL', 'NONE'):
+            if 'USUARIO' not in self.df.columns:
+                raise KeyError("La columna configurada para usuario 'USUARIO' no existe en el CSV.")
+            mask &= (
+                self.df['USUARIO'].astype(str).str.strip().str.upper() == usuario
+            )
 
         est = str(self.filtros.get('estado_judicial', '') or '').strip().upper()
         if est and est not in ('TODAS', 'TODOS', 'ALL', 'NONE'):
@@ -163,6 +231,8 @@ class GestorCasos:
         if mask.any():
             for col, val in datos.items():
                 if val is not None:
+                    if col in self.COLUMNAS_FECHA_PROCESAL:
+                        val = self._normalizar_fecha_reporte(val)
                     if col not in self.df.columns:
                         self.df[col] = None
 
@@ -220,20 +290,23 @@ class GestorCasos:
             df_export['FECHA INICIO JUICIO'] = None
 
         # Asegurar presencia de nuevas columnas MOLDE
-        nuevas_cols_molde = [
-            'FECHA INICIO JUICIO',
-            'FECHA FIN ULTIMA FASE',
-            'ULTIMA ETAPA',
-            'ULTIMA FASE',
-            'DIAS TRANSCURRIDOS',
-            'ETAPA ACTUAL',
-            'FASE ACTUAL',
-            'FECHA INICIO FASE ACTUAL'
-        ]
+        nuevas_cols_molde = list(self.COLUMNAS_MOLDE_EXPORTACION)
 
         for col in nuevas_cols_molde:
             if col not in df_export.columns:
                 df_export[col] = None
+
+        # Presentar nombres breves sin modificar las etiquetas procesales internas.
+        for col_fase in self.COLUMNAS_FASE_EXPORTACION:
+            df_export[col_fase] = df_export[col_fase].map(
+                self._normalizar_fase_exportacion
+            )
+
+        # Normalizar timestamps ISO ya existentes sin volver a consultar el portal.
+        for col_fecha in self.COLUMNAS_FECHA_PROCESAL:
+            df_export[col_fecha] = df_export[col_fecha].map(
+                self._normalizar_fecha_reporte
+            )
 
         # Copiar FECHA FIN ULTIMA FASE a FECHA INICIO FASE ACTUAL si está vacía
         mask_copia = df_export['FECHA INICIO FASE ACTUAL'].isna() & df_export['FECHA FIN ULTIMA FASE'].notna()
@@ -255,7 +328,7 @@ class GestorCasos:
             cols_der = []
 
         df_export[' '] = ""  # Columna separadora vacía
-        cols_ordenadas = cols_izq + [' '] + nuevas_cols_molde + cols_der
+        cols_ordenadas = cols_izq + cols_der + [' '] + nuevas_cols_molde
         
         # Eliminar posibles duplicados manteniendo orden
         cols_finales = []
@@ -307,7 +380,7 @@ class GestorCasos:
 
         logger.info("¡Archivo Excel final generado exitosamente!")
 
-    def calcular_dias_transcurridos(self):
+    def calcular_dias_transcurridos(self, fecha_actual=None):
         """
         Calcula la columna 'DIAS TRANSCURRIDOS' como la diferencia en días calendario
         entre la fecha actual y 'FECHA FIN ULTIMA FASE' (o 'FECHA INICIAL FASE ACTUAL').
@@ -322,25 +395,17 @@ class GestorCasos:
 
         self.df[col_dias] = None
 
-        hoy = datetime.now()
+        hoy = (fecha_actual or datetime.now()).date()
         conteo = 0
 
         for idx, valor in self.df[col_fecha].items():
             if pd.isna(valor) or str(valor).strip() == "":
                 continue
 
-            fecha_str = str(valor).strip()
-            fecha_parsed = None
-
-            for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
-                try:
-                    fecha_parsed = datetime.strptime(fecha_str, fmt)
-                    break
-                except ValueError:
-                    continue
+            fecha_parsed = self._parsear_fecha_reporte(valor)
 
             if fecha_parsed:
-                dias = (hoy - fecha_parsed).days
+                dias = (hoy - fecha_parsed.date()).days
                 self.df.at[idx, col_dias] = max(0, dias)
                 conteo += 1
 
