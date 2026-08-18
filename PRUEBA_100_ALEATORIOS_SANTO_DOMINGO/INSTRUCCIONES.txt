@@ -1,0 +1,14 @@
+PRUEBA AISLADA DE 100 CAUSAS ALEATORIAS - SANTO DOMINGO
+
+Semilla reproducible: 20260814
+Causas unicas seleccionadas: 100
+Filas fuente conservadas: 108
+
+La base SQLite, el CSV de trabajo, el Excel final y la lista de fallidos son exclusivos
+de esta carpeta. La prueba no modifica data/santo_domingo ni su base productiva.
+
+Desde PowerShell, situado en la raiz del proyecto, ejecute:
+& '.\PRUEBA_100_ALEATORIOS_SANTO_DOMINGO\INICIAR_PRUEBA_100.ps1'
+
+El lanzador exige AUTOCAPTCHA_API_KEY en la misma terminal y procesa 10 bloques
+secuenciales de 10 causas. Nunca abra dos procesos main.py a la vez.

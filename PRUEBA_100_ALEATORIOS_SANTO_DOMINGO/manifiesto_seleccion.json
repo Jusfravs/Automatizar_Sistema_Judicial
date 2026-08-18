@@ -1,0 +1,420 @@
+{
+  "semilla": 20260814,
+  "causas_unicas": 100,
+  "filas_fuente_conservadas": 108,
+  "universo_causas_unicas": 263,
+  "columnas_generadas_limpiadas": [
+    "COMENTARIO_ULTIMO",
+    "FECHA INICIO JUICIO",
+    "FECHA INICIAL FASE ACTUAL",
+    "HISTORIAL_ACTUACIONES",
+    "ULTIMA ETAPA",
+    "ULTIMA FASE",
+    "FECHA FIN ULTIMA FASE",
+    "ETAPA ACTUAL",
+    "FASE ACTUAL",
+    "FECHA INICIO FASE ACTUAL"
+  ],
+  "causas": [
+    {
+      "orden": 1,
+      "numero_juicio_normalizado": "23331202500431"
+    },
+    {
+      "orden": 2,
+      "numero_juicio_normalizado": "23331202100510"
+    },
+    {
+      "orden": 3,
+      "numero_juicio_normalizado": "23331202500769"
+    },
+    {
+      "orden": 4,
+      "numero_juicio_normalizado": "23331202602492"
+    },
+    {
+      "orden": 5,
+      "numero_juicio_normalizado": "23331202103391"
+    },
+    {
+      "orden": 6,
+      "numero_juicio_normalizado": "23331202503067"
+    },
+    {
+      "orden": 7,
+      "numero_juicio_normalizado": "23331202202930"
+    },
+    {
+      "orden": 8,
+      "numero_juicio_normalizado": "23331202202714"
+    },
+    {
+      "orden": 9,
+      "numero_juicio_normalizado": "23331202201181"
+    },
+    {
+      "orden": 10,
+      "numero_juicio_normalizado": "23331202600401"
+    },
+    {
+      "orden": 11,
+      "numero_juicio_normalizado": "23331202203693"
+    },
+    {
+      "orden": 12,
+      "numero_juicio_normalizado": "23331202100217"
+    },
+    {
+      "orden": 13,
+      "numero_juicio_normalizado": "23331202202588"
+    },
+    {
+      "orden": 14,
+      "numero_juicio_normalizado": "23331202200010"
+    },
+    {
+      "orden": 15,
+      "numero_juicio_normalizado": "23331202602553"
+    },
+    {
+      "orden": 16,
+      "numero_juicio_normalizado": "23331202504347"
+    },
+    {
+      "orden": 17,
+      "numero_juicio_normalizado": "23331201901321"
+    },
+    {
+      "orden": 18,
+      "numero_juicio_normalizado": "23331202202838"
+    },
+    {
+      "orden": 19,
+      "numero_juicio_normalizado": "23331202202188"
+    },
+    {
+      "orden": 20,
+      "numero_juicio_normalizado": "23331202404598"
+    },
+    {
+      "orden": 21,
+      "numero_juicio_normalizado": "23331202500571"
+    },
+    {
+      "orden": 22,
+      "numero_juicio_normalizado": "23331202404915"
+    },
+    {
+      "orden": 23,
+      "numero_juicio_normalizado": "23331202400816"
+    },
+    {
+      "orden": 24,
+      "numero_juicio_normalizado": "23331202202716"
+    },
+    {
+      "orden": 25,
+      "numero_juicio_normalizado": "23331202304148"
+    },
+    {
+      "orden": 26,
+      "numero_juicio_normalizado": "23331202300116"
+    },
+    {
+      "orden": 27,
+      "numero_juicio_normalizado": "23331202403941"
+    },
+    {
+      "orden": 28,
+      "numero_juicio_normalizado": "23331202401333"
+    },
+    {
+      "orden": 29,
+      "numero_juicio_normalizado": "23331202404084"
+    },
+    {
+      "orden": 30,
+      "numero_juicio_normalizado": "23331202100219"
+    },
+    {
+      "orden": 31,
+      "numero_juicio_normalizado": "23331202600694"
+    },
+    {
+      "orden": 32,
+      "numero_juicio_normalizado": "23331202502386"
+    },
+    {
+      "orden": 33,
+      "numero_juicio_normalizado": "23331202401053"
+    },
+    {
+      "orden": 34,
+      "numero_juicio_normalizado": "23331202300006"
+    },
+    {
+      "orden": 35,
+      "numero_juicio_normalizado": "23331202203716"
+    },
+    {
+      "orden": 36,
+      "numero_juicio_normalizado": "23331202403606"
+    },
+    {
+      "orden": 37,
+      "numero_juicio_normalizado": "23331202602188"
+    },
+    {
+      "orden": 38,
+      "numero_juicio_normalizado": "23331202602551"
+    },
+    {
+      "orden": 39,
+      "numero_juicio_normalizado": "23331202204260"
+    },
+    {
+      "orden": 40,
+      "numero_juicio_normalizado": "23331202302816"
+    },
+    {
+      "orden": 41,
+      "numero_juicio_normalizado": "23331202501870"
+    },
+    {
+      "orden": 42,
+      "numero_juicio_normalizado": "23331202602387"
+    },
+    {
+      "orden": 43,
+      "numero_juicio_normalizado": "23331202102078"
+    },
+    {
+      "orden": 44,
+      "numero_juicio_normalizado": "23331202300007"
+    },
+    {
+      "orden": 45,
+      "numero_juicio_normalizado": "23331202100506"
+    },
+    {
+      "orden": 46,
+      "numero_juicio_normalizado": "23331202100218"
+    },
+    {
+      "orden": 47,
+      "numero_juicio_normalizado": "23331202200005"
+    },
+    {
+      "orden": 48,
+      "numero_juicio_normalizado": "23331202103371"
+    },
+    {
+      "orden": 49,
+      "numero_juicio_normalizado": "23331202402712"
+    },
+    {
+      "orden": 50,
+      "numero_juicio_normalizado": "23331202102127"
+    },
+    {
+      "orden": 51,
+      "numero_juicio_normalizado": "23331202102590"
+    },
+    {
+      "orden": 52,
+      "numero_juicio_normalizado": "23331201901393"
+    },
+    {
+      "orden": 53,
+      "numero_juicio_normalizado": "23331202600963"
+    },
+    {
+      "orden": 54,
+      "numero_juicio_normalizado": "23331202300120"
+    },
+    {
+      "orden": 55,
+      "numero_juicio_normalizado": "23331202302825"
+    },
+    {
+      "orden": 56,
+      "numero_juicio_normalizado": "23331202203990"
+    },
+    {
+      "orden": 57,
+      "numero_juicio_normalizado": "23331202203792"
+    },
+    {
+      "orden": 58,
+      "numero_juicio_normalizado": "23331202204190"
+    },
+    {
+      "orden": 59,
+      "numero_juicio_normalizado": "23331202203524"
+    },
+    {
+      "orden": 60,
+      "numero_juicio_normalizado": "23331201801749"
+    },
+    {
+      "orden": 61,
+      "numero_juicio_normalizado": "23331202100572"
+    },
+    {
+      "orden": 62,
+      "numero_juicio_normalizado": "23331202504106"
+    },
+    {
+      "orden": 63,
+      "numero_juicio_normalizado": "23331202404096"
+    },
+    {
+      "orden": 64,
+      "numero_juicio_normalizado": "23331202504566"
+    },
+    {
+      "orden": 65,
+      "numero_juicio_normalizado": "23331202304275"
+    },
+    {
+      "orden": 66,
+      "numero_juicio_normalizado": "23331202202832"
+    },
+    {
+      "orden": 67,
+      "numero_juicio_normalizado": "23331202100573"
+    },
+    {
+      "orden": 68,
+      "numero_juicio_normalizado": "23331202503206"
+    },
+    {
+      "orden": 69,
+      "numero_juicio_normalizado": "23331202504550"
+    },
+    {
+      "orden": 70,
+      "numero_juicio_normalizado": "23331202101941"
+    },
+    {
+      "orden": 71,
+      "numero_juicio_normalizado": "23331201902879"
+    },
+    {
+      "orden": 72,
+      "numero_juicio_normalizado": "23331202502418"
+    },
+    {
+      "orden": 73,
+      "numero_juicio_normalizado": "23331202304149"
+    },
+    {
+      "orden": 74,
+      "numero_juicio_normalizado": "23331202302815"
+    },
+    {
+      "orden": 75,
+      "numero_juicio_normalizado": "23331202401841"
+    },
+    {
+      "orden": 76,
+      "numero_juicio_normalizado": "23331202400515"
+    },
+    {
+      "orden": 77,
+      "numero_juicio_normalizado": "23331202503005"
+    },
+    {
+      "orden": 78,
+      "numero_juicio_normalizado": "23331202203985"
+    },
+    {
+      "orden": 79,
+      "numero_juicio_normalizado": "23331202202202"
+    },
+    {
+      "orden": 80,
+      "numero_juicio_normalizado": "23331202300128"
+    },
+    {
+      "orden": 81,
+      "numero_juicio_normalizado": "23331202502292"
+    },
+    {
+      "orden": 82,
+      "numero_juicio_normalizado": "23331202502530"
+    },
+    {
+      "orden": 83,
+      "numero_juicio_normalizado": "23331202404911"
+    },
+    {
+      "orden": 84,
+      "numero_juicio_normalizado": "23331202203790"
+    },
+    {
+      "orden": 85,
+      "numero_juicio_normalizado": "23331202202834"
+    },
+    {
+      "orden": 86,
+      "numero_juicio_normalizado": "23331202204257"
+    },
+    {
+      "orden": 87,
+      "numero_juicio_normalizado": "23331202403896"
+    },
+    {
+      "orden": 88,
+      "numero_juicio_normalizado": "23331202500486"
+    },
+    {
+      "orden": 89,
+      "numero_juicio_normalizado": "23331202204262"
+    },
+    {
+      "orden": 90,
+      "numero_juicio_normalizado": "23331202504549"
+    },
+    {
+      "orden": 91,
+      "numero_juicio_normalizado": "23331202202089"
+    },
+    {
+      "orden": 92,
+      "numero_juicio_normalizado": "23331202400534"
+    },
+    {
+      "orden": 93,
+      "numero_juicio_normalizado": "23331202500664"
+    },
+    {
+      "orden": 94,
+      "numero_juicio_normalizado": "23331202501798"
+    },
+    {
+      "orden": 95,
+      "numero_juicio_normalizado": "23331202303080"
+    },
+    {
+      "orden": 96,
+      "numero_juicio_normalizado": "23331202600954"
+    },
+    {
+      "orden": 97,
+      "numero_juicio_normalizado": "23331202503099"
+    },
+    {
+      "orden": 98,
+      "numero_juicio_normalizado": "23331202602267"
+    },
+    {
+      "orden": 99,
+      "numero_juicio_normalizado": "23331202203796"
+    },
+    {
+      "orden": 100,
+      "numero_juicio_normalizado": "23331202502863"
+    }
+  ]
+}

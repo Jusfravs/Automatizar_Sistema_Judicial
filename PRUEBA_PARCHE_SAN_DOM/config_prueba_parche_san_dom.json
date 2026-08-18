@@ -1,0 +1,58 @@
+{
+    "filtros_activos": {
+        "sucursal": "",
+        "oficina": "TSACHILAS",
+        "usuario": "LSTODOMINGO",
+        "estado_judicial": "ACTIVO",
+        "columna_estado_judicial": "ESTADO",
+        "inicio_desde_juicio": ""
+    },
+    "rutas": {
+        "archivo_csv": "PRUEBA_PARCHE_SAN_DOM/reporte_trabajo_prueba.csv",
+        "archivo_origen": "PRUEBA_PARCHE_SAN_DOM/CASOS_PRUEBA_PARCHE_SAN_DOM.xlsx",
+        "archivo_excel_final": "PRUEBA_PARCHE_SAN_DOM/REPORTE_PROCESADO_PRUEBA_PARCHE_SAN_DOM.xlsx",
+        "hoja_lectura": "LSTODOMINGO",
+        "archivo_db": "PRUEBA_PARCHE_SAN_DOM/estado_prueba_parche_san_dom.db",
+        "archivo_casos_fallidos": "PRUEBA_PARCHE_SAN_DOM/casos_fallidos_prueba.txt"
+    },
+    "navegacion": {
+        "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+        "captcha_timeout_ms": 300000,
+        "captcha_render_timeout_ms": 15000,
+        "resultados_timeout_ms": 30000,
+        "datos_generales_timeout_ms": 30000,
+        "actuaciones_timeout_ms": 30000,
+        "movimientos_timeout_ms": 30000,
+        "retorno_buscador_timeout_ms": 15000,
+        "pantalla_final_timeout_ms": 30000,
+        "sondeo_estabilidad_ms": 250,
+        "comprobaciones_estables": 3,
+        "quietud_api_ms": 750,
+        "max_reintentos_transicion": 2
+    },
+    "captcha": {
+        "modo": "api_supervisada",
+        "proveedor": "2captcha",
+        "api_key_env": "AUTOCAPTCHA_API_KEY",
+        "tipo_tarea": "recaptcha_v2_proxyless",
+        "http_timeout_ms": 10000,
+        "max_intentos_red": 3,
+        "reintento_red_ms": 1000,
+        "resolucion_timeout_ms": 300000,
+        "sondeo_ms": 5000,
+        "confirmacion_inyeccion_timeout_ms": 10000,
+        "espera_post_solucion_ms": 10000,
+        "max_tareas_por_causa": 2,
+        "max_errores_consecutivos": 3,
+        "saldo_minimo_usd": 0.01,
+        "fallback_manual": false,
+        "reportar_incorrecta": true,
+        "reportar_correcta": true
+    },
+    "sistema": {
+        "intervalo_autoguardado": 5
+    },
+    "auditoria": {
+        "total_esperado": 20
+    }
+}

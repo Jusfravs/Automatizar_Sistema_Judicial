@@ -1,0 +1,10 @@
+PRUEBA DE 20 CAUSAS - PARCHE SANTO DOMINGO
+============================================
+
+Ejecutar desde la raíz del proyecto:
+
+& '.\.venv\Scripts\python.exe' -u 'main.py' --config '.\PRUEBA_PARCHE_SAN_DOM\config_prueba_parche_san_dom.json' --pendientes
+
+La prueba usa archivos independientes y no modifica el lote principal.
+El resultado se guardará en:
+PRUEBA_PARCHE_SAN_DOM\REPORTE_PROCESADO_PRUEBA_PARCHE_SAN_DOM.xlsx

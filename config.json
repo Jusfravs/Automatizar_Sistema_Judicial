@@ -38,7 +38,7 @@
         "resolucion_timeout_ms": 300000,
         "sondeo_ms": 5000,
         "confirmacion_inyeccion_timeout_ms": 10000,
-        "espera_post_solucion_ms": 10000,
+        "espera_post_solucion_ms": 3000,
         "max_tareas_por_causa": 2,
         "max_errores_consecutivos": 3,
         "saldo_minimo_usd": 0.01,
@@ -47,7 +47,7 @@
         "reportar_correcta": true
     },
     "sistema": {
-        "intervalo_autoguardado": 5
+        "intervalo_autoguardado": 1
     },
     "auditoria": {
         "total_esperado": 4017
