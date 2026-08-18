@@ -1,0 +1,60 @@
+{
+    "filtros_activos": {
+        "sucursal": "QUITO",
+        "oficina": "QUITO SUR",
+        "usuario": "",
+        "estado_judicial": "ACTIVO",
+        "columna_estado_judicial": "ESTADO",
+        "inicio_desde_juicio": ""
+    },
+    "rutas": {
+        "archivo_csv": "data/quito/reporte_trabajo_quito.csv",
+        "archivo_origen": "data/quito/Reporte_juicios_QUITO_20260817.xlsx",
+        "archivo_excel_final": "data/quito/REPORTE_PROCESADO_QUITO.xlsx",
+        "hoja_lectura": "QUITO",
+        "archivo_db": "data/quito/estado_casos_quito.db",
+        "archivo_casos_fallidos": "data/quito/casos_fallidos_quito.txt"
+    },
+    "navegacion": {
+        "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+        "captcha_timeout_ms": 300000,
+        "captcha_render_timeout_ms": 15000,
+        "resultados_timeout_ms": 30000,
+        "datos_generales_timeout_ms": 30000,
+        "actuaciones_timeout_ms": 60000,
+        "movimientos_timeout_ms": 30000,
+        "retorno_buscador_timeout_ms": 15000,
+        "pantalla_final_timeout_ms": 30000,
+        "sondeo_estabilidad_ms": 100,
+        "comprobaciones_estables": 2,
+        "quietud_api_ms": 250,
+        "max_reintentos_transicion": 2
+    },
+    "captcha": {
+        "modo": "api_supervisada",
+        "proveedor": "2captcha",
+        "api_key_env": "AUTOCAPTCHA_API_KEY",
+        "tipo_tarea": "recaptcha_v2_proxyless",
+        "http_timeout_ms": 10000,
+        "max_intentos_red": 3,
+        "reintento_red_ms": 1000,
+        "resolucion_timeout_ms": 300000,
+        "sondeo_ms": 5000,
+        "confirmacion_inyeccion_timeout_ms": 10000,
+        "espera_post_solucion_ms": 500,
+        "max_tareas_por_causa": 2,
+        "max_errores_consecutivos": 3,
+        "saldo_minimo_usd": 0.01,
+        "fallback_manual": false,
+        "reportar_incorrecta": true,
+        "reportar_correcta": true
+    },
+    "sistema": {
+        "intervalo_autoguardado": 1
+    },
+    "auditoria": {
+        "total_esperado": 129,
+        "total_causas_unicas_esperado": 128,
+        "alcance": "Todos los casos judicialmente ACTIVOS de QUITO / QUITO SUR, sin muestreo"
+    }
+}

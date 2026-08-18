@@ -107,7 +107,7 @@ class BotJudicial:
             "resolucion_timeout_ms": 300000,
             "sondeo_ms": 5000,
             "confirmacion_inyeccion_timeout_ms": 10000,
-            "espera_post_solucion_ms": 10000,
+            "espera_post_solucion_ms": 3000,
             "max_tareas_por_causa": 2,
             "max_errores_consecutivos": 3,
             "saldo_minimo_usd": 0.01,
@@ -1880,7 +1880,7 @@ class BotJudicialTransaccional(BotJudicial):
             raise
 
     def _esperar_despues_captcha(self, causa):
-        espera_ms = max(0, int(self.captcha_config.get("espera_post_solucion_ms", 10000)))
+        espera_ms = max(0, int(self.captcha_config.get("espera_post_solucion_ms", 3000)))
         if espera_ms:
             logger.info(
                 "[CAPTCHA] Esperando %s segundos antes de BUSCAR para %s.",
@@ -2250,9 +2250,56 @@ class BotJudicialTransaccional(BotJudicial):
             raise RuntimeError("CARPETA_NO_RELOCALIZABLE")
         return coincidencias[0]
 
-    def _esperar_informacion_proceso_y_bloquear(self, causa, descriptor):
+    def _firma_api_actuaciones_lista(self, causa, secuencia_inicio):
+        """Devuelve una firma durable cuando la API ya entrego las actuaciones.
+
+        La respuesta JSON se captura completa antes de incorporarse a
+        ``paquetes_api_interceptados``. Esto permite continuar aunque Angular
+        siga renderizando una lista extensa, sin relajar la correspondencia de
+        causa ni la ventana transaccional iniciada por el clic de carpeta.
+        """
+        paquetes = self._paquetes_ventana(
+            secuencia_inicio, self._secuencia_api, causa
+        )
+        actuaciones = self._extraer_actuaciones_api(paquetes)
+        if not paquetes or not actuaciones:
+            return None
+        ultima_captura = max(
+            float(paquete.get("capturado_monotonic", 0.0) or 0.0)
+            for paquete in paquetes
+        )
+        quietud_ms = (monotonic() - ultima_captura) * 1000
+        if quietud_ms < self.navegacion["quietud_api_ms"]:
+            return None
+        secuencias = [int(paquete.get("secuencia", 0)) for paquete in paquetes]
+        return (
+            causa,
+            "API_ACTUACIONES",
+            len(actuaciones),
+            min(secuencias),
+            max(secuencias),
+            round(quietud_ms, 1),
+        )
+
+    def _esperar_informacion_proceso_y_bloquear(
+        self, causa, descriptor, secuencia_inicio=None
+    ):
+        if secuencia_inicio is None:
+            secuencia_inicio = self._secuencia_api
         limite = monotonic() + (self.navegacion["actuaciones_timeout_ms"] / 1000)
         while monotonic() < limite:
+            firma_api = None
+            if self._ruta_es(self.page.url, "/actuaciones"):
+                firma_api = self._firma_api_actuaciones_lista(
+                    causa, secuencia_inicio
+                )
+            if firma_api:
+                self._cambiar_estado_navegacion(
+                    causa, "INFORMACION_PROCESO_CARGANDO", "INFORMACION_PROCESO_LISTA",
+                    "validar_informacion_proceso", clave_carpeta=descriptor["clave_carpeta"],
+                    fuente_listo="api", actuaciones_api=firma_api[2],
+                )
+                return self._activar_bloqueo_navegacion(causa, descriptor)
             texto = self.page.inner_text("body")
             texto_upper = self._normalizar_texto(texto)
             controles = any(senal in texto_upper for senal in ("EXPORTAR PDF", "AMPLIAR TODO", "CONTRAER TODO"))
@@ -2266,6 +2313,7 @@ class BotJudicialTransaccional(BotJudicial):
                 self._cambiar_estado_navegacion(
                     causa, "INFORMACION_PROCESO_CARGANDO", "INFORMACION_PROCESO_LISTA",
                     "validar_informacion_proceso", clave_carpeta=descriptor["clave_carpeta"],
+                    fuente_listo="dom",
                 )
                 return self._activar_bloqueo_navegacion(causa, descriptor)
             self.page.wait_for_timeout(self.navegacion["sondeo_estabilidad_ms"])
@@ -2296,13 +2344,19 @@ class BotJudicialTransaccional(BotJudicial):
             adjuntos.count(), self._secuencia_api, self._hay_carga_visible(),
         )
 
-    def _esperar_actuaciones_estables(self, causa):
+    def _esperar_actuaciones_estables(self, causa, secuencia_inicio=None):
         limite = monotonic() + (self.navegacion["pantalla_final_timeout_ms"] / 1000)
         estable = 0
         firma_anterior = None
         while monotonic() < limite:
             if not self._ruta_es(self.page.url, "/actuaciones"):
                 raise RuntimeError("INFORMACION_PROCESO_URL_CAMBIO_DURANTE_EXTRACCION")
+            if secuencia_inicio is not None:
+                firma_api = self._firma_api_actuaciones_lista(
+                    causa, secuencia_inicio
+                )
+                if firma_api:
+                    return firma_api
             firma = self._firma_actuaciones(causa)
             quietud = (monotonic() - self._ultima_respuesta_api_monotonic) * 1000 >= self.navegacion["quietud_api_ms"]
             if not firma[-1] and firma == firma_anterior and quietud:
@@ -2463,7 +2517,7 @@ class BotJudicialTransaccional(BotJudicial):
         manifiesto = None
         resultado = None
         try:
-            firma = self._esperar_actuaciones_estables(causa)
+            firma = self._esperar_actuaciones_estables(causa, secuencia_inicio)
             secuencia_fin = self._secuencia_api
             paquetes = self._paquetes_ventana(secuencia_inicio, secuencia_fin, causa)
             contenido, frames = self._capturar_dom_frames()
@@ -2976,7 +3030,9 @@ class BotJudicialTransaccional(BotJudicial):
                 clave_carpeta=descriptor["clave_carpeta"],
                 secuencia_api_inicio=secuencia_inicio,
             )
-            token = self._esperar_informacion_proceso_y_bloquear(causa, descriptor)
+            token = self._esperar_informacion_proceso_y_bloquear(
+                causa, descriptor, secuencia_inicio
+            )
             self._cambiar_estado_navegacion(
                 causa, "NAVEGACION_BLOQUEADA", "EXTRACCION_EN_PROGRESO",
                 "iniciar_extraccion", clave_carpeta=descriptor["clave_carpeta"],

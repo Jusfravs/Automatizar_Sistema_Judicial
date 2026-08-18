@@ -239,6 +239,12 @@ class GestorCasos:
                     # Si el valor es una lista o diccionario (ej. HISTORIAL_ACTUACIONES), serializar a JSON string
                     if isinstance(val, (list, dict)):
                         val = json.dumps(val, ensure_ascii=False)
+                    # Un CSV con una columna completamente vacia se carga como
+                    # float64. Pandas recientes rechazan guardar texto (por
+                    # ejemplo, una fecha dd/mm/aaaa) sin convertir antes el tipo.
+                    if isinstance(val, str) and self.df[col].dtype != object:
+                        self.df[col] = self.df[col].astype(object)
+
 
                     self.df.loc[mask, col] = val
             return True

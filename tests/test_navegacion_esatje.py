@@ -196,6 +196,22 @@ class PaginaCargaGlobalPendienteFalsa:
         raise AssertionError("El flujo no debe depender del evento global load")
 
 
+class PaginaActuacionesApiFalsa:
+    url = "https://ejemplo.local/actuaciones"
+
+    def __init__(self):
+        self.esperas = []
+
+    def is_closed(self):
+        return False
+
+    def inner_text(self, selector):
+        raise AssertionError("Con API completa no debe esperar el render del DOM")
+
+    def wait_for_timeout(self, milisegundos):
+        self.esperas.append(milisegundos)
+
+
 class NavegacionEsatjeTests(unittest.TestCase):
     def crear_bot(self, **navegacion):
         return BotJudicial("https://ejemplo.local", navegacion)
@@ -242,17 +258,17 @@ class NavegacionEsatjeTests(unittest.TestCase):
         )
         self.assertTrue(BotJudicial._boton_habilitado(BotonFalso()))
 
-    def test_espera_diez_segundos_y_revalida_antes_de_buscar(self):
+    def test_espera_tres_segundos_y_revalida_antes_de_buscar(self):
         bot = self.crear_bot()
         bot.page = PaginaEsperaFalsa()
-        bot.captcha_config["espera_post_solucion_ms"] = 10000
+        bot.captcha_config["espera_post_solucion_ms"] = 3000
         bot._input_causa_unico = lambda: CampoFalso("23331-2022-02089")
         bot._boton_buscar_unico = lambda: BotonFalso()
         bot._captcha_visible = lambda: False
 
         bot._esperar_despues_captcha("23331202202089")
 
-        self.assertEqual(bot.page.esperas, [10000])
+        self.assertEqual(bot.page.esperas, [3000])
 
     def test_espera_post_api_acepta_widget_montado_si_buscar_sigue_habilitado(self):
         bot = self.crear_bot()
@@ -589,7 +605,9 @@ class NavegacionEsatjeTests(unittest.TestCase):
         bot._cambiar_estado_navegacion = lambda *args, **kwargs: None
         bot._click_navegacion = lambda control, contexto: control.click()
         bot._esperar_informacion_proceso_y_bloquear = (
-            lambda causa, buscado: validaciones.append((causa, buscado)) or "token"
+            lambda causa, buscado, secuencia: validaciones.append(
+                (causa, buscado, secuencia)
+            ) or "token"
         )
         bot._extraer_informacion_proceso = (
             lambda causa, buscado, secuencia, token: resultado_carpeta
@@ -602,8 +620,57 @@ class NavegacionEsatjeTests(unittest.TestCase):
         resultado = bot._procesar_todas_las_carpetas("12331202500604")
 
         self.assertEqual(enlace.clicks, 1)
-        self.assertEqual(validaciones, [("12331202500604", descriptor)])
+        self.assertEqual(validaciones, [("12331202500604", descriptor, 0)])
         self.assertEqual(resultado["carpetas"], [resultado_carpeta])
+
+    def test_api_completa_evade_render_lento_de_actuaciones(self):
+        causa = "23331202202089"
+        bot = self.crear_bot(quietud_api_ms=250)
+        bot.page = PaginaActuacionesApiFalsa()
+        bot._secuencia_api = 8
+        bot._ultima_respuesta_api_monotonic = 9.0
+        bot.paquetes_api_interceptados = [{
+            "secuencia": 8,
+            "capturado_monotonic": 9.0,
+            "url": "https://portal/api/actuacionesJudiciales",
+            "data": [{
+                "idJuicio": causa,
+                "fecha": "2025-01-01T10:00:00Z",
+                "actividad": "CITACION REALIZADA",
+            }],
+        }]
+        bot.ultimo_estado_navegacion = "INFORMACION_PROCESO_CARGANDO"
+        bot._intento_actual = "intento-rapido"
+        descriptor = {"clave_carpeta": "carpeta-1"}
+
+        with patch("src.motor_busqueda_web.monotonic", return_value=10.0):
+            token = bot._esperar_informacion_proceso_y_bloquear(
+                causa, descriptor, 7
+            )
+            firma = bot._esperar_actuaciones_estables(causa, 7)
+
+        self.assertEqual(firma[1], "API_ACTUACIONES")
+        self.assertEqual(firma[2], 1)
+        self.assertIn("carpeta-1", token)
+        self.assertEqual(bot.page.esperas, [])
+
+    def test_via_rapida_api_rechaza_actuaciones_de_otra_causa(self):
+        bot = self.crear_bot(quietud_api_ms=250)
+        bot._secuencia_api = 4
+        bot.paquetes_api_interceptados = [{
+            "secuencia": 4,
+            "capturado_monotonic": 9.0,
+            "url": "https://portal/api/actuacionesJudiciales",
+            "data": [{
+                "idJuicio": "23331202202088",
+                "actividad": "ACTUACION AJENA",
+            }],
+        }]
+
+        with patch("src.motor_busqueda_web.monotonic", return_value=10.0):
+            firma = bot._firma_api_actuaciones_lista("23331202202089", 3)
+
+        self.assertIsNone(firma)
 
     def test_flujo_transaccional_rechaza_fila_con_sufijo(self):
         pagina = PaginaAperturaCausaFalsa()
@@ -635,4 +702,3 @@ class NavegacionEsatjeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -193,7 +193,7 @@ class TestClasificacionArbol(unittest.TestCase):
         self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
         self.assertNotEqual(resultado.ultima_fase, "5.3 SENTENCIA EJECUTORIADA")
 
-    def test_acta_mediacion_con_efecto_de_sentencia_ejecutoriada_es_5_3(self):
+    def test_acuerdo_de_mediacion_clasifica_como_sentencia_ejecutoriada(self):
         actuaciones = [{
             "fecha": "05/03/2025",
             "detalle": (
@@ -204,6 +204,8 @@ class TestClasificacionArbol(unittest.TestCase):
 
         resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
 
+        # Acuerdo de mediación con efecto de ejecutoria → regla_6 → 5.3
+        self.assertEqual(resultado.ultima_etapa, "5 SENTENCIA")
         self.assertEqual(resultado.ultima_fase, "5.3 SENTENCIA EJECUTORIADA")
         self.assertEqual(resultado.fecha_fin_ultima_fase, "05/03/2025")
 
@@ -352,7 +354,7 @@ class TestClasificacionArbol(unittest.TestCase):
         self.assertEqual(resultado.fecha_fin_ultima_fase, "19/01/2023")
         self.assertIn("CALIFICACION DE SOLICITUD", resultado.get("ACTUACION_RESPALDO"))
 
-    def test_regla_5_usa_acto_explicito_y_no_mencion_posterior(self):
+    def test_abandono_con_ejecutoria_aplica_regla_5(self):
         actuaciones = [
             {"fecha": "19/01/2023", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION)"},
             {
@@ -365,10 +367,10 @@ class TestClasificacionArbol(unittest.TestCase):
             },
         ]
         resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        # Abandono + RAZON DE EJECUTORIA → Regla 5 → 1.3 CALIFICACION
         self.assertEqual(resultado.get("REGLA_APLICADA"), "regla_5_abandono_ejecutoria")
+        self.assertEqual(resultado.ultima_etapa, "1 PRESENTACION Y CALIFICACION")
         self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
-        self.assertEqual(resultado.fecha_fin_ultima_fase, "19/01/2023")
-        self.assertIn("CALIFICACION DE SOLICITUD", resultado.get("ACTUACION_RESPALDO"))
 
     def test_citacion_realizada_con_dos_puntos_anula_fallo_anterior(self):
         actuaciones = [
@@ -411,6 +413,7 @@ class TestClasificacionArbol(unittest.TestCase):
             {"fecha": "27/01/2023", "detalle": "ARCHIVO POR NO COMPLETAR DEMANDA (AUTO INTERLOCUTORIO). NOTIFIQUESE."},
         ]
         resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        # Archivo por no completar → se reclasifica como 1.2 COMPLETAR/ACLARAR DEMANDA
         self.assertEqual(resultado.ultima_fase, "1.2 COMPLETAR/ACLARAR DEMANDA")
         self.assertEqual(resultado.fecha_fin_ultima_fase, "27/01/2023")
 
@@ -439,6 +442,81 @@ class TestClasificacionArbol(unittest.TestCase):
         self.assertEqual(resultado.ultima_fase, "5.1 SENTENCIA EMITIDA POR EL JUEZ")
         self.assertEqual(resultado.fecha_fin_ultima_fase, "20/06/2026")
 
+    def test_resolucion_generica_en_calificacion_no_es_sentencia(self):
+        actuaciones = [{
+            "fecha": "14/01/2026",
+            "detalle": (
+                "VISTOS: LA DEMANDA SE CALIFICA DE CLARA Y COMPLETA Y SE "
+                "ADMITE A TRAMITE. RESOLUCION: SE RESUELVE CITAR A LA PARTE "
+                "DEMANDADA PARA QUE CONTESTE."
+            ),
+        }]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+
+    def test_cita_legal_sobre_inadmision_dentro_de_sentencia_no_es_terminal(self):
+        actuaciones = [
+            {"fecha": "10/01/2024", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "30/06/2026",
+                "detalle": (
+                    "SENTENCIA (RESOLUCION). EN LOS ANTECEDENTES SE TRANSCRIBE "
+                    "EL ARTICULO 347: LA OMISION PRODUCIRA LA INADMISION DE LA "
+                    "DEMANDA. ADMINISTRANDO JUSTICIA, SE ACEPTA LA DEMANDA."
+                ),
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "5.1 SENTENCIA EMITIDA POR EL JUEZ")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "30/06/2026")
+
+    def test_orden_de_elaborar_boletas_no_significa_citacion_realizada(self):
+        actuaciones = [
+            {"fecha": "14/01/2026", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "14/01/2026",
+                "detalle": (
+                    "SE DISPONE ELABORAR LAS BOLETAS DE CITACION Y, UNA VEZ "
+                    "REMITIDAS LAS COPIAS, SE PROCEDERA CON LA CITACION ORDENADA."
+                ),
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fase_actual, "2.1 CITACION (PERSONA/BOLETA)")
+
+    def test_razon_posterior_que_menciona_auto_inicial_no_mueve_fecha_calificacion(self):
+        actuaciones = [
+            {"fecha": "14/01/2026", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "29/01/2026",
+                "detalle": (
+                    "RAZON: PONGO EN CONOCIMIENTO EL EXTRACTO DE LA DEMANDA "
+                    "Y AUTO INICIAL."
+                ),
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "14/01/2026")
+
+    def test_estado_de_abandono_con_ejecutoriado_aplica_regla_5(self):
+        actuaciones = [
+            {"fecha": "20/01/2015", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "09/02/2017",
+                "detalle": (
+                    "LA PRESENTE CAUSA SE ENCUENTRA EN ESTADO DE ABANDONO; "
+                    "EJECUTORIADO EL PRESENTE AUTO, ORDENO EL ARCHIVO "
+                    "DEFINITIVO DEL PROCESO."
+                ),
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        # Abandono + EJECUTORIADO → Regla 5 → 1.3 CALIFICACION
+        self.assertEqual(resultado.ultima_etapa, "1 PRESENTACION Y CALIFICACION")
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+
     def test_citacion_real_prevalece_sobre_advertencia_de_sentencia(self):
         actuaciones = [
             {
@@ -454,6 +532,44 @@ class TestClasificacionArbol(unittest.TestCase):
         resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
         self.assertEqual(resultado.ultima_fase, "2.1 CITACION (PERSONA/BOLETA)")
         self.assertEqual(resultado.fecha_fin_ultima_fase, "13/05/2026")
+        self.assertEqual(resultado.etapa_actual, "CONTESTACION")
+        self.assertEqual(resultado.fase_actual, "CONTESTACION")
+
+    def test_solo_ordenar_citacion_no_marca_contestacion_actual(self):
+        actuaciones = [
+            {
+                "fecha": "18/12/2025",
+                "detalle": (
+                    "LA DEMANDA SE CALIFICA Y ADMITE A TRAMITE. "
+                    "SE ORDENA LA CITACION DE LA PERSONA DEMANDADA."
+                ),
+            },
+            {"fecha": "18/12/2025", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA"},
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+        self.assertNotEqual(resultado.fase_actual, "CONTESTACION")
+
+    def test_citacion_fallida_no_marca_contestacion_actual(self):
+        actuaciones = [
+            {"fecha": "10/01/2023", "detalle": "AUTO DE CALIFICACION"},
+            {"fecha": "04/02/2023", "detalle": "CITACION: NO REALIZADA - DIRECCION INCORRECTA"},
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+        self.assertNotEqual(resultado.fase_actual, "CONTESTACION")
+
+    def test_boleta_notificada_marca_contestacion_actual(self):
+        actuaciones = [
+            {"fecha": "05/02/2023", "detalle": "AUTO DE CALIFICACION DE LA DEMANDA"},
+            {
+                "fecha": "20/02/2023",
+                "detalle": "BOLETA DE CITACION AL DEMANDADO NOTIFICADA EN SU DOMICILIO",
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.etapa_actual, "CONTESTACION")
+        self.assertEqual(resultado.fase_actual, "CONTESTACION")
 
     def test_acta_ambigua_no_anula_una_citacion_fallida(self):
         actuaciones = [
@@ -493,6 +609,248 @@ class TestClasificacionArbol(unittest.TestCase):
         self.assertEqual(resultado.get("REGLA_APLICADA"), "regla_2_citacion_fallida")
         self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
         self.assertEqual(resultado.fecha_fin_ultima_fase, "10/01/2023")
+
+    def test_acta_posterior_no_anula_dos_citaciones_fallidas(self):
+        actuaciones = [
+            {"fecha": "15/08/2025", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA"},
+            {"fecha": "01/08/2026", "detalle": "RAZON ENVIO A CITACIONES (PERSONA UNO): GESTION REALIZADA CON RAZON DE NO CITACION"},
+            {"fecha": "01/08/2026", "detalle": "RAZON ENVIO A CITACIONES (PERSONA DOS): GESTION REALIZADA CON RAZON DE NO CITACION"},
+            {"fecha": "02/08/2026", "detalle": "ACTA DE CITACION"},
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "15/08/2025")
+        self.assertEqual(resultado.get("REGLA_APLICADA"), "regla_2_citacion_fallida")
+
+    def test_edicto_no_coincide_dentro_del_nombre_edictor(self):
+        actuaciones = [
+            {
+                "fecha": "06/07/2026",
+                "detalle": (
+                    "AB. EDICTOR RODRIGO MANZANO AVOCÓ CONOCIMIENTO. "
+                    "LA DEMANDA SE CALIFICA Y ADMITE A TRAMITE. "
+                    "SE ORDENA LA CITACION EN EL DOMICILIO SENALADO."
+                ),
+            },
+            {"fecha": "06/07/2026", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA"},
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "06/07/2026")
+
+    def test_dos_demandados_exigen_citacion_completa_de_ambos(self):
+        actuaciones = [
+            {"fecha": "27/09/2023", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA"},
+            {
+                "fecha": "29/02/2024",
+                "detalle": (
+                    "RAZON ENVIO A CITACIONES (PERSONA UNO): "
+                    "GESTION REALIZADA CON RAZON DE NO CITACION"
+                ),
+            },
+            {
+                "fecha": "15/03/2024",
+                "detalle": (
+                    "RAZON ENVIO A CITACIONES (PERSONA DOS): TERCERA GESTION "
+                    "REALIZADA POR EL CITADOR: BOLETA 3"
+                ),
+            },
+            {"fecha": "17/04/2024", "detalle": "CITACION: REALIZADA - BOLETA"},
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "27/09/2023")
+        self.assertEqual(resultado.get("REGLA_APLICADA"), "regla_2_citacion_fallida")
+
+    def test_dos_demandados_citados_marcan_contestacion_actual(self):
+        actuaciones = [
+            {"fecha": "27/09/2023", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA"},
+            {
+                "fecha": "15/03/2024",
+                "detalle": (
+                    "RAZON ENVIO A CITACIONES (PERSONA UNO): TERCERA GESTION "
+                    "REALIZADA POR EL CITADOR: BOLETA 3"
+                ),
+            },
+            {
+                "fecha": "17/04/2024",
+                "detalle": (
+                    "RAZON ENVIO A CITACIONES (PERSONA DOS): TERCERA GESTION "
+                    "REALIZADA POR EL CITADOR: BOLETA 3"
+                ),
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        self.assertEqual(resultado.ultima_fase, "2.1 CITACION (PERSONA/BOLETA)")
+        self.assertEqual(resultado.etapa_actual, "CONTESTACION")
+        self.assertEqual(resultado.fase_actual, "CONTESTACION")
+
+    def test_orden_futura_legalmente_citada_no_es_citacion_cumplida(self):
+        actuaciones = [
+            {"fecha": "01/03/2024", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "09/03/2026",
+                "detalle": (
+                    "SE PONE EN CONOCIMIENTO EL ACTA DE NO CITACI&OACUTE;N, "
+                    "DE LA CUAL SE SENALA QUE NO SE CIT&OACUTE; A MARIA DEMANDADA. "
+                    "SE DISPONE CITARLA EN SU LUGAR DE TRABAJO A FIN DE QUE SEA "
+                    "LEGALMENTE CITADA."
+                ),
+            },
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+
+    def test_no_se_encuentra_citado_no_es_citacion_exitosa(self):
+        actuaciones = [
+            {"fecha": "30/11/2016", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "08/11/2021",
+                "detalle": (
+                    "RAZON: CONSTA QUE CRUZ CARRILLO CESAR AUGUSTO "
+                    "NO SE ENCUENTRA CITADO."
+                ),
+            },
+            {"fecha": "08/11/2021", "detalle": "CITACION: REALIZADA - RAZON"},
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+
+    def test_no_he_podido_citar_prevalece_sobre_rotulo_generico(self):
+        actuaciones = [
+            {"fecha": "19/12/2013", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "22/01/2014",
+                "detalle": (
+                    "SENOR JUEZ: SIENTO POR TAL QUE NO HE PODIDO CITAR A "
+                    "QUINCHUELA CHUQUITARCO MONICA PILAR, POR CUANTO NO EXISTE "
+                    "LA DIRECCION INDICADA."
+                ),
+            },
+            {"fecha": "22/01/2014", "detalle": "CITACION: REALIZADA - RAZON"},
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+
+    def test_exito_de_otros_no_compensa_demandado_sin_citar(self):
+        actuaciones = [
+            {"fecha": "26/06/2017", "detalle": "AUTO DE CALIFICACION"},
+            {
+                "fecha": "21/11/2018",
+                "detalle": (
+                    "EL SENOR TISALEMA QUINAUCHO LUIS ORLANDO NO HA SIDO "
+                    "CITADO POR DIRECCION INCORRECTA."
+                ),
+            },
+            {
+                "fecha": "29/11/2018",
+                "detalle": (
+                    "LOS SENORES QUISHPE TIPAN CARMEN AMELIA Y CHANGOLUISA "
+                    "TASIGUANO SEGUNDO ANTONIO HAN SIDO CITADOS EN PERSONA."
+                ),
+            },
+            {"fecha": "29/11/2018", "detalle": "CITACION REALIZADA (RAZON)"},
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+
+    def test_archivo_de_causa_clasifica_en_ultima_fase_conocida(self):
+        actuaciones = [
+            {"fecha": "01/11/2017", "detalle": "ARCHIVO DE LA CAUSA (AUTO RESOLUTIVO)"},
+            {"fecha": "06/11/2017", "detalle": "ARCHIVO DE LA CAUSA (RAZON DE NOTIFICACION)"},
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        # Sin etapas previas reconocibles → cae en 1.1 PRESENTAR DEMANDA
+        self.assertIn(resultado.ultima_etapa, ["1 PRESENTACION Y CALIFICACION", "2 CITACION", "3 CONTESTACION", "4 AUDIENCIA", "5 SENTENCIA", "6 LIQUIDACION Y EMBARGO"])
+        self.assertNotIn("7", resultado.ultima_fase)
+
+    def test_reapertura_explicita_deja_sin_efecto_archivo_anterior(self):
+        actuaciones = [
+            {"fecha": "01/11/2017", "detalle": "ARCHIVO DE LA CAUSA (AUTO RESOLUTIVO)"},
+            {
+                "fecha": "10/01/2018",
+                "detalle": (
+                    "AUTO DE CALIFICACION: SE DEJA SIN EFECTO EL AUTO DE ARCHIVO "
+                    "DE LA CAUSA. LA DEMANDA SE CALIFICA Y ADMITE A TRAMITE."
+                ),
+            },
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "10/01/2018")
+
+    def test_falta_de_constancia_fotografica_mantiene_citacion_pendiente(self):
+        actuaciones = [
+            {"fecha": "25/10/2022", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION)"},
+            {
+                "fecha": "19/05/2026",
+                "detalle": (
+                    "CONSTAN ACTAS DE CITACIONES REALIZADAS; SIN EMBARGO EL "
+                    "CITADOR NO HA ADJUNTADO LA CONSTANCIA FOTOGRAFICA. SE "
+                    "DISPONE QUE EL CITADOR AMPLIE SU CITACION."
+                ),
+            },
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "25/10/2022")
+        self.assertNotEqual(resultado.etapa_actual, "CONTESTACION")
+
+    def test_instrucciones_para_contestar_no_son_contestacion_presentada(self):
+        actuaciones = [
+            {"fecha": "17/11/2025", "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION)"},
+            {
+                "fecha": "17/11/2025",
+                "detalle": (
+                    "CONTESTACION A LA DEMANDA: SE CONCEDE EL TERMINO DE QUINCE "
+                    "DIAS PARA QUE, UNA VEZ CITADA, LA DEMANDADA CONTESTE LA "
+                    "DEMANDA Y PUEDA PROPONER EXCEPCIONES."
+                ),
+            },
+        ]
+
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+
+        self.assertEqual(resultado.ultima_fase, "1.3 CALIFICACION")
+        self.assertEqual(resultado.fase_actual, "2.1 CITACION (PERSONA/BOLETA)")
+
+    def test_retiro_sin_calificar_conserva_aclaracion(self):
+        actuaciones = [
+            {
+                "fecha": "06/07/2026",
+                "detalle": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA",
+            },
+            {
+                "fecha": "30/07/2026",
+                "detalle": (
+                    "PREVIO A SER CALIFICADA LA DEMANDA, LA PARTE ACTORA SOLICITA "
+                    "SU RETIRO. LA DEMANDA SERA DEVUELTA SIN ESTAR CALIFICADA. "
+                    "SE DISPONE EL ARCHIVO DEFINITIVO DE LA CAUSA."
+                ),
+            },
+        ]
+        resultado = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        # Retiro antes de calificar → 1.2 COMPLETAR/ACLARAR DEMANDA (la última fase válida detectada)
+        self.assertEqual(resultado.ultima_fase, "1.2 COMPLETAR/ACLARAR DEMANDA")
+        self.assertEqual(resultado.fecha_fin_ultima_fase, "06/07/2026")
 
     def test_referencia_doctrinal_a_corte_nacional_no_crea_casacion(self):
         actuaciones = [

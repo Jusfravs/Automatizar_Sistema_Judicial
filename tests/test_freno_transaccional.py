@@ -278,6 +278,24 @@ class FrenoNavegacionTests(unittest.TestCase):
         )
         self.assertIsNone(gestor.df.loc[2, "ULTIMA ETAPA"])
 
+    def test_actualizar_caso_admite_fecha_en_columna_vacia_float64(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "NUMERO_JUICIO": ["23331-2025-00431", "OTRA"],
+            "FECHA FIN ULTIMA FASE": [float("nan"), float("nan")],
+        })
+        self.assertEqual(
+            str(gestor.df["FECHA FIN ULTIMA FASE"].dtype), "float64"
+        )
+
+        actualizado = gestor.actualizar_caso(
+            "23331-2025-00431", {"FECHA FIN ULTIMA FASE": "31/01/2025"}
+        )
+
+        self.assertTrue(actualizado)
+        self.assertEqual(gestor.df.loc[0, "FECHA FIN ULTIMA FASE"], "31/01/2025")
+        self.assertTrue(pd.isna(gestor.df.loc[1, "FECHA FIN ULTIMA FASE"]))
+
     def test_obtener_casos_pendientes_filtra_por_usuario(self):
         gestor = GestorCasos.__new__(GestorCasos)
         gestor.df = pd.DataFrame({

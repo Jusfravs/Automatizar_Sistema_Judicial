@@ -339,6 +339,43 @@ class MotorInferenciaProcesal:
             # evidencia suficiente de una fase procesal sustantiva.
             return False
 
+        if termino_norm == "AUTO INICIAL":
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.match(r"^RAZON\b", texto_limpio) or "PONGO EN CONOCIMIENTO" in texto_limpio or "EXTRACTO" in texto_limpio:
+                return False
+
+        if termino_norm in {"CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(
+                r"\b(?:SE\s+CONCEDE|CONCEDASE|PARA\s+QUE|A\s+FIN\s+DE\s+QUE)\b.{0,120}\bCONTESTE\b",
+                texto_limpio,
+            ) and not any(
+                m in texto_evaluable
+                for m in (
+                    "ESCRITO DE CONTESTACION",
+                    "PRESENTA CONTESTACION",
+                    "CONTESTA LA DEMANDA",
+                    "OPONE EXCEPCIONES",
+                    "CONTESTACION: REALIZADA",
+                )
+            ):
+                return False
+
+        if termino_norm in {"CALIFICACION", "CALIFICA", "CALIFICADA"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(
+                r"\b(?:SIN\s+ESTAR|PREVIO\s+A\s+SER|SIN\s+SER|NO|DEVUELTA\s+SIN\s+ESTAR)\s+CALIFICAD[OA]\b",
+                texto_limpio,
+            ):
+                return False
+
+        if termino_norm == "EDICTO":
+            if not re.search(r"\bEDICTO\b", texto_limpio):
+                return False
+
         if termino_norm == "CITACION":
             if re.search(
                 r"\b(?:SE\s+)?(?:ORDENA|DISPONE)\b.{0,45}\bCITACION\b",
@@ -366,6 +403,14 @@ class MotorInferenciaProcesal:
 
         if termino_norm in {"BOLETA", "BOLETAS"}:
             if termino_norm not in texto_evaluable:
+                return False
+            if re.search(
+                r"\b(?:ELABORAR|EMITIR|REMITIR)\s+(?:LAS\s+)?BOLETAS?\b",
+                texto_limpio,
+            ) and not re.search(
+                r"\b(?:NOTIFICADA|ENTREGADA|FIJADA|CITADO|REALIZADA)\b",
+                texto_limpio,
+            ):
                 return False
             return any(
                 marcador in texto_evaluable
@@ -616,9 +661,6 @@ class MotorInferenciaProcesal:
                 "SENTENCIA QUE ANTECEDE",
                 "SENTENCIA SE ENCUENTRA",
                 "SENTENCIA EMITIDA",
-                "DICTA SENTENCIA",
-                "EMITE SENTENCIA",
-                "SENTENCIA ORAL",
             )
             return es_rotulo_breve or any(
                 marcador in texto_evaluable for marcador in marcadores_sentencia_emitida
@@ -627,8 +669,16 @@ class MotorInferenciaProcesal:
         if termino_norm in {"RESOLUCION", "FALLO"}:
             if termino_norm not in texto_evaluable:
                 return False
+            if re.search(
+                r"\b(?:CALIFICA|CITAR|AUTO\s+INICIAL|ADMITE\s+A\s+TRAMITE|SE\s+RESUELVE\s+CITAR)\b",
+                texto_evaluable,
+            ) and not any(
+                k in texto_evaluable
+                for k in ("SENTENCIA", "ACEPTA LA DEMANDA", "DECLARA CON LUGAR")
+            ):
+                return False
             return es_rotulo_breve or bool(
-                re.search(r"\b(?:PARTE RESOLUTIVA|RESUELVE|FALLA)\b", texto_evaluable)
+                re.search(r"\b(?:PARTE RESOLUTIVA|FALLA)\b", texto_evaluable)
             )
 
         terminos_remate = {
@@ -723,6 +773,9 @@ class MotorInferenciaProcesal:
         Si la fase es la última (6.5), retorna la misma fase.
         Si la fase es 6.4 REMATE o 6.5 CONGELAMIENTO, no avanza.
         """
+        if fase_actual in ("2.1 CITACION (PERSONA/BOLETA)", "2.2 CITACION POR PRENSA"):
+            return "CONTESTACION", "CONTESTACION"
+
         idx = cls.obtener_indice_fase(fase_actual)
         if idx < 0:
             return None, None
@@ -808,6 +861,9 @@ class MotorInferenciaProcesal:
             hallazgo
             for hallazgo in candidatos
             if any(marcador in hallazgo.get("actuacion", "") for marcador in marcadores_explicitos)
+            and "RAZON:" not in hallazgo.get("actuacion", "")
+            and "RAZON " not in hallazgo.get("actuacion", "")
+            and "EXTRACTO" not in hallazgo.get("actuacion", "")
         ]
         return cls._hallazgo_mas_reciente(
             explicitos or candidatos, "1.3 CALIFICACION"
@@ -826,14 +882,27 @@ class MotorInferenciaProcesal:
     def _es_citacion_fallida_explicita(texto_normalizado):
         return bool(
             re.search(r"\bCITACION\W*NO\s+REALIZADA\b", texto_normalizado)
-            or "REENVIO CITACION" in texto_normalizado
+            or re.search(r"\bNO\s+(?:SE\s+)?(?:ENCUENTRA\s+|HA\s+SIDO\s+|PUDO\s+|HE\s+PODIDO\s+)CITAD[OA]\b", texto_normalizado)
+            or re.search(r"\bNO\s+SE\s+CITO\b", texto_normalizado)
             or "RAZON DE NO CITACION" in texto_normalizado
+            or "NO HA SIDO CITADO" in texto_normalizado
+            or "NO SE ENCUENTRA CITADO" in texto_normalizado
+            or "NO HE PODIDO CITAR" in texto_normalizado
+            or "ACTA DE NO CITACION" in texto_normalizado
+            or "ACTA DE NO CITACI" in texto_normalizado
+            or "REENVIO CITACION" in texto_normalizado
             or "NULIDAD POR FALTA DE CITACION" in texto_normalizado
+            or "DIRECCION INCORRECTA" in texto_normalizado
+            or "NO EXISTE LA DIRECCION" in texto_normalizado
         )
 
     @staticmethod
     def _es_citacion_exitosa(texto_normalizado):
         if MotorInferenciaProcesal._es_citacion_fallida_explicita(texto_normalizado):
+            return False
+        if re.search(r"\b(?:SE\s+DISPONE|ORDENA|A\s+FIN\s+DE\s+QUE\s+SEA)\s+LEGALMENTE\s+CITAD[OA]\b", texto_normalizado):
+            return False
+        if any(k in texto_normalizado for k in ("NO SE ENCUENTRA CITADO", "NO HE PODIDO CITAR", "NO HA SIDO CITADO", "NO EXISTE LA DIRECCION", "DIRECCION INCORRECTA")):
             return False
         return bool(
             re.search(r"\bCITACION\W*REALIZADA\b", texto_normalizado)
@@ -841,7 +910,10 @@ class MotorInferenciaProcesal:
             or "CITADO Y NOTIFICADO" in texto_normalizado
             or "LEGALMENTE CITADO" in texto_normalizado
             or "LEGALMENTE CITADA" in texto_normalizado
-            or "ACTA DE CITACION" in texto_normalizado
+            or "CITADOS EN PERSONA" in texto_normalizado
+            or "CITADA EN PERSONA" in texto_normalizado
+            or "BOLETA 3" in texto_normalizado
+            or "TERCERA GESTION" in texto_normalizado
         )
 
     @classmethod
@@ -1018,7 +1090,17 @@ class MotorInferenciaProcesal:
                         break
 
         if not hallazgos:
-            return ResultadoInferencia(None, None, None)
+            if actuaciones_evaluar:
+                fecha_ref = actuaciones_evaluar[0].get("fecha")
+                hallazgos.append({
+                    "etapa": "1 PRESENTACION Y CALIFICACION",
+                    "fase": "1.1 PRESENTAR DEMANDA",
+                    "fecha": fecha_ref,
+                    "prioridad": cls.obtener_indice_fase("1.1 PRESENTAR DEMANDA"),
+                    "actuacion": actuaciones_evaluar[0].get("detalle", "")
+                })
+            else:
+                return ResultadoInferencia(None, None, None)
 
         # PASO 4: Emitir clasificación respetando el avance en la rama activa.
         hallazgos_ordenados = sorted(hallazgos, key=lambda x: x["prioridad"], reverse=True)
@@ -1047,17 +1129,41 @@ class MotorInferenciaProcesal:
             and not cls._es_citacion_fallida_explicita(norm)
         ]
         citaciones_exitosas = [act for act, norm in actuaciones_normalizadas if cls._es_citacion_exitosa(norm)]
-        fecha_ultimo_fallo = max(
-            (cls._fecha_ordenable(act.get("fecha")) for act in citaciones_fallidas),
-            default=datetime.min,
-        )
-        fecha_ultimo_exito = max(
-            (cls._fecha_ordenable(act.get("fecha")) for act in citaciones_exitosas),
-            default=datetime.min,
-        )
-        fallo_sin_exito_posterior = bool(citaciones_fallidas) and (
-            not citaciones_exitosas or fecha_ultimo_fallo >= fecha_ultimo_exito
-        )
+
+        tiene_fallo_no_resuelto = False
+        if citaciones_fallidas:
+            stop_words = {"DEMANDADO", "DEMANDADA", "ACTOR", "ACTORA", "SENOR", "SENORA", "SENORES", "CITADO", "CITADA", "CITACIONES", "CITACION", "RAZON", "DIRECCION", "INCORRECTA", "ENVIO", "GESTION", "REALIZADA", "CITADOR", "BOLETA", "NULIDAD", "FALTA", "DENTRO", "CAUSA", "CONSTA", "PROCESO", "AUTO", "SIDO", "PORQUE", "CONSECUENCIA", "SEGUNDO", "PRIMERO", "PRIMERA", "TERCERO", "TERCERA", "CUARTO", "CUARTA"}
+            for item_fallo in citaciones_fallidas:
+                act_fallo = item_fallo[0] if isinstance(item_fallo, tuple) else item_fallo
+                norm_fallo = item_fallo[1] if isinstance(item_fallo, tuple) else normalizar_texto(item_fallo.get("detalle", ""))
+                fecha_fallo = cls._fecha_ordenable(act_fallo.get("fecha"))
+                match_persona = re.search(r"\(PERSONA\s+[^\)]+\)", norm_fallo)
+                persona_str = match_persona.group(0) if match_persona else None
+                palabras_fallo = [w for w in re.findall(r"\b[A-Z]{4,}\b", norm_fallo) if w not in stop_words]
+
+                exito_posterior = False
+                for item_exito in citaciones_exitosas:
+                    act_exito = item_exito[0] if isinstance(item_exito, tuple) else item_exito
+                    norm_exito = item_exito[1] if isinstance(item_exito, tuple) else normalizar_texto(item_exito.get("detalle", ""))
+                    fecha_exito = cls._fecha_ordenable(act_exito.get("fecha"))
+                    es_generic_label = any(k in norm_exito for k in ("- RAZON", "(RAZON)", "RAZON")) and not any(k in norm_exito for k in ("BOLETA 3", "EN PERSONA", "NOTIFICADA"))
+                    if fecha_exito > fecha_fallo or (fecha_exito == fecha_fallo and not es_generic_label):
+                        if persona_str:
+                            if persona_str in norm_exito:
+                                exito_posterior = True
+                                break
+                        elif palabras_fallo:
+                            if any(re.search(r"\b" + p + r"\b", norm_exito) for p in palabras_fallo):
+                                exito_posterior = True
+                                break
+                        else:
+                            exito_posterior = True
+                            break
+                if not exito_posterior:
+                    tiene_fallo_no_resuelto = True
+                    break
+
+        fallo_sin_exito_posterior = tiene_fallo_no_resuelto
         pendiente_sin_exito = bool(citaciones_pendientes) and not citaciones_exitosas
         fase_hasta_citacion = cls.obtener_indice_fase("2.2 CITACION POR PRENSA")
         evidencia_posterior_a_citacion = (
