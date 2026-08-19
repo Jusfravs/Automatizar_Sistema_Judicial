@@ -201,7 +201,9 @@ class MotorInferenciaProcesal:
             [
                 "LIQUIDACION PERITO LIQUIDADOR", "PERITO LIQUIDADOR", "INFORME DE LIQUIDACION",
                 "LIQUIDACION DE CAPITAL E INTERESES", "INFORME PERICIAL DE LIQUIDACION",
-                "NOMBRAMIENTO DE PERITO", "INFORME DEL PERITO", "PERITO NOMBRADO"
+                "NOMBRAMIENTO DE PERITO", "INFORME DEL PERITO", "PERITO NOMBRADO",
+                "ACTA SORTEO PERITO", "SORTEO DE PERITO", "SORTEO PERITO",
+                "ACREDITACION/FACTURA", "ACREDITACION PERITO", "FACTURA PERITO"
             ]
         ),
         (
@@ -232,8 +234,7 @@ class MotorInferenciaProcesal:
             "4 AUDIENCIA", "4.3 ACUERDO DE MEDIACION",
             [
                 "ACUERDO DE MEDIACION", "ACTA DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO",
-                "ACTA DE ACUERDO TOTAL", "ARCHIVO POR ACUERDO DE MEDIACION", "CONCILIACION DE MEDIACION",
-                "DERIVACION A MEDIACION"
+                "ACTA DE ACUERDO TOTAL", "ARCHIVO POR ACUERDO DE MEDIACION", "CONCILIACION DE MEDIACION"
             ]
         ),
         (
@@ -433,13 +434,13 @@ class MotorInferenciaProcesal:
                 marcador in texto_evaluable for marcador in marcadores_respuesta
             )
 
-        if termino_norm in {"ACUERDO DE MEDIACION", "MEDIACION", "ACTA DE MEDIACION", "CENTRO DE MEDIACION", "CONCILIACION DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO", "ACTA DE ACUERDO TOTAL", "ARCHIVO POR ACUERDO DE MEDIACION", "DERIVACION A MEDIACION"}:
+        if termino_norm in {"ACUERDO DE MEDIACION", "MEDIACION", "ACTA DE MEDIACION", "CENTRO DE MEDIACION", "CONCILIACION DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO", "ACTA DE ACUERDO TOTAL", "ARCHIVO POR ACUERDO DE MEDIACION"}:
             if termino_norm not in texto_evaluable:
                 return False
             if re.search(r"\b(?:PUEDEN|PODRAN|FACULTAD\s+DE)\s+ACUDIR\b.{0,60}\bMEDIACI[OÓ]N\b", texto_limpio):
                 return False
             if re.search(r"\b(?:INFORMA|HACE\s+CONOCER)\b.{0,60}\bCENTRO\s+DE\s+MEDIACI[OÓ]N\b", texto_limpio) and not any(
-                k in texto_limpio for k in ("ACTA DE MEDIACION", "ACUERDO DE MEDIACION", "DERIVACION A MEDIACION", "ACTA DE ACUERDO")
+                k in texto_limpio for k in ("ACTA DE MEDIACION", "ACUERDO DE MEDIACION", "ACTA DE ACUERDO")
             ):
                 return False
             marcadores_mediacion = (
@@ -448,12 +449,11 @@ class MotorInferenciaProcesal:
                 "ACTA DE ACUERDO TOTAL",
                 "ACTA Y EXPEDIENTE N",
                 "ARCHIVO POR ACUERDO DE MEDIACION",
-                "DERIVACION A MEDIACION",
                 "CENTRO DE MEDIACION DE LA FUNCION JUDICIAL",
                 "CONCILIACION DE MEDIACION",
             )
             es_rotulo_mediacion = es_rotulo_breve and bool(re.match(
-                r"^(?:ACUERDO DE MEDIACION|ACTA DE MEDIACION|DERIVACION A MEDIACION|ARCHIVO POR ACUERDO DE MEDIACION)\b",
+                r"^(?:ACUERDO DE MEDIACION|ACTA DE MEDIACION|ARCHIVO POR ACUERDO DE MEDIACION)\b",
                 texto_limpio,
             ))
             return es_rotulo_mediacion or any(
@@ -1337,7 +1337,7 @@ class MotorInferenciaProcesal:
                 for a in actuaciones_ord:
                     norm_a = normalizar_texto(a.get("detalle", ""))
                     fecha_a = cls._fecha_ordenable(a.get("fecha"))
-                    if fecha_a > fecha_ultimo_nombramiento and any(k in norm_a for k in ("ESCRITO", "ANEXOS", "FEPRESENTACION", "INFORME")):
+                    if fecha_a > fecha_ultimo_nombramiento and any(k in norm_a for k in ("ESCRITO", "ANEXOS", "FEPRESENTACION", "INFORME", "ACREDITACION", "FACTURA")):
                         tiene_informe_perito = True
                         break
 
@@ -1359,8 +1359,8 @@ class MotorInferenciaProcesal:
 
         # Regla 1: Remate o Congelamiento (no avanzar a siguiente fase)
         mensaje_especial = None
-        tiene_derivacion_mediacion = any(k in texto_actuaciones_unido for k in ["DERIVACION A MEDIACION", "ARCHIVO POR ACUERDO DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO", "ACTA DE MEDIACION"])
-        if tiene_derivacion_mediacion and ultima_fase in ("4.3 ACUERDO DE MEDIACION", "5.3 SENTENCIA EJECUTORIADA", "5.1 SENTENCIA EMITIDA POR EL JUEZ"):
+        tiene_acuerdo_mediacion = any(k in texto_actuaciones_unido for k in ["ARCHIVO POR ACUERDO DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO", "ACTA DE MEDIACION"])
+        if tiene_acuerdo_mediacion and ultima_fase in ("4.3 ACUERDO DE MEDIACION", "5.3 SENTENCIA EJECUTORIADA", "5.1 SENTENCIA EMITIDA POR EL JUEZ"):
             mensaje_especial = "REVISION MANUAL"
 
         if ultima_fase == "6.4 REMATE":
