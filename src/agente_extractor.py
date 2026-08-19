@@ -199,10 +199,9 @@ class MotorInferenciaProcesal:
         (
             "6 LIQUIDACION Y EMBARGO", "6.1 LIQUIDACION PERITO LIQUIDADOR",
             [
-                "LIQUIDACION PERITO LIQUIDADOR", "LIQUIDADOR", "LIQUIDACION",
-                "PERITO LIQUIDADOR", "INFORME DE LIQUIDACION",
+                "LIQUIDACION PERITO LIQUIDADOR", "PERITO LIQUIDADOR", "INFORME DE LIQUIDACION",
                 "LIQUIDACION DE CAPITAL E INTERESES", "INFORME PERICIAL DE LIQUIDACION",
-                "NOMBRAMIENTO DE PERITO", "INFORME DEL PERITO"
+                "NOMBRAMIENTO DE PERITO", "INFORME DEL PERITO", "PERITO NOMBRADO"
             ]
         ),
         (
@@ -216,8 +215,9 @@ class MotorInferenciaProcesal:
         (
             "5 SENTENCIA", "5.2 APELACION",
             [
-                "APELACION", "RECURSO DE APELACION", "ALZADA", "CONCEDE RECURSO",
-                "CORTE PROVINCIAL", "FUNDAMENTACION DE APELACION", "ELEVA ALZADA"
+                "RECURSO DE APELACION", "CONCEDE RECURSO DE APELACION", "CONCEDE RECURSO",
+                "CONCEDESE EL RECURSO", "INTERPONE RECURSO DE APELACION", "ELEVA EN APELACION",
+                "FUNDAMENTACION DE APELACION", "ELEVA ALZADA", "RECURSO DE APELACION INTERPUESTO"
             ]
         ),
         (
@@ -231,8 +231,9 @@ class MotorInferenciaProcesal:
         (
             "4 AUDIENCIA", "4.3 ACUERDO DE MEDIACION",
             [
-                "ACUERDO DE MEDIACION", "MEDIACION", "ACTA DE MEDIACION",
-                "CENTRO DE MEDIACION", "CONCILIACION DE MEDIACION"
+                "ACUERDO DE MEDIACION", "ACTA DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO",
+                "ACTA DE ACUERDO TOTAL", "ARCHIVO POR ACUERDO DE MEDIACION", "CONCILIACION DE MEDIACION",
+                "DERIVACION A MEDIACION"
             ]
         ),
         (
@@ -247,12 +248,12 @@ class MotorInferenciaProcesal:
         (
             "4 AUDIENCIA", "4.1 FIJACION FECHA AUDIENCIA",
             [
-                "FIJACION FECHA AUDIENCIA", "FIJACION", "SEÑALA AUDIENCIA",
+                "FIJACION FECHA AUDIENCIA", "FIJACION DE FECHA DE AUDIENCIA", "FIJACION DE AUDIENCIA",
+                "SEÑALA AUDIENCIA", "SENALA DIA Y HORA", "SEÑALA FECHA Y HORA", "SENALA FECHA Y HORA",
                 "CONVOCA A AUDIENCIA", "SEÑALAMIENTO DE AUDIENCIA", "FECHA AUDIENCIA",
                 "DILIGENCIA DE AUDIENCIA PARA EL", "CONVOCATORIA A AUDIENCIA",
-                "SUSPENCION Y NUEVO SEÑALAMIENTO DE AUDIENCIA",
-                "SUSPENSION Y NUEVO SEÑALAMIENTO", "NUEVA FECHA AUDIENCIA",
-                "REPROGRAMACION AUDIENCIA", "CALIFICACION DE LA CONTESTACION Y CONVOCATORIA"
+                "SUSPENCION Y NUEVO SEÑALAMIENTO DE AUDIENCIA", "SUSPENSION Y NUEVO SEÑALAMIENTO",
+                "NUEVA FECHA AUDIENCIA", "REPROGRAMACION AUDIENCIA", "CALIFICACION DE LA CONTESTACION Y CONVOCATORIA"
             ]
         ),
         (
@@ -345,23 +346,150 @@ class MotorInferenciaProcesal:
             if re.match(r"^RAZON\b", texto_limpio) or "PONGO EN CONOCIMIENTO" in texto_limpio or "EXTRACTO" in texto_limpio:
                 return False
 
-        if termino_norm in {"CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO"}:
+        if "FIJACION" in termino_norm:
+            if re.search(r"\bFIJACION\s+DE\s+(?:BOLETAS?|CARTELES?|EXTRACTOS?)\b", texto_limpio):
+                return False
+
+        if termino_norm in {
+            "FIJACION FECHA AUDIENCIA", "FIJACION DE FECHA DE AUDIENCIA", "FIJACION DE AUDIENCIA",
+            "SEÑALA AUDIENCIA", "SENALA DIA Y HORA", "CONVOCA A AUDIENCIA", "SEÑALAMIENTO DE AUDIENCIA",
+            "FECHA AUDIENCIA", "DILIGENCIA DE AUDIENCIA PARA EL", "CONVOCATORIA A AUDIENCIA",
+            "SUSPENCION Y NUEVO SEÑALAMIENTO DE AUDIENCIA", "SUSPENSION Y NUEVO SEÑALAMIENTO",
+            "NUEVA FECHA AUDIENCIA", "REPROGRAMACION AUDIENCIA", "CALIFICACION DE LA CONTESTACION Y CONVOCATORIA"
+        }:
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(r"\bFIJACION\s+DE\s+(?:BOLETAS?|CARTELES?|EXTRACTOS?)\b", texto_limpio):
+                return False
+            es_rotulo_fijacion = es_rotulo_breve and bool(re.search(r"\b(?:AUDIENCIA|CONVOCATORIA|SENALAMIENTO)\b", texto_limpio))
+            accion_fijacion = bool(re.search(r"\b(?:SENALA|CONVOCA|CONVOCATORIA|FIJA|SENALAMIENTO)\b.{0,60}\b(?:DIA\s+Y\s+HORA|AUDIENCIA)\b", texto_limpio))
+            return es_rotulo_fijacion or accion_fijacion
+
+        if termino_norm in {
+            "ACTA RESUMEN", "ACTA DE AUDIENCIA", "AUDIENCIA PRELIMINAR",
+            "AUDIENCIA DE JUICIO", "INSTALACION DE AUDIENCIA",
+            "DILIGENCIA DE AUDIENCIA", "DESARROLLO DE AUDIENCIA",
+            "ACTA RESUMEN DE AUDIENCIA", "AUDIENCIA CELEBRADA"
+        }:
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(r"\b(?:PREVIO\s+A|CONVOQUESE\s+A|SENALARA|SE\s+SENALARA)\b.{0,60}\bAUDIENCIA\b", texto_limpio):
+                return False
+            es_rotulo_audiencia = es_rotulo_breve and bool(re.match(r"^(?:ACTA (?:DE )?AUDIENCIA|ACTA RESUMEN|AUDIENCIA PRELIMINAR|AUDIENCIA UNICA|AUDIENCIA DE JUICIO)\b", texto_limpio))
+            audiencia_instalada = bool(re.search(r"\b(?:SE\s+INSTALA|INSTALADA|CELEBRADA|LLEVAD[AO]\s+A\s+CABO|DESARROLLO\s+DE)\b.{0,60}\bAUDIENCIA\b", texto_limpio))
+            return es_rotulo_audiencia or audiencia_instalada or "ACTA RESUMEN" in texto_limpio
+
+        if termino_norm in {"CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO", "RESPONDE DEMANDA", "ESCRITO DE CONTESTACION", "OPONE EXCEPCIONES"}:
             if termino_norm not in texto_evaluable:
                 return False
             if re.search(
-                r"\b(?:SE\s+CONCEDE|CONCEDASE|PARA\s+QUE|A\s+FIN\s+DE\s+QUE)\b.{0,120}\bCONTESTE\b",
+                r"\b(?:SE\s+CONCEDE|CONCEDASE|PARA\s+QUE|A\s+FIN\s+DE\s+QUE|DEBERA|DEBE|TERMINO\s+DE\s+\w+\s+DIAS\s+PARA\s+QUE)\b.{0,140}\b(?:CONTESTE|CONTESTAR|CONTESTA|CONTESTEN)\b",
                 texto_limpio,
             ) and not any(
                 m in texto_evaluable
                 for m in (
                     "ESCRITO DE CONTESTACION",
                     "PRESENTA CONTESTACION",
-                    "CONTESTA LA DEMANDA",
+                    "AGREGUESE AL PROCESO EL ESCRITO DE CONTESTACION",
+                    "CONTESTA LA DEMANDA DE FECHA",
                     "OPONE EXCEPCIONES",
                     "CONTESTACION: REALIZADA",
                 )
             ):
                 return False
+            if re.search(r"\bART(?:ICULO|\.)?\s*\d+\b.{0,80}\b(?:CONTESTACI[OÓ]N|FALTA\s+DE\s+CONTESTACI[OÓ]N)\b", texto_limpio) and not any(
+                m in texto_evaluable for m in ("ESCRITO DE CONTESTACION", "PRESENTA CONTESTACION", "CALIFICA LA CONTESTACION")
+            ):
+                return False
+            if re.search(r"\bNO\s+(?:HA|HAN|HABER|HABIENDO)\s+(?:CONTESTAD[OA]|DADO\s+CONTESTACI[OÓ]N)\b", texto_limpio):
+                return False
+            if re.search(r"\bSIN\s+(?:HABER|QUE\s+HAYAN?)\s+CONTESTAD[OA]\b", texto_limpio):
+                return False
+            if "FALTA DE CONTESTACION" in texto_limpio or "CONTESTACION DE ESTA PROVIDENCIA" in texto_limpio:
+                return False
+            if "ACTAS DE NO CITACION" in texto_limpio or "RAZON DE NO CITACION" in texto_limpio:
+                return False
+            marcadores_respuesta = (
+                "CONTESTACION A LA DEMANDA",
+                "ESCRITO DE CONTESTACION",
+                "PRESENTA CONTESTACION",
+                "AGREGUESE EL ESCRITO DE CONTESTACION",
+                "AGREGUESE AL PROCESO EL ESCRITO DE CONTESTACION",
+                "CONTESTA LA DEMANDA",
+                "SE DA POR CONTESTADA",
+                "SE TIENE POR CONTESTADA",
+                "OPONE EXCEPCIONES",
+                "PRESENTA EXCEPCIONES",
+                "CALIFICA LA CONTESTACION",
+            )
+            es_rotulo_contestacion = es_rotulo_breve and bool(re.match(
+                r"^(?:CONTESTACION|ESCRITO DE CONTESTACION|EXCEPCIONES|ALLANAMIENTO|OPOSICION DE EXCEPCIONES)\b",
+                texto_limpio,
+            ))
+            es_auto_calificacion = bool(re.search(r"\b(?:CALIFICACI[OÓ]N|ADMITIR LA DEMANDA|AUTO DE SUSTANCIACI[OÓ]N|AUTO INICIAL|DEMANDA Y CALIFICACI[OÓ]N)\b", texto_limpio))
+            if es_auto_calificacion and not any(m in texto_limpio for m in ("CALIFICA LA CONTESTACION", "ESCRITO DE CONTESTACION")):
+                return False
+            return es_rotulo_contestacion or any(
+                marcador in texto_evaluable for marcador in marcadores_respuesta
+            )
+
+        if termino_norm in {"ACUERDO DE MEDIACION", "MEDIACION", "ACTA DE MEDIACION", "CENTRO DE MEDIACION", "CONCILIACION DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO", "ACTA DE ACUERDO TOTAL", "ARCHIVO POR ACUERDO DE MEDIACION", "DERIVACION A MEDIACION"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            if re.search(r"\b(?:PUEDEN|PODRAN|FACULTAD\s+DE)\s+ACUDIR\b.{0,60}\bMEDIACI[OÓ]N\b", texto_limpio):
+                return False
+            if re.search(r"\b(?:INFORMA|HACE\s+CONOCER)\b.{0,60}\bCENTRO\s+DE\s+MEDIACI[OÓ]N\b", texto_limpio) and not any(
+                k in texto_limpio for k in ("ACTA DE MEDIACION", "ACUERDO DE MEDIACION", "DERIVACION A MEDIACION", "ACTA DE ACUERDO")
+            ):
+                return False
+            marcadores_mediacion = (
+                "ACTA DE MEDIACION",
+                "ACUERDO DE MEDIACION",
+                "ACTA DE ACUERDO TOTAL",
+                "ACTA Y EXPEDIENTE N",
+                "ARCHIVO POR ACUERDO DE MEDIACION",
+                "DERIVACION A MEDIACION",
+                "CENTRO DE MEDIACION DE LA FUNCION JUDICIAL",
+                "CONCILIACION DE MEDIACION",
+            )
+            es_rotulo_mediacion = es_rotulo_breve and bool(re.match(
+                r"^(?:ACUERDO DE MEDIACION|ACTA DE MEDIACION|DERIVACION A MEDIACION|ARCHIVO POR ACUERDO DE MEDIACION)\b",
+                texto_limpio,
+            ))
+            return es_rotulo_mediacion or any(
+                m in texto_evaluable for m in marcadores_mediacion
+            )
+
+        if termino_norm in {"APELACION", "RECURSO DE APELACION", "ALZADA", "CONCEDE RECURSO", "CORTE PROVINCIAL", "FUNDAMENTACION DE APELACION", "ELEVA ALZADA", "CONCEDE RECURSO DE APELACION", "CONCEDESE EL RECURSO", "INTERPONE RECURSO DE APELACION", "ELEVA EN APELACION", "RECURSO DE APELACION INTERPUESTO"}:
+            if termino_norm not in texto_evaluable:
+                return False
+            if "OFICINA DE SORTEOS" in texto_limpio or "SORTEOS DE LA CORTE PROVINCIAL" in texto_limpio or "SISTEMA SATJE" in texto_limpio:
+                return False
+            if any(k in texto_limpio for k in ("GACETA JUDICIAL", "SENTENCIA N.", "JUICIOS NUMEROS", "JUICIOS N.", "TRATADISTA")):
+                return False
+            if termino_norm == "CORTE PROVINCIAL" and not any(k in texto_limpio for k in ("ELEVA", "REMITASE", "SALA DE LA CORTE PROVINCIAL", "APELACION")):
+                return False
+            marcadores_apelacion = (
+                "CONCEDE RECURSO",
+                "CONCEDE EL RECURSO",
+                "CONCEDESE EL RECURSO",
+                "RECURSO DE APELACION",
+                "INTERPONE RECURSO",
+                "INTERPONE APELACION",
+                "ELEVA ALZADA",
+                "ELEVA EN APELACION",
+                "SUBE EN APELACION",
+                "FUNDAMENTACION DE APELACION",
+                "APELACION ADMITIDA",
+                "APELACION ADMITIDO",
+            )
+            es_rotulo_apelacion = es_rotulo_breve and bool(re.match(
+                r"^(?:APELACION|RECURSO DE APELACION|CONCESION DE RECURSO|AUTO DE APELACION)\b",
+                texto_limpio,
+            ))
+            return es_rotulo_apelacion or any(
+                m in texto_evaluable for m in marcadores_apelacion
+            )
 
         if termino_norm in {"CALIFICACION", "CALIFICA", "CALIFICADA"}:
             if termino_norm not in texto_evaluable:
@@ -405,12 +533,14 @@ class MotorInferenciaProcesal:
             if termino_norm not in texto_evaluable:
                 return False
             if re.search(
-                r"\b(?:ELABORAR|EMITIR|REMITIR)\s+(?:LAS\s+)?BOLETAS?\b",
+                r"\b(?:ELABORAR|EMITIR|REMITIR|SE\s+ORDENA\s+CITAR|ORDENESE\s+CITAR|DISPONESE\s+CITAR)\b",
                 texto_limpio,
             ) and not re.search(
                 r"\b(?:NOTIFICADA|ENTREGADA|FIJADA|CITADO|REALIZADA)\b",
                 texto_limpio,
             ):
+                return False
+            if re.search(r"\bSE\s+ORDENA\s+CITAR\b", texto_limpio) and not re.search(r"\b(?:ACTA|RAZON|DILIGENCIA|ENTREGADA|FIJADA)\b", texto_limpio):
                 return False
             return any(
                 marcador in texto_evaluable
@@ -560,12 +690,11 @@ class MotorInferenciaProcesal:
             ))
             return es_rotulo_ejecutado or cuenta_afectada or transferencia_valores
 
-        if termino_norm in {"LIQUIDACION", "LIQUIDADOR"}:
+        if termino_norm in {"LIQUIDACION", "LIQUIDADOR", "PERITO LIQUIDADOR", "LIQUIDACION PERITO LIQUIDADOR"}:
             if termino_norm not in texto_evaluable:
                 return False
-            # "Liquidacion" aparece con frecuencia en la descripcion inicial
-            # del tipo de juicio. Solo es fase 6.1 cuando la actuacion es un
-            # rotulo procesal breve o contiene una gestion pericial concreta.
+            if re.search(r"\b(?:DIRECTOR|GERENTE|REPRESENTANTE|APODERADO)\b.{0,40}\bLIQUIDADOR\b", texto_limpio):
+                return False
             marcadores_liquidacion = (
                 "PERITO LIQUIDADOR",
                 "LIQUIDACION PERITO LIQUIDADOR",
@@ -580,9 +709,10 @@ class MotorInferenciaProcesal:
                 "PRACTICAR LA LIQUIDACION",
                 "PRESENTA LA LIQUIDACION",
                 "TRASLADO CON LA LIQUIDACION",
+                "PERITO NOMBRADO",
             )
             es_rotulo_liquidacion = es_rotulo_breve and bool(re.match(
-                r"^(?:LIQUIDACION|LIQUIDADOR|PERITO|NOMBRAMIENTO|INFORME)\b",
+                r"^(?:LIQUIDACION|PERITO LIQUIDADOR|NOMBRAMIENTO DE PERITO|INFORME PERICIAL)\b",
                 texto_limpio,
             ))
             return es_rotulo_liquidacion or any(
@@ -595,12 +725,15 @@ class MotorInferenciaProcesal:
         }:
             if termino_norm not in texto_evaluable:
                 return False
-            # La formula "ejecutoriado que sea el presente auto" anuncia una
-            # condicion futura y no acredita que la sentencia ya este firme.
             texto_sin_condicion_futura = re.sub(
                 r"\b(?:UNA VEZ\s+)?EJECUTORIAD[OA]\s+QUE\s+SEA\s+EL\s+PRESENTE\s+AUTO\b",
                 " ",
                 texto_limpio,
+            )
+            texto_sin_condicion_futura = re.sub(
+                r"\b(?:TIENE|CONFIERE\s+AL\s+ACTA\s+DE\s+MEDIACI[OÓ]N\s+EL\s+CAR[AÁ]CTER\s+DE|CON\s+EFECTO\s+DE)\s+SENTENCIA\s+EJECUTORIADA\b",
+                " ",
+                texto_sin_condicion_futura,
             )
             if termino_norm not in texto_sin_condicion_futura:
                 return False
@@ -614,7 +747,6 @@ class MotorInferenciaProcesal:
                 "CERTIFICO EJECUTORIA",
                 "HA CAUSADO EJECUTORIA",
                 "DECLARA EJECUTORIADA",
-                "EFECTO DE SENTENCIA EJECUTORIADA",
             )
             es_rotulo_ejecutoria = es_rotulo_breve and bool(re.match(
                 r"^(?:RAZON DE )?(?:SENTENCIA )?EJECUTORIAD[AO]?\b",
@@ -627,26 +759,6 @@ class MotorInferenciaProcesal:
             ))
             return es_rotulo_ejecutoria or sentencia_declarada_ejecutoriada or any(
                 marcador in texto_sin_condicion_futura for marcador in marcadores_ejecutoria
-            )
-
-        if termino_norm in {"CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO"}:
-            if termino_norm not in texto_evaluable:
-                return False
-            marcadores_respuesta = (
-                "CONTESTACION A LA DEMANDA",
-                "ESCRITO DE CONTESTACION",
-                "PRESENTA CONTESTACION",
-                "CONTESTA LA DEMANDA",
-                "SE DA POR CONTESTADA",
-                "OPONE EXCEPCIONES",
-                "PRESENTA EXCEPCIONES",
-            )
-            es_rotulo_contestacion = es_rotulo_breve and bool(re.match(
-                r"^(?:CONTESTACION|ESCRITO DE CONTESTACION|EXCEPCIONES|ALLANAMIENTO)\b",
-                texto_limpio,
-            ))
-            return es_rotulo_contestacion or any(
-                marcador in texto_evaluable for marcador in marcadores_respuesta
             )
 
         if termino_norm == "SENTENCIA":
@@ -882,13 +994,18 @@ class MotorInferenciaProcesal:
     def _es_citacion_fallida_explicita(texto_normalizado):
         return bool(
             re.search(r"\bCITACION\W*NO\s+REALIZADA\b", texto_normalizado)
-            or re.search(r"\bNO\s+(?:SE\s+)?(?:ENCUENTRA\s+|HA\s+SIDO\s+|PUDO\s+|HE\s+PODIDO\s+)CITAD[OA]\b", texto_normalizado)
+            or re.search(r"\bNO\s+(?:SE\s+)?(?:ENCUENTRA\s+|HA\s+SIDO\s+|PUDO\s+|HE\s+PODIDO\s+|HA\s+EFECTUADO\s+|SE\s+HA\s+)CITAD[OA]\b", texto_normalizado)
             or re.search(r"\bNO\s+SE\s+CITO\b", texto_normalizado)
+            or re.search(r"\bCONSTA\s+QUE\s+NO\s+SE\s+HA\s+CITADO\b", texto_normalizado)
+            or re.search(r"\bNO\s+SE\s+HA\s+CITADO\b", texto_normalizado)
+            or re.search(r"\bNO\s+SE\s+HA\s+EFECTUADO\b.{0,40}\bCITACI[OÓ]N\b", texto_normalizado)
+            or re.search(r"\bDEVUELTA\s+SIN\s+CITAR\b", texto_normalizado)
             or "RAZON DE NO CITACION" in texto_normalizado
             or "NO HA SIDO CITADO" in texto_normalizado
             or "NO SE ENCUENTRA CITADO" in texto_normalizado
             or "NO HE PODIDO CITAR" in texto_normalizado
             or "ACTA DE NO CITACION" in texto_normalizado
+            or "ACTAS DE NO CITACION" in texto_normalizado
             or "ACTA DE NO CITACI" in texto_normalizado
             or "REENVIO CITACION" in texto_normalizado
             or "NULIDAD POR FALTA DE CITACION" in texto_normalizado
@@ -1194,20 +1311,16 @@ class MotorInferenciaProcesal:
         tiene_mediacion = any(k in texto_actuaciones_unido for k in ["ACUERDO DE MEDIACION", "ACTA DE MEDIACION", "MEDIACIÓN"])
         if tiene_mediacion and not tiene_ejecutoria:
             evidencia = cls._hallazgo_mas_reciente(hallazgos, "4.3 ACUERDO DE MEDIACION")
-            decision = cls._decision_con_evidencia("regla_6_mediacion_sin_ejecutoria", "5 SENTENCIA", "5.3 SENTENCIA EJECUTORIADA", evidencia)
+            decision = cls._decision_con_evidencia("regla_6_mediacion_sin_ejecutoria", "4 AUDIENCIA", "4.3 ACUERDO DE MEDIACION", evidencia)
             regla_aplicada = "regla_6_mediacion_sin_ejecutoria"
 
         # Regla 7: Nombramiento de Perito sin Informe Pericial posterior
         tiene_nombramiento_perito = any(k in texto_actuaciones_unido for k in ["NOMBRAMIENTO DE PERITO", "PERITO LIQUIDADOR NOMBRADO"])
         tiene_informe_perito = any(k in texto_actuaciones_unido for k in ["INFORME PERICIAL", "INFORME DEL PERITO", "INFORME PERITO LIQUIDADOR"])
-        if decision["fase"] == "6.1 LIQUIDACION PERITO LIQUIDADOR" and tiene_nombramiento_perito and not tiene_informe_perito:
+        if decision["fase"] == "6.1 LIQUIDACION PERITO LIQUIDADOR" and not tiene_informe_perito:
             evidencia_ejecutoria = cls._hallazgo_mas_reciente(
                 hallazgos, "5.3 SENTENCIA EJECUTORIADA"
             )
-            # Si el historial contiene la razon de ejecutoria, su fecha es la
-            # evidencia correcta. En expedientes parciales que solo exponen el
-            # nombramiento se conserva el respaldo historico usado hasta ahora,
-            # evitando convertir el inicio de 6.1 en una fase ya terminada.
             evidencia = evidencia_ejecutoria or decision
             decision = cls._decision_con_evidencia(
                 "regla_7_perito_sin_informe", "5 SENTENCIA",
@@ -1222,6 +1335,10 @@ class MotorInferenciaProcesal:
 
         # Regla 1: Remate o Congelamiento (no avanzar a siguiente fase)
         mensaje_especial = None
+        tiene_derivacion_mediacion = any(k in texto_actuaciones_unido for k in ["DERIVACION A MEDIACION", "ARCHIVO POR ACUERDO DE MEDIACION", "ACTA DE MEDIACION CON ACUERDO", "ACTA DE MEDIACION"])
+        if tiene_derivacion_mediacion and ultima_fase in ("4.3 ACUERDO DE MEDIACION", "5.3 SENTENCIA EJECUTORIADA", "5.1 SENTENCIA EMITIDA POR EL JUEZ"):
+            mensaje_especial = "REVISION MANUAL"
+
         if ultima_fase == "6.4 REMATE":
             etapa_actual = "6 LIQUIDACION Y EMBARGO"
             fase_actual = "6.4 REMATE"
@@ -1230,6 +1347,9 @@ class MotorInferenciaProcesal:
             etapa_actual = "6 LIQUIDACION Y EMBARGO"
             fase_actual = "6.5 CONGELAMIENTO DE CUENTAS / CIERRE"
             mensaje_especial = "CASO SOLVENTADO POR CONGELAMIENTO"
+        elif mensaje_especial == "REVISION MANUAL":
+            etapa_actual = "REVISION MANUAL"
+            fase_actual = "REVISION MANUAL"
         else:
             etapa_actual, fase_actual = cls.calcular_siguiente_fase(ultima_fase)
 
