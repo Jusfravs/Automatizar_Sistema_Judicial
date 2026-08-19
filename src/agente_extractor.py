@@ -1320,8 +1320,27 @@ class MotorInferenciaProcesal:
             regla_aplicada = "regla_6_mediacion_sin_ejecutoria"
 
         # Regla 7: Nombramiento de Perito sin Informe Pericial posterior
-        tiene_nombramiento_perito = any(k in texto_actuaciones_unido for k in ["NOMBRAMIENTO DE PERITO", "PERITO LIQUIDADOR NOMBRADO"])
+        tiene_nombramiento_perito = any(k in texto_actuaciones_unido for k in ["NOMBRAMIENTO DE PERITO", "PERITO LIQUIDADOR NOMBRADO", "ACTA SORTEO PERITO"])
         tiene_informe_perito = any(k in texto_actuaciones_unido for k in ["INFORME PERICIAL", "INFORME DEL PERITO", "INFORME PERITO LIQUIDADOR"])
+
+        # El portal SATJE etiqueta el escrito de informe pericial genericamente como "ESCRITO"
+        # con contenido "ANEXOS, Escrito, FePresentacion" — sin escribir "INFORME PERICIAL" en el texto.
+        # Si hay un ESCRITO posterior al NOMBRAMIENTO DE PERITO, tratarlo como confirmacion del informe.
+        if tiene_nombramiento_perito and not tiene_informe_perito:
+            actuaciones_ord = sorted(actuaciones_evaluar, key=lambda a: cls._fecha_ordenable(a.get("fecha")))
+            fecha_ultimo_nombramiento = None
+            for a in actuaciones_ord:
+                norm_a = normalizar_texto(a.get("detalle", ""))
+                if "NOMBRAMIENTO DE PERITO" in norm_a or "PERITO LIQUIDADOR NOMBRADO" in norm_a or "ACTA SORTEO PERITO" in norm_a:
+                    fecha_ultimo_nombramiento = cls._fecha_ordenable(a.get("fecha"))
+            if fecha_ultimo_nombramiento:
+                for a in actuaciones_ord:
+                    norm_a = normalizar_texto(a.get("detalle", ""))
+                    fecha_a = cls._fecha_ordenable(a.get("fecha"))
+                    if fecha_a > fecha_ultimo_nombramiento and any(k in norm_a for k in ("ESCRITO", "ANEXOS", "FEPRESENTACION", "INFORME")):
+                        tiene_informe_perito = True
+                        break
+
         if decision["fase"] == "6.1 LIQUIDACION PERITO LIQUIDADOR" and not tiene_informe_perito:
             evidencia_ejecutoria = cls._hallazgo_mas_reciente(
                 hallazgos, "5.3 SENTENCIA EJECUTORIADA"
