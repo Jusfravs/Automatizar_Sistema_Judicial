@@ -51,5 +51,13 @@
     },
     "auditoria": {
         "total_esperado": 4017
+    },
+    "base_de_datos": {
+        "motor": "postgres",
+        "host": "localhost",
+        "puerto": 5432,
+        "nombre_db": "casos_judiciales",
+        "usuario": "postgres",
+        "password_env": "POSTGRES_PASSWORD"
     }
 }

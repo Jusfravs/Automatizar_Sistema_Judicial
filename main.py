@@ -145,6 +145,23 @@ def main(argv=None):
     # --- Integración con SQLite (GestorCola) ---
     cola = GestorCola(ruta_db=ruta_db)
 
+    # --- Integración con PostgreSQL (si está configurado) ---
+    gestor_pg = None
+    config_db = repo.config.get("base_de_datos", {})
+    if config_db.get("motor") == "postgres":
+        try:
+            from src.db_postgres import GestorPostgres
+            gestor_pg = GestorPostgres(
+                host=config_db.get("host"),
+                port=config_db.get("puerto"),
+                user=config_db.get("usuario"),
+                password=os.getenv(config_db.get("password_env", "POSTGRES_PASSWORD"), ""),
+                dbname=config_db.get("nombre_db")
+            )
+            logger.info("[POSTGRES] Sincronización activa con base de datos '%s'.", config_db.get("nombre_db"))
+        except Exception as e:
+            logger.warning("[POSTGRES] No se pudo inicializar sincronización PostgreSQL: %s", e)
+
     # Verificar esquema de la base de datos
     if not cola.verificar_esquema():
         logger.critical(
@@ -239,6 +256,12 @@ def main(argv=None):
                         ruta_html=None,
                         estado_final=estado_sqlite,
                     )
+                    if gestor_pg:
+                        try:
+                            ciudad_pg = repo.filtros.get("sucursal") or "QUITO"
+                            gestor_pg.registrar_resultado(numero_juicio, resultado, ciudad=ciudad_pg)
+                        except Exception as e:
+                            logger.warning("[POSTGRES] Error al persistir expediente %s: %s", numero_juicio, e)
                     if estado == "COMPLETADO":
                         exitosos += 1
                         logger.info("[+] Juicio %s completado y persistido.", numero_juicio)
@@ -251,6 +274,11 @@ def main(argv=None):
                         origen="ESATJE_TRANSACCIONAL",
                         estado_final="SIN_RESULTADOS",
                     )
+                    if gestor_pg:
+                        try:
+                            gestor_pg.registrar_error(numero_juicio, origen="ESATJE_TRANSACCIONAL", error_detalle="SIN_RESULTADOS")
+                        except Exception as e:
+                            logger.warning("[POSTGRES] Error al registrar sin resultados de %s: %s", numero_juicio, e)
                     logger.info("[-] Juicio %s sin resultados, estado persistido.", numero_juicio)
                 elif estado in {
                     "EXTRACCION_ERROR",
@@ -274,6 +302,11 @@ def main(argv=None):
                         origen="ESATJE_TRANSACCIONAL",
                         estado_final="ERROR",
                     )
+                    if gestor_pg:
+                        try:
+                            gestor_pg.registrar_error(numero_juicio, origen="ESATJE_TRANSACCIONAL", error_detalle=detalle)
+                        except Exception as e:
+                            logger.warning("[POSTGRES] Error al registrar error de %s: %s", numero_juicio, e)
                     casos_fallidos.append(numero_juicio)
                     logger.error(
                         "[-] Juicio %s terminó como %s: %s", numero_juicio, estado, detalle
