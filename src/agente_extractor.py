@@ -1246,6 +1246,11 @@ class MotorInferenciaProcesal:
             and not cls._es_citacion_fallida_explicita(norm)
         ]
         citaciones_exitosas = [act for act, norm in actuaciones_normalizadas if cls._es_citacion_exitosa(norm)]
+        citaciones_prensa = [
+            act for act, norm in actuaciones_normalizadas
+            if any(k in norm for k in ("CITACION POR PRENSA", "CITACION POR LA PRENSA", "POR LA PRENSA EN UNO DE LOS PERIODICOS", "EXTRACTO DE CITACION", "ART 56", "ART. 56"))
+            and not cls._es_citacion_fallida_explicita(norm)
+        ]
 
         tiene_fallo_no_resuelto = False
         if citaciones_fallidas:
@@ -1259,11 +1264,11 @@ class MotorInferenciaProcesal:
                 palabras_fallo = [w for w in re.findall(r"\b[A-Z]{4,}\b", norm_fallo) if w not in stop_words]
 
                 exito_posterior = False
-                for item_exito in citaciones_exitosas:
+                for item_exito in (citaciones_exitosas + citaciones_prensa):
                     act_exito = item_exito[0] if isinstance(item_exito, tuple) else item_exito
                     norm_exito = item_exito[1] if isinstance(item_exito, tuple) else normalizar_texto(item_exito.get("detalle", ""))
                     fecha_exito = cls._fecha_ordenable(act_exito.get("fecha"))
-                    es_generic_label = any(k in norm_exito for k in ("- RAZON", "(RAZON)", "RAZON")) and not any(k in norm_exito for k in ("BOLETA 3", "EN PERSONA", "NOTIFICADA"))
+                    es_generic_label = any(k in norm_exito for k in ("- RAZON", "(RAZON)", "RAZON")) and not any(k in norm_exito for k in ("BOLETA 3", "EN PERSONA", "NOTIFICADA", "PRENSA", "EXTRACTO"))
                     if fecha_exito > fecha_fallo or (fecha_exito == fecha_fallo and not es_generic_label):
                         if persona_str:
                             if persona_str in norm_exito:
@@ -1281,8 +1286,8 @@ class MotorInferenciaProcesal:
                     break
 
         fallo_sin_exito_posterior = tiene_fallo_no_resuelto
-        pendiente_sin_exito = bool(citaciones_pendientes) and not citaciones_exitosas
-        fase_hasta_citacion = cls.obtener_indice_fase("2.2 CITACION POR PRENSA")
+        pendiente_sin_exito = bool(citaciones_pendientes) and not (citaciones_exitosas or citaciones_prensa)
+        fase_hasta_citacion = cls.obtener_indice_fase("2.1 CITACION (PERSONA/BOLETA)")
         evidencia_posterior_a_citacion = (
             decision.get("prioridad", -1) > fase_hasta_citacion
         )
