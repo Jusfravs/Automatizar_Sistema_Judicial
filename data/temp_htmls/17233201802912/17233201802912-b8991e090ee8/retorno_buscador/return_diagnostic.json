@@ -1,0 +1,34 @@
+{
+  "iniciado": true,
+  "finalizado": true,
+  "confirmado": false,
+  "clicks": 0,
+  "go_back": 0,
+  "recargas": 0,
+  "estrategia": "ruta_busqueda_pendiente",
+  "url_inicial": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+  "url_final": null,
+  "candidatos": [],
+  "diagnostico_inicial": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+    "ruta_valida": true,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false
+  },
+  "diagnostico_final": {
+    "url": null,
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false,
+    "error": "PAGINA_NO_DISPONIBLE"
+  },
+  "error": "RETORNO_BUSCADOR_FORMULARIO_NO_LISTO:Page.wait_for_timeout: Target page, context or browser has been closed"
+}

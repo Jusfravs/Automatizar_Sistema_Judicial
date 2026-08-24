@@ -1,0 +1,39 @@
+{
+  "evento": {
+    "instante": "2026-08-21T17:11:11.729Z",
+    "objetivo": {
+      "etiqueta": "I",
+      "texto": "picture_as_pdf",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "material-icons"
+    },
+    "accionable": {
+      "etiqueta": "BUTTON",
+      "texto": "picture_as_pdf",
+      "rol": null,
+      "aria": "Descargar documento 17230201615866_3_47_151022539_111725048_P00.pdf",
+      "titulo": null,
+      "tooltip": "Descargar",
+      "clase": "mat-mdc-tooltip-trigger ng-star-inserted cdk-focused cdk-program-focused"
+    },
+    "fila": {
+      "etiqueta": "TR",
+      "texto": "OFICIO (OFICIO)\t17230201615866_3_47_151022539_111725048_P00.pdf\tpicture_as_pdf",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": ""
+    }
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "causa": null,
+    "captcha": true,
+    "buscar": null
+  },
+  "red": []
+}

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\HP\OneDrive\Desktop\Casos Judiciales\scripts\diagnosticar_esatje.py", line 6, in <module>
+    from src.motor_busqueda_web import BotJudicial
+ModuleNotFoundError: No module named 'src.motor_busqueda_web'

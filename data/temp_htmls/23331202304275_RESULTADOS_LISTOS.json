@@ -1,0 +1,36 @@
+{
+  "causa": "23331202304275",
+  "estado": "RESULTADOS_LISTOS",
+  "carpeta": null,
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/movimientos",
+  "error": "ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO",
+  "traza": "Traceback (most recent call last):\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 834, in _procesar_flujo_autonomo\n    self._abrir_detalle_causa(causa, resultado)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 498, in _abrir_detalle_causa\n    raise RuntimeError(\"ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO\")\nRuntimeError: ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO\n",
+  "ultimo_paquete_api": {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202304275",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202304275",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2023-11-10T19:51:26.863+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "nombreTipoAccion": "EJECUTIVO",
+  "actuaciones": [
+    {"fecha": "10/01/2022", "actuacion": "Calificación de la demanda"},
+    {"fecha": "15/01/2022", "actuacion": "Boleta de citación al demandado"}
+  ]
+}

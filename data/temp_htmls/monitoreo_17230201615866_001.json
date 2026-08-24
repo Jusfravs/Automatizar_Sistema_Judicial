@@ -1,0 +1,35 @@
+{
+  "evento": {
+    "instante": "2026-08-21T17:10:19.301Z",
+    "objetivo": {
+      "etiqueta": "SPAN",
+      "texto": "BUSCAR",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "mdc-button__label"
+    },
+    "accionable": {
+      "etiqueta": "BUTTON",
+      "texto": "BUSCAR",
+      "rol": null,
+      "aria": "Enviar formulario de búsqueda avanzada",
+      "titulo": null,
+      "tooltip": null,
+      "clase": "boton-buscar mdc-button mdc-button--raised mat-mdc-raised-button mat-accent mat-mdc-button-base cdk-focused cdk-mouse-focused"
+    },
+    "fila": null
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+    "causa": "17230-2016-15866",
+    "captcha": true,
+    "buscar": {
+      "disabled": true,
+      "aria": "Botón de búsqueda deshabilitado. Complete los campos requeridos para habilitar",
+      "clase": "boton-buscar mdc-button mdc-button--raised mat-mdc-raised-button mat-accent mat-mdc-button-base mat-mdc-button-disabled"
+    }
+  },
+  "red": []
+}

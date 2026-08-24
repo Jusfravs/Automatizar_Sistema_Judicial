@@ -1,0 +1,165 @@
+{
+  "version_esquema": 1,
+  "estado": "COMPLETA",
+  "causa": "1730720140329",
+  "intento_id": "1730720140329-3bf02ce2523b",
+  "clave_carpeta": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+  "descriptor": {
+    "causa": "1730720140329",
+    "dependencia": "Juzgado Séptimo De Lo Civil",
+    "ciudad": "Quito",
+    "numero_incidente": "1",
+    "fecha_ingreso": "07/04/2014 00:00",
+    "actores": "Ab. Carla Fernanda Barrera Teran Procuradora Judicial De La Fundacion Para El Desarrollo Espoir",
+    "demandados": "Martinez Soria Freddy Patricio, Salazar Marcia Patricia",
+    "texto_normalizado": "1 07/04/2014 00:00 Ab. Carla Fernanda Barrera Teran Procuradora Judicial De La Fundacion Para El Desarrollo Espoir Martinez Soria Freddy Patricio, Salazar Marcia Patricia folder_open",
+    "href_actuaciones": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "id_api": null,
+    "clave_carpeta": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+    "indice_visual_dependencia": 1,
+    "indice_visual_incidente": 0
+  },
+  "firma": [
+    "1730720140329",
+    "API_ACTUACIONES",
+    3,
+    10,
+    10,
+    411.3
+  ],
+  "secuencia_api_inicio": 8,
+  "secuencia_api_fin": 10,
+  "fuente": "API+DOM",
+  "datos": {
+    "FECHA INICIO JUICIO": "07/04/2014",
+    "FECHA INICIAL FASE ACTUAL": "05/05/2014",
+    "ETAPA_PROCESAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE_PROCESAL": "1.3 CALIFICACION",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "2014-05-05T17:32:00.000+00:00",
+        "detalle": "VISTOS: AVOCO CONOCIMIENTO EN LA PRESENTE CAUSA, EN MI CALIDAD DE JUEZ ENCARGADO, MEDIANTE ACCIÓN DE PERSONAL NO.5501-DP-DPP, DE 1 DE NOVIEMBRE DEL 2013.-  LA DEMANDA QUE ANTECEDE ES CLARA, COMPLETA Y REÚNE LOS DEMÁS  REQUISITOS DE LEY. EL TÍTULO ACOMPAÑADO A LA DEMANDA PRESTA MÉRITO EJECUTIVO,  EN CONSECUENCIA, LOS DEMANDADOS,  EN EL TÉRMINO DE TRES DÍAS DE SER CITADOS LEGALMENTE, PAGUEN LA OBLIGACIÓN REQUERIDA O PROPONGAN EXCEPCIONES. CÍTESE A LOS DEMANDADOS EN EL LUGAR QUE SE INDICA.  AGRÉGUENSE AL PROCESO LOS DOCUMENTOS QUE SE ACOMPAÑAN. TÉNGASE EN CUENTA EL CASILLERO JUDICIAL SEÑALADO POR EL COMPARECIENTE. ACTÚA EL ABG. PAUL EFRAÍN PÉREZ EN CALIDAD DE SECRETARIO ENCARGADO MEDIANTE DE PERSONAL NO. 2421-DP-DPP, DE 03 DE ABRIL DEL 2014- ACTÚA EL ABG. PAUL EFRAÍN PÉREZ EN CALIDAD DE SECRETARIO ENCARGADO MEDIANTE DE PERSONAL NO. 2421-DP-DPP, DE 03 DE ABRIL DEL 2014- NOTIFÍQUESE.-",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "2014-04-08T21:11:00.000+00:00",
+        "detalle": "RECIBO EN LA SECRETARIA DE ESTA JUDICATURA EL DÍA DE HOY OCHO DE ABRIL DEL DOS MIL CATORCE, A LAS CATORCE HORAS TREINTA MINUTOS DE LA OFICINA DE SORTEOS DE LA CORTE PROVINCIAL DE JUSTICIA DE PICHINCHA LA DEMANDA EJECUTIVA NO. 0329-2014-PP- QUITO, 8 DE ABRIL DE 2014.- CERTIFICO.-\r\n\r\n\r\n\r\n                                     DR. MARIO ENRIQUE YÀNEZ URBANO\r\n                                                  SECRETARIO",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "2014-04-07T05:00:00.000+00:00",
+        "detalle": "RECIBIDA EL DÍA DE HOY, LUNES SIETE DE ABRIL DEL DOS MIL CARTORCE, A LAS DIECISEIS HORAS Y CINCO MINUTOS, EL PROCESO EJECUTIVO POR PAGARE A LA ORDEN SEGUIDO POR: SALCEDO GALVEZ MARLENE GIOCONDA PROCURADORA JUDICIAL DE LA FUNDACION PARA EL DESARROLLO ESPOIR EN CONTRA DE MARTINEZ SORIA FREDDY PATRICIO, SALAZAR MARCIA PATRICIA, EN: 0 FOJA(S), ADJUNTA UN PAGARE POR DOS MIL VEINTE Y TRES DOLARES AMERICANOS CON 09/100, UNA TABLA DE PAGOS, UN PODER ESPECIAL,  DEMANDA ORIGINAL Y COPIAS DE LA MISMA. POR SORTEO SU CONOCIMIENTO CORRESPONDIÓ AL JUZGADO SEPTIMO DE LO CIVIL Y AL NÚMERO: 17307-2014-0329.\r\rQUITO, LUNES 7 DE ABRIL DEL 2014.",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "07/04/2014",
+        "detalle": "MATERIA",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "05/05/2014",
+        "detalle": "CALIFICACION DE LA DEMANDA",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "08/04/2014",
+        "detalle": "ACTA GENERAL",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "07/04/2014",
+        "detalle": "ACTA DE SORTEO",
+        "CAUSA": "1730720140329",
+        "CLAVE_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "DEPENDENCIA_JURISDICCIONAL": "Juzgado Séptimo De Lo Civil",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730720140329_1_07_04_2014_00_00_af2ae65e7e14",
+        "ORIGEN_DATA": "API+DOM"
+      }
+    ],
+    "ULTIMA ETAPA": "1 PRESENTACION Y CALIFICACION",
+    "ULTIMA FASE": "1.3 CALIFICACION",
+    "FECHA FIN ULTIMA FASE": "05/05/2014",
+    "ETAPA ACTUAL": "2 CITACION",
+    "FASE ACTUAL": "2.1 CITACION (PERSONA/BOLETA)",
+    "FECHA INICIO FASE ACTUAL": "05/05/2014",
+    "ORIGEN_DATA": "API+DOM"
+  },
+  "advertencias": [],
+  "error": null,
+  "inicio": "2026-08-17T23:40:39.025248+00:00",
+  "duracion_s": 0.723,
+  "artefactos": {
+    "html": "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\page.html",
+    "frames": [
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_001.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_002.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_003.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_004.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_005.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_006.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_007.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_008.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_009.html",
+      "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\frame_010.html"
+    ],
+    "api": "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\api.json",
+    "diagnostico": "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\diagnostic.json",
+    "screenshot": "data\\temp_htmls\\1730720140329\\1730720140329-3bf02ce2523b\\1730720140329_1_07_04_2014_00_00_af2ae65e7e14\\screen.png"
+  },
+  "hashes": {
+    "html": "6b8a9d87f2e2a5f395df771c98e1fbb276e9cd226f3e5ab359e70846f8a40d5d",
+    "frames": [
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "94d7b090273a64b89dd335611c0078c3b0e02cfd4846ccd7c3a56cb3cebe0769",
+      "41f65caaa397c7eaa7558d4a19bfc3b1e04ea89b077cadae40ed798fb8a8ad0f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f",
+      "1ae36545d3acb3b919455fcbdcaf6c8d759521a2294bfced8c73a7e70d93e08f"
+    ],
+    "api": "1b71e9663361165f81606b7b132a130ac0629651830119741aa025c9fdf41b58",
+    "diagnostico": "a472ecb597faea027b59932c256b3b89311e4d005292ad7b237bcf9a1c9417eb",
+    "screenshot": "eebdb4d3c2e4d0401f5cbc7fb7679c4a0c9f7bb0e48d627b9401da195a158ab9"
+  }
+}

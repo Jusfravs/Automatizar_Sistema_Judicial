@@ -1,0 +1,26 @@
+{
+  "evento": {
+    "instante": "2026-08-07T05:31:18.927Z",
+    "objetivo": {
+      "etiqueta": "FORM",
+      "texto": "Búsqueda avanzada\nNúmero de proceso\nActor / Ofendido\nCédula/RUC/Pasaporte\nApellido(s)/Nombre(s)\nDemandado / Procesado\nCédula/RUC/Pasaporte\nApellido(s)/Nombre(s)\nNoticia del delito\nFiltros adicionales\nBUSCAR\nLIMPIAR\n\nNota: Antes de la vigencia del Código Orgánico Integral Penal, esto es el 10 de agosto de 2014, los procesos judiciales penales tenían un número diferente en cada instancia o recurso, pese a que correspondía al mismo expediente.",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "form-container ng-touched ng-dirty ng-submitted ng-valid"
+    },
+    "accionable": null,
+    "fila": null
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+    "causa": "23331-2022-02089",
+    "captcha": true,
+    "buscar": {
+      "disabled": false,
+      "aria": "Enviar formulario de búsqueda avanzada",
+      "clase": "boton-buscar mdc-button mdc-button--raised mat-mdc-raised-button mat-accent mat-mdc-button-base"
+    }
+  }
+}

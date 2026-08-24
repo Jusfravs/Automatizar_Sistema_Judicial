@@ -1,0 +1,143 @@
+{
+  "causa": "23331202304275",
+  "estado": "ERROR_NAVEGACION",
+  "carpeta": null,
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+  "error": "NO_SE_PUDO_VOLVER_AL_BUSCADOR",
+  "traza": "Traceback (most recent call last):\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 825, in _procesar_flujo_autonomo\n    causa = self._preparar_busqueda(causa_original)\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 327, in _preparar_busqueda\n    raise RuntimeError(\"NO_SE_PUDO_VOLVER_AL_BUSCADOR\")\nRuntimeError: NO_SE_PUDO_VOLVER_AL_BUSCADOR\n",
+  "ultimo_paquete_api": {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "version_esquema": 1,
+  "estado": "COMPLETA",
+  "causa": "1730320131115",
+  "intento_id": "1730320131115-1cd8090a3c3f",
+  "clave_carpeta": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+  "descriptor": {
+    "causa": "1730320131115",
+    "dependencia": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+    "ciudad": "Quito",
+    "numero_incidente": "1",
+    "fecha_ingreso": "23/10/2014 22:56",
+    "actores": "Sinailin Socasi Victor Hugo Representante De La Fundacion Para El Desarrollo Integral Espoir,",
+    "demandados": "Tigasi Chugchilan Julio, Tigasi Chugchilan Juan Humberto",
+    "texto_normalizado": "1 23/10/2014 22:56 Sinailin Socasi Victor Hugo Representante De La Fundacion Para El Desarrollo Integral Espoir, Tigasi Chugchilan Julio, Tigasi Chugchilan Juan Humberto folder_open",
+    "href_actuaciones": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "id_api": null,
+    "clave_carpeta": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+    "indice_visual_dependencia": 0,
+    "indice_visual_incidente": 0
+  },
+  "firma": [
+    "1730320131115",
+    "API_ACTUACIONES",
+    1,
+    6,
+    6,
+    292.8
+  ],
+  "secuencia_api_inicio": 4,
+  "secuencia_api_fin": 6,
+  "fuente": "API+DOM",
+  "datos": {
+    "FECHA INICIO JUICIO": "23/10/2014",
+    "FECHA INICIAL FASE ACTUAL": "2014-10-24T03:56:32.000+00:00",
+    "ETAPA_PROCESAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE_PROCESAL": "1.1 PRESENTAR DEMANDA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "2014-10-24T03:56:32.000+00:00",
+        "detalle": "RECIBIDA EL DÍA DE HOY, JUEVES CINCO DE DICIEMBRE DEL DOS MIL TRECE, A LAS DIECISEIS HORAS Y CINCUENTA MINUTOS, EL PROCESO EJECUTIVO POR PAGARE A LA ORDEN SEGUIDO POR: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR, SINAILIN SOCASI VICTOR HUGO (REPRESENTANTE) EN CONTRA DE TIGASI CHUGCHILAN JUAN HUMBERTO, TIGASI CHUGCHILAN JULIO, EN: 0 FOJA(S), ADJUNTA UN PAGARE POR CINCO MIL QUINIENTOS NOVENTA Y SIETE 73/100 DOLARES AMERICANOS, UNA FOTOCOPIA SIMPLE DEL PAGARE, UNA ESCIRTURA DE PODER, ORIGINAL Y COPIAS DE LA DEMANDA. POR SORTEO SU CONOCIMIENTO CORRESPONDIÓ AL JUZGADO TERCERO DE LO CIVIL Y AL NÚMERO: 17303-2013-1115.\r\rQUITO, JUEVES 5 DE DICIEMBRE DEL 2013.",
+        "CAUSA": "1730320131115",
+        "CLAVE_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "05/12/2013",
+        "detalle": "MATERIA",
+        "CAUSA": "1730320131115",
+        "CLAVE_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "23/10/2014",
+        "detalle": "ACTA DE SORTEO",
+        "CAUSA": "1730320131115",
+        "CLAVE_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "ORIGEN_DATA": "API+DOM"
+      }
+    ],
+    "ULTIMA ETAPA": "1 PRESENTACION Y CALIFICACION",
+    "ULTIMA FASE": "1.1 PRESENTAR DEMANDA",
+    "FECHA FIN ULTIMA FASE": "2014-10-24T03:56:32.000+00:00",
+    "ETAPA ACTUAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE ACTUAL": "1.2 COMPLETAR/ACLARAR DEMANDA",
+    "FECHA INICIO FASE ACTUAL": "2014-10-24T03:56:32.000+00:00",
+    "ORIGEN_DATA": "API+DOM"
+  },
+  "advertencias": [],
+  "error": null,
+  "inicio": "2026-08-20T17:06:31.449472+00:00",
+  "duracion_s": 0.281,
+  "artefactos": {
+    "html": "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\page.html",
+    "frames": [
+      "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_001.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_002.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_003.html"
+    ],
+    "api": "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\api.json",
+    "diagnostico": "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\diagnostic.json",
+    "screenshot": "data\\temp_htmls\\1730320131115\\1730320131115-1cd8090a3c3f\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\screen.png"
+  },
+  "hashes": {
+    "html": "fc1f493a00c6cd7f7e3f4fe0259c5f9815239fe643b4c27bde8df06c90fd3231",
+    "frames": [
+      "4800a7762aa334d5fa873fcfc6c65c6f744b7fac0485a09b1e485dc71ca6484e",
+      "4800a7762aa334d5fa873fcfc6c65c6f744b7fac0485a09b1e485dc71ca6484e",
+      "cb3cd3977ec9185d2276351fad514063ca1ff0f91a1700d5d06621f95b37dc8f"
+    ],
+    "api": "480f8d88e9d135102d8339156c79c83de5a30872805b5781c21999039048b746",
+    "diagnostico": "5354c48493088b24e899130b3fe6e68d3799bd5c44798ec5de17be245b8bd959",
+    "screenshot": "2c8ca2ff9ba604201b13368476d979a6ce36c63d83bbf46b002fd21f5f9a5e58"
+  }
+}

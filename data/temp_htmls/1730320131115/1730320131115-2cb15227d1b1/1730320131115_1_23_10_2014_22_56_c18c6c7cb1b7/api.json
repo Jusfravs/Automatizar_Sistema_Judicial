@@ -1,0 +1,34 @@
+[
+  {
+    "secuencia": 6,
+    "capturado_monotonic": 29663.8449224,
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "status": 200,
+    "resource_type": "xhr",
+    "data": [
+      {
+        "codigo": 3452558,
+        "idJudicatura": "17230",
+        "idJuicio": "1730320131115  ",
+        "fecha": "2014-10-24T03:56:32.000+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibida el día de hoy, jueves cinco de diciembre del dos mil trece, a las dieciseis horas y cincuenta minutos, el proceso EJECUTIVO por PAGARE A LA ORDEN seguido por: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR, SINAILIN SOCASI VICTOR HUGO (REPRESENTANTE) en contra de TIGASI CHUGCHILAN JUAN HUMBERTO, TIGASI CHUGCHILAN JULIO, en: 0 foja(s), adjunta UN PAGARE POR CINCO MIL QUINIENTOS NOVENTA Y SIETE 73/100 DOLARES AMERICANOS, UNA FOTOCOPIA SIMPLE DEL PAGARE, UNA ESCIRTURA DE PODER, ORIGINAL Y COPIAS DE LA DEMANDA. Por sorteo su conocimiento correspondió al JUZGADO TERCERO DE LO CIVIL y al número: 17303-2013-1115.\r\rQUITO, Jueves 5 de Diciembre del 2013.",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": -1,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "",
+        "alias": "",
+        "nombreArchivo": "NO_GENERA",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "-1",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": "",
+        "registroAudDigitalizacionHistorica": 0
+      }
+    ]
+  }
+]

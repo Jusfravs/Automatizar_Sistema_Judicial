@@ -1,0 +1,57 @@
+[
+  {
+    "secuencia": 6,
+    "capturado_monotonic": 1040791.7963249,
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "status": 200,
+    "resource_type": "xhr",
+    "data": [
+      {
+        "codigo": 18381234,
+        "idJudicatura": "17232",
+        "idJuicio": "23331202500693 ",
+        "fecha": "2026-04-17T15:05:15.280+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "PROCESO JUDICIAL No: 23331-2025-00693 (2) Primera Instancia.\n\nRegistro realizado en la provincia de SANTO DOMINGO DE LOS TSACHILAS, cantón SANTO DOMINGO, el viernes 17 de abril de 2026, a las 10:05, el proceso: Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de pagaré a la orden, seguido  por: Fundacion Para el Desarrollo Integral Espoir, Rios Mendoza Marcos Antonio, en contra de: Garcia Vargas Maira Fabiola.\n \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL MULTICOMPETENTE CON SEDE EN EL CANTÓN PUERTO QUITO, conformado por el/la juez(a): Juez(a) Holger Alberto Garcia Navarrete. Secretario(a): Yandry Mauricio Villalva Nuñez Que Reemplaza A Guamán Ramírez Silvia Lorena.ABG ZANIAH OLIMPIA NEVAREZ REINAResponsable del SorteoUNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO.",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 28713456,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260417-100525461388-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_28713456",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "28713456",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": "",
+        "registroAudDigitalizacionHistorica": 0
+      },
+      {
+        "codigo": 234212763,
+        "idJudicatura": "17232",
+        "idJuicio": "23331202500693",
+        "fecha": "2026-04-17T15:05:13.000+00:00",
+        "tipo": "CARATULA SORTEO DE DEPRECATORIOS",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 28713456,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20260417-100518982038-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_28713456",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "28713456",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": "",
+        "registroAudDigitalizacionHistorica": 0
+      }
+    ]
+  }
+]

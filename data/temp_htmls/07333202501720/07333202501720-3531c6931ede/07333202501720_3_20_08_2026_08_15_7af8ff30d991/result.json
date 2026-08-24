@@ -1,0 +1,129 @@
+{
+  "version_esquema": 1,
+  "estado": "COMPLETA",
+  "causa": "07333202501720",
+  "intento_id": "07333202501720-3531c6931ede",
+  "clave_carpeta": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+  "descriptor": {
+    "causa": "07333202501720",
+    "dependencia": "Unidad Judicial Civil Con Sede En El Cantón Santa Rosa",
+    "ciudad": "Santa Rosa",
+    "numero_incidente": "3",
+    "fecha_ingreso": "20/08/2026 08:15",
+    "actores": "Fundacion Para El Desarrollo Integral Espoir",
+    "demandados": "Cabrera Gonzalez Mayra Alejandra, Jaen Morocho Luis Alberto",
+    "texto_normalizado": "3 20/08/2026 08:15 Fundacion Para El Desarrollo Integral Espoir Cabrera Gonzalez Mayra Alejandra, Jaen Morocho Luis Alberto folder_open",
+    "href_actuaciones": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "id_api": null,
+    "clave_carpeta": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+    "indice_visual_dependencia": 1,
+    "indice_visual_incidente": 1
+  },
+  "firma": [
+    "07333202501720",
+    "API_ACTUACIONES",
+    2,
+    14,
+    14,
+    879.3
+  ],
+  "secuencia_api_inicio": 12,
+  "secuencia_api_fin": 14,
+  "fuente": "API+DOM",
+  "datos": {
+    "FECHA INICIO JUICIO": "20/08/2026",
+    "FECHA INICIAL FASE ACTUAL": "20/08/2026",
+    "ETAPA_PROCESAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE_PROCESAL": "1.1 PRESENTAR DEMANDA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "2026-08-20T13:15:28.127+00:00",
+        "detalle": "PROCESO JUDICIAL NO: 07333-2025-01720 (3) PRIMERA INSTANCIA.\n\nREGISTRO REALIZADO EN LA PROVINCIA DE EL ORO, CANTÓN MACHALA, EL JUEVES 20 DE AGOSTO DE 2026, A LAS 08:15, EL PROCESO: CIVIL, TIPO DE PROCEDIMIENTO: EJECUTIVO POR ASUNTO: COBRO DE PAGARÉ A LA ORDEN, SEGUIDO  POR: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR, EN CONTRA DE: CABRERA GONZALEZ MAYRA ALEJANDRA, JAEN MOROCHO LUIS ALBERTO.\n \n\nPOR SORTEO DE LEY LA COMPETENCIA SE RADICA EN LA UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN SANTA ROSA, CONFORMADO POR EL/LA JUEZ(A): JUEZ(A) ABG ORTIZ POMA FAUSTO FABIAN QUE REEMPLAZA A DOCTOR JAVIER ALFONSO VELEZ RODAS. SECRETARIO(A): ABG HIDALGO PIZARRO CARLA JOHANNA.ABG CARLOS JINSOHP AJILA AGUIRRERESPONSABLE DEL SORTEOUNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN MACHALA.",
+        "CAUSA": "07333202501720",
+        "CLAVE_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En El Cantón Santa Rosa",
+        "CIUDAD_CARPETA": "Santa Rosa",
+        "INSTANCIA_CARPETA": "3",
+        "ORIGEN_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "2026-08-20T13:15:27.000+00:00",
+        "detalle": "<B>CARATULA</B>",
+        "CAUSA": "07333202501720",
+        "CLAVE_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En El Cantón Santa Rosa",
+        "CIUDAD_CARPETA": "Santa Rosa",
+        "INSTANCIA_CARPETA": "3",
+        "ORIGEN_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "08/07/2025",
+        "detalle": "MATERIA",
+        "CAUSA": "07333202501720",
+        "CLAVE_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En El Cantón Santa Rosa",
+        "CIUDAD_CARPETA": "Santa Rosa",
+        "INSTANCIA_CARPETA": "3",
+        "ORIGEN_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "20/08/2026",
+        "detalle": "ACTA DE SORTEO",
+        "CAUSA": "07333202501720",
+        "CLAVE_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En El Cantón Santa Rosa",
+        "CIUDAD_CARPETA": "Santa Rosa",
+        "INSTANCIA_CARPETA": "3",
+        "ORIGEN_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "20/08/2026",
+        "detalle": "CARATULA SORTEO DE DEPRECATORIOS",
+        "CAUSA": "07333202501720",
+        "CLAVE_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En El Cantón Santa Rosa",
+        "CIUDAD_CARPETA": "Santa Rosa",
+        "INSTANCIA_CARPETA": "3",
+        "ORIGEN_CARPETA": "07333202501720_3_20_08_2026_08_15_7af8ff30d991",
+        "ORIGEN_DATA": "API+DOM"
+      }
+    ],
+    "ULTIMA ETAPA": "1 PRESENTACION Y CALIFICACION",
+    "ULTIMA FASE": "1.1 PRESENTAR DEMANDA",
+    "FECHA FIN ULTIMA FASE": "20/08/2026",
+    "ETAPA ACTUAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE ACTUAL": "1.2 COMPLETAR/ACLARAR DEMANDA",
+    "FECHA INICIO FASE ACTUAL": "20/08/2026",
+    "ORIGEN_DATA": "API+DOM"
+  },
+  "advertencias": [],
+  "error": null,
+  "inicio": "2026-08-24T15:43:53.354248+00:00",
+  "duracion_s": 0.967,
+  "artefactos": {
+    "html": "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\page.html",
+    "frames": [
+      "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\frame_001.html",
+      "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\frame_002.html",
+      "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\frame_003.html"
+    ],
+    "api": "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\api.json",
+    "diagnostico": "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\diagnostic.json",
+    "screenshot": "data\\temp_htmls\\07333202501720\\07333202501720-3531c6931ede\\07333202501720_3_20_08_2026_08_15_7af8ff30d991\\screen.png"
+  },
+  "hashes": {
+    "html": "2bdbab5559e9e8b3fb049ffae79022359bfbefc06f958ad1b016dce7c879aa6a",
+    "frames": [
+      "4800a7762aa334d5fa873fcfc6c65c6f744b7fac0485a09b1e485dc71ca6484e",
+      "9047168eda4acff6069524dff68acf492c09af9aa3b007a04672b87a93838e11",
+      "4800a7762aa334d5fa873fcfc6c65c6f744b7fac0485a09b1e485dc71ca6484e"
+    ],
+    "api": "b79ad8d1e4908724351daaadf4a93d2ecd02feed388629265b88389d8af285a7",
+    "diagnostico": "245daefb79882e0cdfcce9b138bd22a555f618ad39d408c460a0c596218ee4ec",
+    "screenshot": "f36a86ec902602a4f5668fae7694b8e9b004870fe75acf95caa6eeba297e39c6"
+  }
+}

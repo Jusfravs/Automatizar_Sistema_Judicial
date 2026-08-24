@@ -1,0 +1,9 @@
+{
+  "causa": "23331202203524",
+  "estado": "CAPTCHA_TIMEOUT",
+  "carpeta": null,
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+  "error": "CAPTCHA_TIMEOUT: BUSCAR no quedo habilitado",
+  "traza": "Traceback (most recent call last):\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 827, in _procesar_flujo_autonomo\n    self._esperar_busqueda_habilitada(causa)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 377, in _esperar_busqueda_habilitada\n    raise PlaywrightTimeoutError(\"CAPTCHA_TIMEOUT: BUSCAR no quedo habilitado\")\nplaywright._impl._errors.TimeoutError: CAPTCHA_TIMEOUT: BUSCAR no quedo habilitado\n",
+  "ultimo_paquete_api": null
+}

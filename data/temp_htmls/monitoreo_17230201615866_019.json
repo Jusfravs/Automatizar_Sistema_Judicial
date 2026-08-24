@@ -1,0 +1,61 @@
+{
+  "evento": {
+    "instante": "2026-08-21T17:13:12.804Z",
+    "objetivo": {
+      "etiqueta": "I",
+      "texto": "picture_as_pdf",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "material-icons"
+    },
+    "accionable": {
+      "etiqueta": "BUTTON",
+      "texto": "picture_as_pdf",
+      "rol": null,
+      "aria": "Descargar documento 17230201615866_3_47_151022539_111725048_P00.pdf",
+      "titulo": null,
+      "tooltip": "Descargar",
+      "clase": "mat-mdc-tooltip-trigger ng-star-inserted cdk-focused cdk-program-focused"
+    },
+    "fila": {
+      "etiqueta": "TR",
+      "texto": "OFICIO (OFICIO)\t17230201615866_3_47_151022539_111725048_P00.pdf\tpicture_as_pdf",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": ""
+    }
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "causa": null,
+    "captcha": true,
+    "buscar": null
+  },
+  "red": [
+    {
+      "instante": 373949.5292031,
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-GE64D6ZMHF&gtm=45je68j0v9117855992za200zd9117855992&_p=1787332208617&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=796135149&_eu=AAAAAGQ&are=1&cid=270052082.1787332210&frm=0&pscdl=noapi&rcb=16&sr=1366x768&uaa=x86&uab=64&uafvl=Chromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=10.0&uaw=0&ul=es-es&gaf=2&_s=12&tag_exp=115616986~115938465~115938469~118897920~118897930~119367802~119367810~120315470~120385422&sid=1787332209&sct=1&seg=1&dl=https%3A%2F%2Fprocesosjudiciales.funcionjudicial.gob.ec%2Factuaciones&dr=https%3A%2F%2Fprocesosjudiciales.funcionjudicial.gob.ec%2Fmovimientos&dt=Consulta%20de%20procesos&en=descargaPDF&_ee=1&ep.event_category=api%20rest&ep.event_label=ea4b23af-269a-45ab-8752-6ac9aab444af&_et=6066&tfd=64346",
+      "estado": 204,
+      "content_type": "text/plain",
+      "metodo": "POST"
+    },
+    {
+      "instante": 373949.7510413,
+      "url": "https://api.funcionjudicial.gob.ec/CJ-DOCUMENTO-SERVICE/api/document/query/hba?code=ea4b23af-269a-45ab-8752-6ac9aab444af",
+      "estado": 200,
+      "content_type": "application/pdf",
+      "metodo": "GET"
+    },
+    {
+      "instante": 374070.5307427,
+      "url": "https://api.funcionjudicial.gob.ec/CJ-DOCUMENTO-SERVICE/api/document/query/hba?code=ea4b23af-269a-45ab-8752-6ac9aab444af",
+      "estado": 200,
+      "content_type": "application/pdf",
+      "metodo": "GET"
+    }
+  ]
+}

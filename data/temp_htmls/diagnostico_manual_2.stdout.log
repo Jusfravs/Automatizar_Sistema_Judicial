@@ -1,0 +1,14 @@
+2026-08-06 23:31:03 [INFO] [BotJudicial] Navegador iniciado en https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros
+2026-08-06 23:31:07 [INFO] [BotJudicial] [OK] Portal del Consejo de la Judicatura cargado correctamente.
+2026-08-06 23:31:07 [INFO] [BotJudicial] Iniciando causa: 23331-2022-02089
+2026-08-06 23:31:07 [INFO] [AgenteExtractor] [ÁRBOL NAV] [MOVE UP] Escalada por ausencia -> Subiendo al Nivel 1 (Retornando al nivel raíz de búsqueda)
+2026-08-06 23:31:08 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "PREPARAR_BUSCADOR", "estado_siguiente": "CAUSA_ESCRITA", "accion": "escribir_causa"}
+2026-08-06 23:31:08 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "CAUSA_ESCRITA", "estado_siguiente": "ESPERAR_FIN_CAPTCHA", "accion": "esperar_buscar_habilitado"}
+2026-08-06 23:31:08 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "ESPERAR_FIN_CAPTCHA", "estado_siguiente": "BUSQUEDA_HABILITADA", "accion": "captcha_finalizado"}
+2026-08-06 23:31:08 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "BUSQUEDA_HABILITADA", "estado_siguiente": "BUSQUEDA_ENVIADA", "accion": "click_buscar", "intento_id": "23331202202089:1", "click_numero": 1}
+2026-08-06 23:31:38 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "BUSQUEDA_ENVIADA", "estado_siguiente": "ERROR_NAVEGACION", "accion": "timeout", "error": "RESULTADOS_TIMEOUT", "intento": 1}
+2026-08-06 23:31:38 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "VOLVER_AL_BUSCADOR", "estado_siguiente": "BUSCADOR_LISTO", "accion": "validar_formulario"}
+2026-08-06 23:31:38 [INFO] [AgenteExtractor] [ÁRBOL NAV] [MOVE UP] Escalada por ausencia -> Subiendo al Nivel 0 (Retornando al nivel raíz de búsqueda)
+2026-08-06 23:31:39 [INFO] [BotJudicial] [NAVEGACION_ESATJE] {"causa": "23331202202089", "estado_anterior": "BUSCADOR_LISTO", "estado_siguiente": "ERROR_NAVEGACION", "accion": "error", "error": "CAUSA_NO_CONFIRMADA_EN_CAMPO", "intento": 2}
+RESULTADO_DIAGNOSTICO causa=23331-2022-02089 completado=False estado=ERROR_NAVEGACION
+2026-08-06 23:31:40 [INFO] [BotJudicial] Navegador cerrado.

@@ -1,0 +1,575 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202203524",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2022-10-19T20:25:41.997+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202203524",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202203524",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2022-10-19T20:25:41.997+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202203524",
+    "data": [
+      {
+        "idJudicatura": "08332",
+        "nombreJudicatura": "UNIDAD JUDICIAL MULTICOMPETENTE CIVIL DE QUININDÉ",
+        "ciudad": "QUININDE",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 26104747,
+            "idMovimientoJuicioIncidente": 24748669,
+            "idJudicaturaDestino": "08332",
+            "fechaCrea": "2023-02-27T13:50:18.757",
+            "incidente": 2,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "ERAZO CHALACAN FREDDY XAVIER",
+                "representadoPor": "ERAZO CHALACAN FREDDY XAVIER",
+                "idLitigante": 40127938
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36925178
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "GARAICOA PEREZ FRANCISCO JOSE",
+                "representadoPor": "GARAICOA PEREZ FRANCISCO JOSE",
+                "idLitigante": 27519849
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PALADINES CARRASCO PAMELA MISHELLE",
+                "representadoPor": "PALADINES CARRASCO PAMELA MISHELLE",
+                "idLitigante": 34573422
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          },
+          {
+            "idIncidenteJudicatura": 26553219,
+            "idMovimientoJuicioIncidente": 25191473,
+            "idJudicaturaDestino": "08332",
+            "fechaCrea": "2023-07-07T16:31:40.937",
+            "incidente": 2,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "ERAZO CHALACAN FREDDY XAVIER",
+                "representadoPor": "ERAZO CHALACAN FREDDY XAVIER",
+                "idLitigante": 40127938
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36925178
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "GARAICOA PEREZ FRANCISCO JOSE",
+                "representadoPor": "GARAICOA PEREZ FRANCISCO JOSE",
+                "idLitigante": 27519849
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PALADINES CARRASCO PAMELA MISHELLE",
+                "representadoPor": "PALADINES CARRASCO PAMELA MISHELLE",
+                "idLitigante": 34573422
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      },
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 25738663,
+            "idMovimientoJuicioIncidente": 24387501,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2022-10-19T15:25:41.997",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "ERAZO CHALACAN FREDDY XAVIER",
+                "representadoPor": "ERAZO CHALACAN FREDDY XAVIER",
+                "idLitigante": 40127938
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "GARAICOA PEREZ FRANCISCO JOSE",
+                "representadoPor": "GARAICOA PEREZ FRANCISCO JOSE",
+                "idLitigante": 27519849
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36925178
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PALADINES CARRASCO PAMELA MISHELLE",
+                "representadoPor": "PALADINES CARRASCO PAMELA MISHELLE",
+                "idLitigante": 34573422
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 217503120,
+        "idJudicatura": "08332",
+        "idJuicio": "23331202203524 ",
+        "fecha": "2024-07-25T22:13:49.033+00:00",
+        "tipo": "DEVOLUCIÓN DEPRECATORIO POR CUMPLIMIENTO DE DILIGENCIA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Quininde, jueves veinte y cinco de julio del dos mil veinte y cuatro, a partir de las diecisiete horas y catorce minutos, mediante boletas judiciales notifiqué el AUTO DE INTERLOCUTORIO que antecede a: ERAZO CHALACAN FREDDY XAVIER en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com,  francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN; FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com,  francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN; GARAICOA PEREZ FRANCISCO JOSE en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com,  francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN;  No se notifica a: PALADINES CARRASCO PAMELA MISHELLE,  por no haber señalado casillero electrónico.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>BRAVO ZAMBRANO ALEX JOSÉ</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO</strong>\r\n  </p>",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 25191473,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20240725-17131566812-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203524_237900109_17_13_48_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "25191473",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 217503120,
+        "idJudicatura": "08332",
+        "idJuicio": "23331202203524 ",
+        "fecha": "2024-07-25T21:33:25.000+00:00",
+        "tipo": "DEVOLUCIÓN DEPRECATORIO POR CUMPLIMIENTO DE DILIGENCIA (AUTO INTERLOCUTORIO) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-family:Arial,sans-serif\"><em><strong>VISTOS: </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>Dr. </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>Patricio Roberto Riofrio Carranza </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em>- Juez de esta Unidad Judicial Multicompetente Civil de Quinind&eacute;; y, por encontrarme encargado del despacho de la Dra. Amparo del Pilar Tapia Reinoso, mediante acci&oacute;n de personal </em></span><span style=\"font-family:Arial,sans-serif\"><em>extendida numero </em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>1790-DP08-2024-MV, que rige por el d&iacute;a de hoy 2</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>5</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong> de Ju</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>l</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>io al 2</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>0</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong> de </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>Agosto </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>del 2024, </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em>en lo principal dispongo:</em></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Arial,sans-serif\"><em><strong>1. DILIGENCIA </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>DEPRECADA</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>: </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em>De </em></span><span style=\"font-family:Arial,sans-serif\"><em>la revisi&oacute;n de los recaudos procesales del presente deprecatorio virtual que reposan en esta Unidad Judicial de Quinind&eacute;, a la presente fecha se ha cumplido con la diligencia deprecada; en tal virtud, se dispone la </em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>DEVOLUCI&Oacute;N</strong></em></span><span style=\"font-family:Arial,sans-serif\"><em> del mismo a la Unidad Judicial de Origen a trav&eacute;s del Sistema </em></span><span style=\"color:#202124\"><span style=\"font-family:Arial,sans-serif\"><em><span style=\"background-color:#ffffff\">Autom&aacute;tico de Tr&aacute;mite Judicial Ecuatoriano &ldquo;</span></em></span></span><span style=\"color:#202124\"><span style=\"font-family:Arial,sans-serif\"><em><strong><span style=\"background-color:#ffffff\">SATJE</span></strong></em></span></span><span style=\"color:#202124\"><span style=\"font-family:Arial,sans-serif\"><em><span style=\"background-color:#ffffff\">&rdquo;</span></em></span></span><span style=\"font-family:Arial,sans-serif\"><em>.</em></span><span style=\"font-family:Arial,sans-serif\"><strong> </strong></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Arial,sans-serif\"><em><strong>2. </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em><strong>SECRETARIO: </strong></em></span><span style=\"font-family:Arial,sans-serif\"><em>Act&uacute;e en calidad de secretario del despacho el se&ntilde;or Ab. Alex Jos&eacute; Bravo Zambrano mediante acci&oacute;n de personal No. DP08-INT-2021-02147, de 4 de octubre el 2021.</em></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Arial,sans-serif\"><em><strong>3. FIRMAS ELECTR&Oacute;NICA: </strong>Al amparo del art&iacute;culo 14 de la Ley de Comercio Electr&oacute;nico, Firmas Electr&oacute;nicas y Mensajes de Datos, se indica que la firma electr&oacute;nica contenida en el presente auto, tiene igual validez y genera los mismos efectos jur&iacute;dicos que la firma manuscrita; en consecuencia, no ser&aacute; necesario consignar la firma manuscrita en la presente actuaci&oacute;n judicial. <strong>NOTIF&Iacute;QUESE y DEVUELV&Aacute;SE.-</strong></em></span></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 25191473,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20240725-163330115577-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203524_237887057_16_33_34_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "25191473",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202992425,
+        "idJudicatura": "08332",
+        "idJuicio": "23331202203524 ",
+        "fecha": "2023-07-21T16:53:08.203+00:00",
+        "tipo": "DILIGENCIA DEPRECATORIO (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Quininde, viernes veinte y uno de julio del dos mil veinte y tres, a partir de las once horas y cincuenta y tres minutos, mediante boletas judiciales notifiqué el AUTO DE SUSTANCIACIÓN que antecede a: ERAZO CHALACAN FREDDY XAVIER en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com,  francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN; FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com,  francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN; GARAICOA PEREZ FRANCISCO JOSE en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com,  francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN;  No se notifica a: PALADINES CARRASCO PAMELA MISHELLE,  por no haber señalado casillero electrónico.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>BRAVO ZAMBRANO ALEX JOSÉ</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO</strong>\r\n  </p>",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 25191473,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230721-115377031938-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203524_208672720_11_53_7_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "25191473",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202992425,
+        "idJudicatura": "08332",
+        "idJuicio": "23331202203524 ",
+        "fecha": "2023-07-21T13:20:49.000+00:00",
+        "tipo": "DILIGENCIA DEPRECATORIO (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong><em>VISTOS:</em></strong><em> <strong>Dra. Amparo del Pilar Tapia Reinoso</strong> en mi calidad de Juez de esta Unidad Judicial Multicompetente Civil de Quinind&eacute;, avoco conocimiento de la presente causa y en lo principal dispongo: <strong>1.</strong> <strong>AVOCO CONOCIMIENTO</strong> del presente <strong>DEPRECATORIO VIRTUAL</strong> signado con el n&uacute;mero </em><strong><em>23331-2022-03524</em></strong><strong><em> </em></strong><em>en virtud del sorteo realizado<strong> </strong>y<strong> </strong>por recibido c&uacute;mplase, al efecto la diligencia ordenada; esto es, proc&eacute;dase a realizar la <strong>NOTIFICACI&Oacute;N al AB. BYRON ANDRES TORRES JIMENEZ, </strong>para lo cual el actuario del despacho librara el correspondiente oficio de ley. Para lo cual, rem&iacute;tase la documentaci&oacute;n pertinente a la oficina de citaciones de esta Unidad Judicial, procedi&eacute;ndose a desmaterializar las copias necesarias del presente deprecatorio. <strong>2. </strong>Act&uacute;e en calidad de secretario del despacho el se&ntilde;or Ab. Alex Jos&eacute; Bravo Zambrano mediante acci&oacute;n de personal No. DP08-INT-2021-02147, de&nbsp; 4 de octubre el 2021. <strong>NOTIF&Iacute;QUESE.-</strong></em></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 25191473,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230721-082077213790-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203524_208636483_8_20_54_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "25191473",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 14821570,
+        "idJudicatura": "08332",
+        "idJuicio": "23331202203524 ",
+        "fecha": "2023-07-07T21:31:41.767+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "PROCESO JUDICIAL No: 23331-2022-03524 (2) Primera Instancia.\n\nRegistro realizado en la provincia de SANTO DOMINGO DE LOS TSACHILAS, cantón SANTO DOMINGO, el viernes 7 de julio de 2023, a las 16:31, el proceso: Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de letra de cambio, seguido  por: Erazo Chalacan Freddy Xavier, Fundacion Para el Desarrollo Integral Espoir, Garaicoa Perez Francisco Jose, en contra de: Paladines Carrasco Pamela Mishelle.\n \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL MULTICOMPETENTE CIVIL DE QUININDÉ, conformado por el/la juez(a): Juez(a) Dra. Tapia Reinoso Amparo del Pilar. Secretario(a): Bravo Zambrano Alex José.FABIAN ROBERTO BELTRAN ARMASResponsable del SorteoUNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO.",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 25191473,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20230707-163127842139-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_25191473",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "25191473",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 122529796,
+        "idJudicatura": "08332",
+        "idJuicio": "23331202203524",
+        "fecha": "2023-07-07T21:31:40.000+00:00",
+        "tipo": "CARATULA SORTEO DE DEPRECATORIOS",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 25191473,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20230707-163123426027-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_25191473",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "25191473",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  }
+]

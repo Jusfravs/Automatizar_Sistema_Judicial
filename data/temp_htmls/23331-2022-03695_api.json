@@ -1,0 +1,1154 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202101941",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202101941",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2021-07-14T21:09:30.233+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202203695",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2022-10-28T20:32:36.257+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202203695",
+    "data": [
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 25768362,
+            "idMovimientoJuicioIncidente": 24416770,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2022-10-28T15:32:36.257",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "ERAZO CHALACAN FREDDY XAVIER",
+                "representadoPor": "ERAZO CHALACAN FREDDY XAVIER",
+                "idLitigante": 40127938
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "GARAICOA PEREZ FRANCISCO JOSE",
+                "representadoPor": "GARAICOA PEREZ FRANCISCO JOSE",
+                "idLitigante": 27519849
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PUETATE CHUQUIZAN KAREN THALIA",
+                "representadoPor": "PUETATE CHUQUIZAN KAREN THALIA",
+                "idLitigante": 40612982
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202203695",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202203695",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2022-10-28T20:32:36.257+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 205977918,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-10-06T16:38:53.000+00:00",
+        "tipo": "RAZON DE EJECUTORIA (RAZON) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">RAZON: Siento por tal que la sentencia de fecha de 02 de octubre del 2023, dentro de la presente causa se encuentra ejecutoriada seg&uacute;n el Ministerio de la Ley.- SANTO DOMINGO 06 DE OCTUBRE DEL 2023.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm\">Ab. Juan Jos&eacute; Men&eacute;ndez Leguizamo</p>\n\n<p style=\"text-align:justify\">SECRETARIO</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20231006-113968544030-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_214629982_11_39_8_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 205767015,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-10-02T21:45:26.127+00:00",
+        "tipo": "SENTENCIA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo domingo, lunes dos de octubre del dos mil veinte y tres, a partir de las dieciséis horas y cuarenta y cinco minutos, mediante boletas judiciales notifiqué la SENTENCIA que antecede a: ERAZO CHALACAN FREDDY XAVIER en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN; GARAICOA PEREZ FRANCISCO JOSE en el casillero No.383,  en el casillero electrónico No.1709647927 correo electrónico  abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec.  del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN;  No se notifica a: PUETATE CHUQUIZAN KAREN THALIA,  por no haber señalado casillero electrónico.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>MENENDEZ LEGUIZAMO JUAN JOSE</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A</strong>\r\n  </p>",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20231002-164562442262-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_214237692_16_45_25_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 205767015,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-10-02T19:47:22.000+00:00",
+        "tipo": "SENTENCIA (RESOLUCION) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>VISTOS:</strong> En lo principal: Una vez que ha fenecido el t&eacute;rmino otorgado a la demandada, en auto de calificaci&oacute;n de la demanda, y de acuerdo a la raz&oacute;n sentada por el actuario de la judicatura dentro del proceso ejecutivo signado con el No. 23331-2022-03695, siendo el momento procesal el de pronunciar sentencia, conforme lo establecen los Arts. 90 y 95 del C&oacute;digo Org&aacute;nico General de Procesos (COGEP), se considera:</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>1.- Identificaci&oacute;n de las partes procesales</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>1.1.- Actor:</strong> <strong>Fundaci&oacute;n para el Desarrollo Integral ESPOIR<em> regional Santo Domingo,</em></strong> representado legalmente por el Ab. Francisco Jos&eacute; Garaicoa P&eacute;rez<strong><em> </em></strong>en su calidad de coordinador y como tal Representante legal, quien comparece a trav&eacute;s de su Procurador Judicial Ab. Freddy Xavier Erazo Chalac&aacute;n, a quien en adelante se le denominar&aacute; <strong><em>&ldquo;parte actora, ejecutante o actor&rdquo;</em></strong>.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>1.2.-</strong> <strong>Demandada: Karen Thal&iacute;a Puetate Chuquizan,</strong> a quien en adelante se le denominar&aacute; <strong><em>&ldquo;ejecutada, demandada o parte demandada&rdquo;.</em></strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>2.- Enunciaci&oacute;n breve de los hechos y circunstancias objeto de la demanda. </strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>2.1.- Hechos</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>2.2.-</strong> Que, del t&iacute;tulo de cr&eacute;dito adjunto a la demanda (letra de cambio), por la suma de <strong><em>$. 1.066,15</em><em> (Mil sesenta y seis 15/100 d&oacute;lares de los Estados Unidos de Am&eacute;rica)</em></strong>; que la parte demandada le adeuda la cantidad antes se&ntilde;alada por un pr&eacute;stamo otorgado a su favor por parte de su mandante, monto que ten&iacute;a que pagarlo con los respectivos intereses legalmente pactados.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>2.3.-</strong> El ejecutante sostiene que el t&iacute;tulo de cr&eacute;dito contiene una obligaci&oacute;n clara, pura, determinada y actualmente exigible; y que, pese a los constantes requerimientos de pago realizados a la parte demandada, esta no ha cancelado su obligaci&oacute;n.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>2.4.- Pretensiones</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>2.5.-</strong> La ejecutante demanda a la ciudadana <strong>Karen Thal&iacute;a Puetate Chuquizan</strong>, para que en sentencia se le condene al pago de lo siguiente: <strong>a.) </strong>Al pago del capital constante en la letra de cambio, esto es, la suma de <strong><em>$. 1.066,15</em><em> (Mil sesenta y seis 15/100 d&oacute;lares de los Estados Unidos de Am&eacute;rica)</em></strong>; <strong>b)</strong> Al pago de los intereses legales y de mora; <strong>c)</strong> Al pago de costas procesales que incluye honorarios profesionales de su abogado defensor.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>3.- Sustanciaci&oacute;n del Proceso.</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>3.1.-</strong> La demanda se present&oacute; el d&iacute;a 28 de octubre de 2022, en la Sala de Sorteos de la Unidad Judicial Civil del cant&oacute;n de Santo Domingo. Luego del sorteo de rigor, previno en el conocimiento el Abogado Alejandro Ruperto Le&oacute;n Zapata en su calidad de Juez de la Unidad Judicial Civil del cant&oacute;n de Santo Domingo.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">3.2.- Mediante fecha 15 de noviembre de 2022 las 15h50, la demanda fue admitida a tr&aacute;mite. Se orden&oacute; citar a la demandada; y, se le concedi&oacute; el t&eacute;rmino de quince d&iacute;as para que conteste la demanda.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>3.3.-</strong> La demandada fue citada en persona el d&iacute;a;18 de julio de 2023, como se observa del acta de citaci&oacute;n que obra a <strong>(fj. 24)</strong>.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>3.4.-</strong> La demandada no compareci&oacute;, por tanto, no contest&oacute; la demanda. Adem&aacute;s, no se observa cumplimiento de la obligaci&oacute;n exigida. Por estos motivos, corresponde dictar sentencia como ordena el art&iacute;culo 352 del COGEP.<strong> </strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>4.- Presupuestos Procesales</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>4.1.-Competencia</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>4.2.-</strong> El suscrito Juez es competente para conocer y resolver la presente causa, conforme dispone el art&iacute;culo 240 numerales 1 y 2 del C&oacute;digo Org&aacute;nico de la Funci&oacute;n Judicial; y, al sorteo correspondiente.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>4.3.-Validez Procesal</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>4.4.-</strong> A la causa se le ha dado el tr&aacute;mite ejecutivo, y de forma particular lo previsto en el art&iacute;culo 352 del C&oacute;digo Org&aacute;nico General de Procesos. A la demanda se acompa&ntilde;&oacute; el t&iacute;tulo ejecutivo <strong><em>(letra de cambio)</em></strong>.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>4.5.-</strong> La ejecutada se la cit&oacute; en persona<strong>,</strong> conforme se aprecia a <strong>(fj. 24)</strong>, de modo que, se respet&oacute; el derecho al debido proceso en la garant&iacute;a del derecho a la defensa. Adem&aacute;s, no se observa omisi&oacute;n a solemnidad sustancial que pueda afectar la validez procesal. A base a todo lo anterior, se declara v&aacute;lido el proceso.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>5.- Hechos probados, relevantes para la resoluci&oacute;n</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>5.1.-</strong> Con la letra de cambio acompa&ntilde;ada a la demanda, prueba el ejecutante su derecho para ejercer la acci&oacute;n en contra del ejecutado.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.- An&aacute;lisis Jur&iacute;dico y Explicaci&oacute;n de Pertinencia.</strong></p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.1.-</strong> Para examinar si procede la acci&oacute;n ejecutiva con sustento en la letra de cambio adjunta a la demanda, es preciso analizar los siguientes presupuestos jur&iacute;dicos:</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.2</strong> Sabido es, que solo la Ley puede crear t&iacute;tulos ejecutivos, por tanto, establecer tal calidad, no queda a criterio del Juez ni de las partes; en la especie, la letra de cambio es uno de los t&iacute;tulos al que la Ley le ha dado la calidad de ejecutivo conforme a la enumeraci&oacute;n ejemplificativa que hace el Art. 347 numeral 4 del C&oacute;digo Org&aacute;nico General de Procesos.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.3.-</strong> Bajo ese tenor, el juicio ejecutivo solo tiene raz&oacute;n de ser cuando la demanda se sustenta en un t&iacute;tulo ejecutivo, de all&iacute; el axioma <strong>&ldquo;nulla executio sine t&iacute;tulo&rdquo;</strong>, vale decir, que no puede haber ejecuci&oacute;n sin t&iacute;tulo; de modo que, la acci&oacute;n ejecutiva solo es procedente si se funda en un t&iacute;tulo al que la Ley le ha otorgado la calidad de ejecutivo.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.4.-</strong> En ese sentido, la naturaleza del juicio ejecutivo, la Ley le ha asignado un procedimiento sumario, es decir, un procedimiento breve, y las razones que ameritan este procedimiento sumario, no son en relaci&oacute;n a la cuant&iacute;a o al fondo de la ejecuci&oacute;n, sino m&aacute;s bien a la calidad en que se funda la ejecuci&oacute;n.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.5.-</strong> Por tanto, el t&iacute;tulo ejecutivo constituye requisito esencial <strong><em>&ldquo;ad solemnitaten&rdquo;</em></strong> para la procedencia de la acci&oacute;n ejecutiva, ya que contiene un elemento productor de certezas, pues se presume leg&iacute;timo y viene tambi&eacute;n a constituir la prueba plena del derecho <strong><em>&ldquo;ad probationem&rdquo;</em></strong> que afirma tener el ejecutante.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.6.-</strong> Adem&aacute;s, en el juicio ejecutivo no se trata de decidir sobre derechos dudosos o controvertidos, se trata m&aacute;s bien de llevarse a ejecuci&oacute;n derechos claros, ciertos y determinados; consecuentemente, el conocimiento del Juez en esta clase de juicios se reduce en un principio a examinar el t&iacute;tulo ejecutivo, a examinar su apariencia, a ver si est&aacute; asistido de todos los requisitos de fondo y de forma para merecer la tutela privilegiada propia de la v&iacute;a ejecutiva.&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.7.-</strong> En este contexto, revisada la letra de cambio acompa&ntilde;ada a la demanda, se colige que contiene los siguientes elementos:</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>1.- </strong>La denominaci&oacute;n de letra de cambio inserta en el texto mismo del documento y expresada en el idioma empleado para la redacci&oacute;n del mismo; <strong>2.-</strong> La orden incondicional de pagar una cantidad determinada de <strong><em>$. 1.066,15</em><em> (Mil sesenta y seis 15/100 d&oacute;lares de los Estados Unidos de Am&eacute;rica)</em></strong>; <strong>3.-</strong> El nombre de la persona que debe pagar <strong><em>(</em></strong><strong>Karen Thal&iacute;a Puetate Chuquizan<em>)</em></strong>; <strong>4.-</strong> La indicaci&oacute;n del vencimiento <strong><em>( vence en 180 d&iacute;as vista)</em></strong>; <strong>5.-</strong> El lugar donde debe efectuarse el pago <strong><em>(Santo Domingo)</em></strong>; <strong>6.-</strong> El nombre de la persona a quien o a cuya orden debe efectuarse el pago<strong><em> (Fundaci&oacute;n para el Desarrollo Integral ESPOIR)</em></strong>; <strong>7.-</strong> La indicaci&oacute;n de la fecha y del lugar en que se gira la letra <strong><em>(Santo Domingo, 18 de junio de 2021)</em></strong>; <strong>8.-</strong> La firma de la persona que la emite <strong><em>(Se encuentra suscrito por la ejecutante, quien emite la letra de cambio)</em></strong>.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.8.-</strong> Con este antecedente, es propio concluir que la letra de cambio acompa&ntilde;ada a la demanda cumple con los requisitos del art&iacute;culo 114 del C&oacute;digo de Comercio, por tanto, es v&aacute;lida como letra de cambio.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.9.- </strong>Adicionalmente, a base a lo detallado en l&iacute;neas anteriores, es dable concluir que la obligaci&oacute;n contenida en la letra de cambio, <strong><em><u>es clara</u></em></strong> ya que no existe duda en cuanto a sus elementos; <strong><em>pura</em></strong>, por cuanto ha producido sus efectos desde que se contrae y para siempre, sin restricciones y limitaciones de ninguna clase; <strong><em>es determinada</em></strong> ya que se conoce con precisi&oacute;n cu&aacute;l es la prestaci&oacute;n que debe la deudora; esto es la cantidad de <strong><em>$. 1.066,15</em><em> (Mil sesenta y seis 15/100 d&oacute;lares de los Estados Unidos de Am&eacute;rica)</em></strong>; y, que es lo que el acreedor tiene derecho a recibir; <strong><em><u>es l&iacute;quida</u></em></strong> ya que la prestaci&oacute;n es clara y cierta en su cantidad o valor; y est&aacute; determinada. <strong><em><u>Es actualmente exigible</u></em></strong>, ya que es ejecutable por ser una obligaci&oacute;n pura y simple desde su nacimiento y no se observa que est&eacute; sujeta a plazo, condici&oacute;n o modo.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.10.-</strong> En consecuencia, de conformidad con el art&iacute;culo 348 del C&oacute;digo Org&aacute;nico General de Procesos, cumple con los requisitos de procedencia, esto es, la obligaci&oacute;n contenida en el t&iacute;tulo es clara, pura, determinada, l&iacute;quida y actualmente exigible.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>6.11.-</strong> En definitiva, la letra de cambio que obra en el proceso constituye t&iacute;tulo ejecutivo y su obligaci&oacute;n es ejecutiva, con el cual se ha demandado, de modo que, cumple con los presupuestos exigidos en los art&iacute;culos 114 del C&oacute;digo de Comercio y 348 inciso 1 del C&oacute;digo Org&aacute;nico General de Procesos.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>7.-</strong> Por los razonamientos que preceden, <strong>ADMINISTRANDO JUSTICIA, EN NOMBRE DEL PUEBLO SOBERANO DEL ECUADOR, Y POR AUTORIDAD DE LA CONSTITUCI&Oacute;N Y LAS LEYES DE LA REP&Uacute;BLICA,</strong> se acepta la demanda y se dispone que:</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>7.1.-</strong> La ejecutada pague la cantidad <strong><em>$. 1.066,15</em><em> (Mil sesenta y seis 15/100 d&oacute;lares de los Estados Unidos de Am&eacute;rica)</em></strong>; m&aacute;s los intereses legales y de mora los mismos que ser&aacute;n liquidados en la fase de ejecuci&oacute;n.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>7.2.-</strong> En lo que se refiere al pago de costas, gastos y expensas judiciales solicitados en la demanda, en la que seg&uacute;n el segundo inciso del art&iacute;culo 285 del COGEP contempla los honorarios y gastos, se niega, toda vez que no se han configurado los presupuestos contemplados en las normas del art&iacute;culo 284 ibidem, ya que no se ha demostrado que la parte ejecutada haya litigado de forma abusiva, maliciosa, temeraria o con deslealtad ni se incurre en las causales del art&iacute;culo 286 ibidem. -</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>7.4.-</strong> Act&uacute;e el Ab. Juan Jos&eacute; Men&eacute;ndez en calidad de secretario de la Unidad Judicial.</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>7.3.-</strong> Ejecutoriado el fallo, desgl&oacute;sese y entr&eacute;guese la documentaci&oacute;n aportada al proceso a quien corresponde, previamente dejando copias certificadas en el proceso.&nbsp;</p>\n\n<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\"><strong>7.4.-</strong> C&uacute;mplase y Notif&iacute;quese.</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20231002-144985278532-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_214203911_14_49_22_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 205628918,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-09-28T15:22:17.000+00:00",
+        "tipo": "CITACION REALIZADA (RAZON) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">RAZ&Oacute;N: Siento por tal que, consta que se ha efectuado la citaci&oacute;n mediante boleta personal del d&iacute;a 18 de julio de 2023, a PUETATE CHUQUIZAN KAREN THALIA, lo que dejo constancia para los fines legales consiguientes.&nbsp; Santo Domingo, 28 de septiembre del 2023. CERTIFICO. -</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230928-102281970728-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_213930921_10_22_56_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 205515843,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-09-26T20:18:48.550+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo domingo, martes veinte y seis de septiembre del dos mil veinte y tres, a partir de las quince horas y diecinueve minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>MITTE PAZMIÑO PEDRO ORLEY</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230926-15188441172-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_213746443_15_18_47_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 205515843,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-09-26T20:02:06.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">VISTOS.- Agr&eacute;guese a los autos el escrito que antecede proveyendo el mismo se dispone. 1).- Incorp&oacute;rese al proceso el acta remitida por la Oficina de Citaciones de esta jurisdicci&oacute;n, la cual indica que se ha citado a la parte demandada se&ntilde;ora PUETATE CHIQUIZAN KAREN THALIA, seg&uacute;n la raz&oacute;n sentada en dicha acta, lo cual, t&eacute;ngase en cuenta para los fines legales pertinentes 2).- Por cuanto, de la revisi&oacute;n de los autos consta que la demandada ha sido legalmente citada, seg&uacute;n consta de la raz&oacute;n sentada en el acta remitida por la Oficina de Citaciones de esta jurisdicci&oacute;n, y no han cumplido la obligaci&oacute;n ni han propuesto excepciones dentro de t&eacute;rmino concedido en auto de sustanciaci&oacute;n inicial de fecha 15 de noviembre del 2022 (Fs. 17), pasen los autos para resolver de conformidad a lo establecido en el Art. 352 del C&oacute;digo Org&aacute;nico General de Procesos. NOTIF&Iacute;QUESE.-</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230926-150293410139-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_213742185_15_2_10_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 58886980,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-09-20T13:40:26.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20230920-084035989634-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_58886980",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 3540744,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-07-18T17:41:13.000+00:00",
+        "tipo": "CITACIÓN: Realizada - EN PERSONA",
+        "actividad": "Acta de citación",
+        "visible": "S",
+        "origen": "CitacionIncidente",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "CLEX1.CitacionIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20230718-124116722327-593792259-1648666963",
+        "alias": "HBA01",
+        "nombreArchivo": "Acta de citación",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-07-18T17:15:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): PROCESO ASIGNADO A UN CITADOR - 18/07/2023 12:15",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-07-18T17:15:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): PRIMERA GESTIÓN REALIZADA POR EL CITADOR: BOLETA 1 (DIRECCIÓN PRINCIPAL) - 18/07/2023 12:15",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-07-05T20:56:39.460+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): PROCESO ASIGNADO A UN CITADOR - 05/07/2023 15:56",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-07-05T20:50:32.857+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 05/07/2023 15:50",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-07-05T20:50:32.857+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 05/07/2023 15:50",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202178039,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-06-30T21:05:55.000+00:00",
+        "tipo": "RAZON (RAZON) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">RAZON: En esta fecha se envi&oacute; las boletas respectivas a la oficina de citaciones de esta ciudad.- Santo Domingo, a 30 de junio del 2023.- Certifico.</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160642269022-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_207004389_16_6_9_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-06-30T21:05:21.477+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA)",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 202177971,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-06-30T21:05:21.477+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA)",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes treinta  de junio del dos mil veintitres, a las dieciseis  horas y cinco minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230630-160549863203-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3540744_16_5_21_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 201289321,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-06-09T17:19:57.283+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo domingo, viernes nueve de junio del dos mil veinte y tres, a partir de las doce horas y veinte minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>MENENDEZ LEGUIZAMO JUAN JOSE</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230609-121972665331-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_205222348_12_19_56_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 201289321,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-06-09T17:12:25.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"margin-left:0cm; margin-right:0cm; text-align:justify\">Agr&eacute;guese a los autos el escrito que antecede y proveyendo el mismo se dispone. 1).- Incorp&oacute;rese al proceso el acta remitida por la Oficina de Citaciones de esta jurisdicci&oacute;n, la cual indica que NO se ha citado a la demandada se&ntilde;ora PUETATE CHUQUIZAN KAREN THALIA, seg&uacute;n la raz&oacute;n sentada en dicha acta, lo cual, t&eacute;ngase en cuenta para los fines legales pertinentes. 2).- Atento lo solicitado por la parte actora, c&iacute;tese a la demandada se&ntilde;ora PUETATE CHUQUIZAN KAREN THALIA, en el domicilio se&ntilde;alado en el escrito que atiende, para el efecto rem&iacute;tanse las boletas de estilo, a la Oficina de Citaciones de esta jurisdicci&oacute;n, adjuntando la demanda, copia certificada de los documentos adjuntos y este auto. Se requiere a la parte actora, que comparezca a esta Unidad Judicial a sacar las respectivas copias, a fin emitir las boletas correspondientes para la pr&aacute;ctica de la diligencia de citaci&oacute;n al demandado. NOTIF&Iacute;QUESE.-</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20230609-121291418080-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_205221138_12_12_28_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 57283911,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-05-18T16:57:29.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "ANEXOS, Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20230518-115726975360-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_57283911",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-17T14:47:40.940+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 17/01/2023 09:47",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-17T14:47:40.940+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 17/01/2023 09:47",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 3202677,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-17T14:47:40.000+00:00",
+        "tipo": "CITACIÓN: No realizada - CAMBIO DE DIRECCIÓN",
+        "actividad": "Acta de citación",
+        "visible": "S",
+        "origen": "CitacionIncidente",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "CLEX1.CitacionIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20230117-094571628302-593792259-1648666963",
+        "alias": "HBA01",
+        "nombreArchivo": "Acta de citación",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-16T15:44:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): PROCESO ASIGNADO A UN CITADOR - 16/01/2023 10:44",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-16T15:44:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): PROCESO ASIGNADO A UN CITADOR - 09/01/2023 09:05",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-09T14:05:10.473+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): PROCESO ASIGNADO A UN CITADOR - 09/01/2023 09:05",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-06T20:49:04.963+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 06/01/2023 15:49",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2023-01-06T20:49:04.963+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 06/01/2023 15:49",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-12-19T21:11:33.937+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA)",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194918162,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-12-19T21:11:33.937+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PUETATE CHUQUIZAN KAREN THALIA)",
+        "actividad": "<p>Providencia del Juicio 23331202203695 </p><br><p>PUETATE CHUQUIZAN KAREN THALIA</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS lunes diecinueve  de diciembre del dos mil veintidos, a las dieciseis  horas y once  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-161156682893-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3202677_16_11_33_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194916855,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-12-19T21:00:00.000+00:00",
+        "tipo": "RAZON (RAZON) ",
+        "actividad": "RAZON: En esta fecha se envió las boletas respectivas a la oficina de citaciones de esta ciudad.- Santo Domingo, a 19 de diciembre del 2022.- Certifico.\r\n\r\nAB. JUAN JOSÉ MENÉNDEZ LEGUIZAMO. \r\nSECRETARIO",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-160000730375-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_4_0_194916855_192706587_P01.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 194904632,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-12-19T19:12:00.000+00:00",
+        "tipo": "RAZON (RAZON) ",
+        "actividad": "RAZÓN: Siento como tal que con esta fecha recibo 1 juego de copias para citar.-Lo que dejo constancia para los fines pertinentes.- Santo Domingo, de 19 de diciembre del 2022.- CERTIFICO.\r\n\r\n\r\nAB. JUAN JOSÉ MENÉNDEZ LEGUIZAMO. \r\nSECRETARIO",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221219-141013959577-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_2_12_194904632_192682712_P01.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 193599665,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-11-15T21:54:44.067+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, martes quince de noviembre del dos mil veinte y dos, a partir de las dieciseis horas y cincuenta y un minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: ERAZO CHALACAN FREDDY XAVIER en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN; GARAICOA PEREZ FRANCISCO JOSE en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PUETATE CHUQUIZAN KAREN THALIA por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221115-16510373979-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_4_51_193599665_190202078_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 193599665,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-11-15T20:50:00.000+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, martes 15 de noviembre del 2022, las 15h50, VISTOS: Ab. Alejandro Leon Zapata, en mi calidad de Juez de esta Unidad Judicial Civil del cantón Santo Domingo, avoco conocimiento de la presente causa en legal y debida forma. La demanda que antecede es clara, completa y cumple los requisitos legales previstos en el artículo 142 y 143 del Código Orgánico General de Procesos (COGEP) y se fundamenta en letra de cambio, al tenor de lo previsto en los artículos 347 numeral 4 y 348 del mismo código, ya que contiene una obligación clara, pura, determinada y actualmente exigible; por lo que se califica y admite a trámite mediante procedimiento ejecutivo. Se ordena la citación de la demandada KAREN THALIA PUETATE CHUQUIZAN, en calidad de deudora principal, en el domicilio señalado, para el efecto, envíense a la Oficina de Citaciones de esta jurisdicción las boletas de estilo, para lo cual se adjuntará la demanda, copia certificada de los documentos adjuntos y este auto. La actora deberá entregar las copias suficientes para la elaboración de las respectivas notificaciones a la brevedad posible. En aplicación de los artículos 355 y 333, numeral 3 del COGEP, se concede el término de quince (15) días para que la parte demandada proponga alguna de las excepciones taxativas del artículo 353 del código citado, bajo prevención que de no hacerlo se pronunciará inmediatamente sentencia y esa resolución no será susceptible de recurso alguno, en cumplimiento al artículo 352 del COGEP. Tómese en cuenta el casillero judicial, los correos electrónicos señalados. CÍTESE Y NOTIFÍQUESE.-\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20221115-155070353143-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202203695_3_50_193599665_190182454_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 14040178,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695 ",
+        "fecha": "2022-10-28T20:32:36.257+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibido en la ciudad de Santo domingo el día de hoy, viernes 28 de octubre de 2022, a las 15:32,  el proceso  de Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de letra de cambio, seguido  por: Erazo Chalacan Freddy Xavier, Garaicoa Perez Francisco Jose, en contra de: Puetate Chuquizan Karen Thalia. \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS, conformado por Juez(a): Abg Leon Zapata Alejandro Ruperto. Secretaria(o): Menendez Leguizamo Juan Jose. \n\nProceso número: 23331-2022-03695 (1) Primera InstanciaAl que se adjunta los siguientes documentos:\n1) PETICIÓN INICIAL (ORIGINAL)\n2) LETRA DE CAMBIO POR EL VALOR DE MIL SESENTA Y SEIS DOLARES.- (ORIGINAL)\n3) PROCURACION JUDICIAL..- (COPIAS CERTIFICADAS/COMPULSA)\n4) CEDULA DE CIUDADANIA Y CROQUIS.- (COPIA SIMPLE)\n\nTotal de fojas: 15BELLA ANITA FARIAS DEMERA Responsable de sorteo",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20221028-153258297480-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_24416770",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 98420894,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202203695",
+        "fecha": "2022-10-28T20:32:36.000+00:00",
+        "tipo": "CARATULA DE JUICIO",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 24416770,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20221028-153253078130-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_24416770",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "24416770",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  }
+]

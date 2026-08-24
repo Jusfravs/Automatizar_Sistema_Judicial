@@ -1,0 +1,116 @@
+{
+  "version_esquema": 1,
+  "estado": "COMPLETA",
+  "causa": "1730320131115",
+  "intento_id": "1730320131115-27a78f54bffb",
+  "clave_carpeta": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+  "descriptor": {
+    "causa": "1730320131115",
+    "dependencia": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+    "ciudad": "Quito",
+    "numero_incidente": "1",
+    "fecha_ingreso": "23/10/2014 22:56",
+    "actores": "Sinailin Socasi Victor Hugo Representante De La Fundacion Para El Desarrollo Integral Espoir,",
+    "demandados": "Tigasi Chugchilan Julio, Tigasi Chugchilan Juan Humberto",
+    "texto_normalizado": "1 23/10/2014 22:56 Sinailin Socasi Victor Hugo Representante De La Fundacion Para El Desarrollo Integral Espoir, Tigasi Chugchilan Julio, Tigasi Chugchilan Juan Humberto folder_open",
+    "href_actuaciones": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "id_api": null,
+    "clave_carpeta": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+    "indice_visual_dependencia": 0,
+    "indice_visual_incidente": 0
+  },
+  "firma": [
+    "1730320131115",
+    0,
+    2,
+    1121,
+    null,
+    null,
+    1,
+    6,
+    false
+  ],
+  "secuencia_api_inicio": 4,
+  "secuencia_api_fin": 6,
+  "fuente": "API+DOM",
+  "datos": {
+    "FECHA INICIO JUICIO": "23/10/2014",
+    "FECHA INICIAL FASE ACTUAL": "2014-10-24T03:56:32.000+00:00",
+    "ETAPA_PROCESAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE_PROCESAL": "1.1 PRESENTAR DEMANDA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "2014-10-24T03:56:32.000+00:00",
+        "detalle": "RECIBIDA EL DÍA DE HOY, JUEVES CINCO DE DICIEMBRE DEL DOS MIL TRECE, A LAS DIECISEIS HORAS Y CINCUENTA MINUTOS, EL PROCESO EJECUTIVO POR PAGARE A LA ORDEN SEGUIDO POR: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR, SINAILIN SOCASI VICTOR HUGO (REPRESENTANTE) EN CONTRA DE TIGASI CHUGCHILAN JUAN HUMBERTO, TIGASI CHUGCHILAN JULIO, EN: 0 FOJA(S), ADJUNTA UN PAGARE POR CINCO MIL QUINIENTOS NOVENTA Y SIETE 73/100 DOLARES AMERICANOS, UNA FOTOCOPIA SIMPLE DEL PAGARE, UNA ESCIRTURA DE PODER, ORIGINAL Y COPIAS DE LA DEMANDA. POR SORTEO SU CONOCIMIENTO CORRESPONDIÓ AL JUZGADO TERCERO DE LO CIVIL Y AL NÚMERO: 17303-2013-1115.\r\rQUITO, JUEVES 5 DE DICIEMBRE DEL 2013.",
+        "CAUSA": "1730320131115",
+        "CLAVE_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "05/12/2013",
+        "detalle": "MATERIA",
+        "CAUSA": "1730320131115",
+        "CLAVE_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "23/10/2014",
+        "detalle": "ACTA DE SORTEO",
+        "CAUSA": "1730320131115",
+        "CLAVE_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7",
+        "ORIGEN_DATA": "API+DOM"
+      }
+    ],
+    "ULTIMA ETAPA": "1 PRESENTACION Y CALIFICACION",
+    "ULTIMA FASE": "1.1 PRESENTAR DEMANDA",
+    "FECHA FIN ULTIMA FASE": "2014-10-24T03:56:32.000+00:00",
+    "ETAPA ACTUAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE ACTUAL": "1.2 COMPLETAR/ACLARAR DEMANDA",
+    "FECHA INICIO FASE ACTUAL": "2014-10-24T03:56:32.000+00:00",
+    "ORIGEN_DATA": "API+DOM"
+  },
+  "advertencias": [],
+  "error": null,
+  "inicio": "2026-08-11T19:37:52.997923+00:00",
+  "duracion_s": 1.349,
+  "artefactos": {
+    "html": "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\page.html",
+    "frames": [
+      "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_001.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_002.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_003.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_004.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_005.html",
+      "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\frame_006.html"
+    ],
+    "api": "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\api.json",
+    "diagnostico": "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\diagnostic.json",
+    "screenshot": "data\\temp_htmls\\1730320131115\\1730320131115-27a78f54bffb\\1730320131115_1_23_10_2014_22_56_c18c6c7cb1b7\\screen.png"
+  },
+  "hashes": {
+    "html": "4c653fee2328628ec2ae7dcb2c5eb9795cd449275ea67a4cac26aeb5ad8bfb5c",
+    "frames": [
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "22b9234cb3e10350fbdc25411141d8fccaab51b55b45e107d39fe2fe4f8e51a4"
+    ],
+    "api": "6ab699f441373f9424c4f72b416efeddd86fdd442445b9439e9d38a1409b0d7a",
+    "diagnostico": "b3b19ee7c77e3b93994acb5aad1894f8f6d900e9ec218903d7e7645c13701805",
+    "screenshot": "24231ba0b8d6c51e6dd0e9f60ff29e89a3edf2a88631ea128c787a55476fd23f"
+  }
+}

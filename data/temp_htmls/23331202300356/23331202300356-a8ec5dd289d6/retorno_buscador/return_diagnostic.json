@@ -1,0 +1,33 @@
+{
+  "iniciado": true,
+  "finalizado": true,
+  "confirmado": false,
+  "clicks": 0,
+  "go_back": 0,
+  "recargas": 0,
+  "estrategia": null,
+  "url_inicial": "chrome-error://chromewebdata/",
+  "url_final": "chrome-error://chromewebdata/",
+  "candidatos": [],
+  "diagnostico_inicial": {
+    "url": "chrome-error://chromewebdata/",
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false
+  },
+  "error": "RETORNO_BUSCADOR_ORIGEN_NO_VALIDO",
+  "diagnostico_final": {
+    "url": "chrome-error://chromewebdata/",
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false
+  }
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "secuencia": 14,
+    "capturado_monotonic": 627927.7951492,
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "status": 200,
+    "resource_type": "xhr",
+    "data": [
+      {
+        "codigo": 18785081,
+        "idJudicatura": "07307",
+        "idJuicio": "07333202501720 ",
+        "fecha": "2026-08-20T13:15:28.127+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "PROCESO JUDICIAL No: 07333-2025-01720 (3) Primera Instancia.\n\nRegistro realizado en la provincia de EL ORO, cantón MACHALA, el jueves 20 de agosto de 2026, a las 08:15, el proceso: Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de pagaré a la orden, seguido  por: Fundacion Para el Desarrollo Integral Espoir, en contra de: Cabrera Gonzalez Mayra Alejandra, Jaen Morocho Luis Alberto.\n \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN SANTA ROSA, conformado por el/la juez(a): Juez(a) Abg Ortiz Poma Fausto Fabian Que Reemplaza A Doctor Javier Alfonso Velez Rodas. Secretario(a): Abg Hidalgo Pizarro Carla Johanna.ABG CARLOS JINSOHP AJILA AGUIRREResponsable del SorteoUNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN MACHALA.",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 29114028,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260820-081549829362-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_29114028",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "29114028",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": "",
+        "registroAudDigitalizacionHistorica": 0
+      },
+      {
+        "codigo": 248506815,
+        "idJudicatura": "07307",
+        "idJuicio": "07333202501720",
+        "fecha": "2026-08-20T13:15:27.000+00:00",
+        "tipo": "CARATULA SORTEO DE DEPRECATORIOS",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 29114028,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20260820-081543826592-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_29114028",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "29114028",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": "",
+        "registroAudDigitalizacionHistorica": 0
+      }
+    ]
+  }
+]

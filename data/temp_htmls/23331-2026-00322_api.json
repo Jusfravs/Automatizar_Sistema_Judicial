@@ -1,0 +1,796 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202600322",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2026-02-03T20:38:16.313+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202600322",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202600322",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE LETRA DE CAMBIO",
+        "fechaIngreso": "2026-02-03T20:38:16.313+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202600322",
+    "data": [
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 29883790,
+            "idMovimientoJuicioIncidente": 28476051,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2026-02-03T15:38:16.313",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "RIOS MENDOZA MARCOS ANTONIO",
+                "representadoPor": "RIOS MENDOZA MARCOS ANTONIO",
+                "idLitigante": 42370696
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36800677
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "ALDAZ BENITEZ JOSHUA NATANAEL",
+                "representadoPor": "ALDAZ BENITEZ JOSHUA NATANAEL",
+                "idLitigante": 35933801
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 245976917,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-06-19T22:14:58.797+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, viernes diecinueve de junio del dos mil veinte y seis, a partir de las diecisiete horas y quince minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>BELTRAN ARMAS FABIAN ROBERTO</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260619-171463132262-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_295218488_17_14_58_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245976917,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-06-19T19:46:32.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><strong>VISTOS</strong><span style=\"background-color:transparent; color:#000000\">.- En lo principal hay lo que sigue, agr&eacute;guese a los autos:</span></span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><span style=\"background-color:transparent; color:#000000\">1.- El acta de NO citacion, mismo que se pone en conocimiento.</span></span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><span style=\"background-color:transparent; color:#000000\">2.- El escrito que antecede presentado por la parte </span><strong>ACTORA</strong><span style=\"background-color:transparent; color:#000000\">; y, en atenci&oacute;n a su contenido y considerando el estado procesal de la causa, se </span><strong>CONSIDERA</strong><span style=\"background-color:transparent; color:#000000\">:</span></span></span></p>\n\n<p style=\"margin-left:30pt; text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><span style=\"background-color:transparent; color:#000000\">a).- Env&iacute;ese las boletas a la oficina de citaciones de esta Unidad Judicial, a fin de que se proceda a citar a la parte accionada:&nbsp;</span></span></span><span style=\"font-size:18px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><strong>ALDAZ BENITEZ JOSHUA NATANAEL;</strong></span></span><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"> <span style=\"background-color:transparent; color:#000000\">en la nueva direcci&oacute;n proporcionada para el cumplimiento de la diligencia.</span></span></span></p>\n\n<p style=\"margin-left:30pt; text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><span style=\"background-color:transparent; color:#000000\">b).- Para el efecto la parte solicitante conceda las copias suficientes para remitir las boletas a la oficina de citaciones, en tal virtud se concede el t&eacute;rmino de cinco d&iacute;as, para lo cual se adjuntar&aacute; copia certificada de la demanda, auto reca&iacute;do en ella, los documentos adjuntos, el escrito que antecede y este auto.</span></span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><strong>3.- </strong><strong>NOTIF&Iacute;QUESE, C&Iacute;TESE Y C&Uacute;MPLASE.-</strong></span></span></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260619-144610747169-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_295177618_14_46_36_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 72987484,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-06-18T14:11:56.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "ANEXOS, Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260618-091157198062-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_72987484",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-20T16:35:56.230+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 20/05/2026 11:35",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-20T16:35:56.230+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 20/05/2026 11:35",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 6597520,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-20T16:35:56.000+00:00",
+        "tipo": "CITACIÓN: No realizada - DESCONOCIDO",
+        "actividad": "Acta de citación",
+        "visible": "S",
+        "origen": "CitacionIncidente",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "CLEX1.CitacionIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260520-113542570718-593792259-1648666963",
+        "alias": "HBA01",
+        "nombreArchivo": "Acta de citación",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-07T19:34:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): PROCESO ASIGNADO A UN CITADOR - 06/05/2026 16:24",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-07T19:34:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): PROCESO ASIGNADO A UN CITADOR - 07/05/2026 14:34",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-06T21:24:10.247+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): PROCESO ASIGNADO A UN CITADOR - 06/05/2026 16:24",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-06T21:22:32.867+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 06/05/2026 16:22",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-06T21:22:32.867+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 06/05/2026 16:22",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243861213,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-04T21:14:48.000+00:00",
+        "tipo": "DESGLOSE DE DOCUMENTOS (RAZON) ",
+        "actividad": "<p style=\"text-align:justify\"><strong><span style=\"font-size:13pt\">322-2026</span></strong></p>\n\n<p style=\"text-align:justify\"><strong><span style=\"font-size:13pt\">RAZ&Oacute;N: </span><span style=\"font-size:13pt\">SIENTO POR TAL QUE EN CUMPLIMIENTO DE LO DISPUESTO EN AUTO ANTERIOR, REALICE EL DESGLOSE Y ENTREGA DE LA DOCUMENTACI&Oacute;N SOLICITADA A LA AB MARCOS ANTONIO RIOS MENDOZA, DE LA FJ 4 A LA A LA 08, DEJ&Aacute;NDOSE COPIAS CERTIFICADAS A LAS CUALES ME REMITO EN CASO DE SER NECESARIO.&nbsp; SANTO DOMINGO 04 DE MAYO DEL 2026</span></strong></p>\n\n<p>&nbsp;</p>\n\n<p style=\"text-align:justify\"><strong><span style=\"font-size:13pt\">COMPARECIENTE </span><span style=\"font-size:13pt\"> </span><span style=\"font-size:13pt\"> </span><span style=\"font-size:13pt\"> </span><span style=\"font-size:13pt\"> </span><span style=\"font-size:13pt\">SECRETARIO</span></strong></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-16143665681-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_290900318_16_14_51_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858181,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-04T20:53:16.000+00:00",
+        "tipo": "RAZON (RAZON) ",
+        "actividad": "<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:'Times New Roman',serif; font-size:12pt\">Raz&oacute;n: Siento como tal, que en la presente fecha procedo a enviar las boletas de citaci&oacute;n/notificaci&oacute;n&nbsp; a la Sala de Citaciones.- Santo Domingo, 04 de mayo del 2026. Lo Certifico.</span></strong></p>\n\n<p><br />\n<br />\n&nbsp;</p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:'Times New Roman',serif; font-size:12pt\">AB. FABIAN BELTRAN ARMAS</span></strong></p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:'Times New Roman',serif; font-size:12pt\">SECRETARIO</span></strong></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155337159990-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_290893089_15_53_19_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-04T20:53:13.287+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL)",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243858172,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-05-04T20:53:13.287+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (ALDAZ BENITEZ JOSHUA NATANAEL)",
+        "actividad": "<p>Providencia del Juicio 23331202600322 </p><br><p>ALDAZ BENITEZ JOSHUA NATANAEL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO lunes cuatro de mayo del dos mil veintiseis, a las quince  horas y cincuenta y tres minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260504-155330115794-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_6597520_15_53_13_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243509853,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-04-23T19:36:16.000+00:00",
+        "tipo": "RAZON (RAZON) ",
+        "actividad": "<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:'Times New Roman',serif; font-size:12pt\">Raz&oacute;n: Siento como tal, que en esta fecha recibo las boletas para citar/notificar en la presente causa.- Santo Domingo, 23 de abril del 2026. Lo Certifico.</span></strong></p>\n\n<p><br />\n<br />\n&nbsp;</p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:'Times New Roman',serif; font-size:12pt\">AB. FABIAN BELTRAN ARMAS</span></strong></p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:'Times New Roman',serif; font-size:12pt\">SECRETARIO</span></strong></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260423-143622586081-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_290193429_14_36_22_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 240584552,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-02-12T16:28:47.343+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, jueves doce de febrero del dos mil veinte y seis, a partir de las once horas y veinte y nueve minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>BELTRAN ARMAS FABIAN ROBERTO</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260212-112862892551-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_284322965_11_28_46_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 240584552,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-02-12T15:13:17.000+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><strong>VISTOS.- </strong>Ab. Karina Aracely Vel&aacute;squez Puruncaja, en calidad de Jueza de esta Unidad Judicial Civil con sede en el cant&oacute;n Santo Domingo, puesto que ha sido a mi vista el expediente el d&iacute;a de hoy, avoco conocimiento de la presente solicitud en legal y debida forma, por el sorteo electr&oacute;nico de Ley.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">1.- En lo principal, la demanda que antecede se la califica de clara, completa y cumple los requisitos legales previstos en el art&iacute;culo 142 y 143 del C&oacute;digo Org&aacute;nico General de Procesos (COGEP) y se fundamenta en <strong>Letra de Cambio</strong>, al tenor de lo previsto en los art&iacute;culos 347, 348 Y 349 del mismo c&oacute;digo; por lo que se califica y admite a tr&aacute;mite mediante procedimiento ejecutivo.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">2.- Se ordena la citaci&oacute;n de los demandados:</span></span></p>\n\n<p style=\"margin-left:40px; text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><em><strong>2.1.- ALDAZ BENITEZ JOSHUA NATANAEL, </strong></em>en el domicilio se&ntilde;alado en la demanda, para efecto rem&iacute;tase las boletas respectivas a la oficina de citaciones de esta jurisdicci&oacute;n, para lo cual se adjuntar&aacute; la demanda, copia certificada de los documentos adjuntos y este auto.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">3.- En aplicaci&oacute;n de los art&iacute;culos 355 y 333, numeral 3 del COGEP, se concede el t&eacute;rmino de quince (15) d&iacute;as para que los demandados propongan alguna de las excepciones taxativas del art&iacute;culo 353 del c&oacute;digo citado, bajo prevenci&oacute;n que de no hacerlo se pronunciar&aacute; inmediatamente sentencia y esa resoluci&oacute;n no ser&aacute; susceptible de recurso alguno, en cumplimiento al art&iacute;culo 352 del COGEP.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">4.- Dej&aacute;ndose copias certificadas, se concede el desglose de la documentaci&oacute;n acompa&ntilde;ada en la demanda a excepci&oacute;n del t&iacute;tulo ejecutivo que sirve de base para iniciar el procedimiento ejecutivo. </span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">5.- Agr&eacute;guese al proceso la documentaci&oacute;n aparejada a la demanda.&nbsp;</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">6.- T&oacute;mese en cuenta el casillero judicial y correo electr&oacute;nico se&ntilde;alado.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\">7.- Act&uacute;e en la presente causa el Ab. Fabi&aacute;n Beltr&aacute;n Armas, en calidad de Secretario de esta Unidad Judicial.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><strong>8.- NOTIF&Iacute;QUESE Y C&Uacute;MPLASE.</strong></span></span></p>\n\n<p style=\"text-align:justify\">&nbsp;</p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260212-101336277296-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600322_284307724_10_13_26_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 18141601,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322 ",
+        "fecha": "2026-02-03T20:38:18.543+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibido en la ciudad de Santo domingo el día de hoy, martes 3 de febrero de 2026, a las 15:38,  el proceso  de Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de letra de cambio, seguido  por: Rios Mendoza Marcos Antonio, Fundacion Para el Desarrollo Integral Espoir, en contra de: Aldaz Benitez Joshua Natanael. \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO, conformado por Juez(a): Velasquez Puruncaja Karina Aracely. Secretaria(o): Beltran Armas Fabian Roberto. \n\nProceso número: 23331-2026-00322 (1) Primera InstanciaAl que se adjunta los siguientes documentos:\n1) PETICIÓN INICIAL (ORIGINAL)\n2) LETRA DE CAMBIO POR EL VLAOR DE  1.097,45 DOLARES,ESTADO DE CUENTA, DATOS DEL DEUDOR. (ORIGINAL)\n3) PROCURACION JUDICIAL. (COPIAS CERTIFICADAS/COMPULSA)\n4) FICHA DE INSCRIPCION,CROQUIS, CEDULAS DE CIUDADANIA Y CREDENCIA LDE ABOGADO. (COPIA SIMPLE)\n\nTotal de fojas: 20BELLA ANITA FARIAS DEMERA Responsable de sorteo",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260203-153890122360-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_28476051",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 225865916,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600322",
+        "fecha": "2026-02-03T20:38:16.000+00:00",
+        "tipo": "CARATULA DE JUICIO",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 28476051,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20260203-153886119826-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_28476051",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "28476051",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  }
+]

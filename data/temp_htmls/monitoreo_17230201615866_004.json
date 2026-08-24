@@ -1,0 +1,31 @@
+{
+  "evento": {
+    "instante": "2026-08-21T17:10:34.086Z",
+    "objetivo": {
+      "etiqueta": "MAT-ICON",
+      "texto": "folder_open",
+      "rol": "img",
+      "aria": null,
+      "titulo": null,
+      "tooltip": "Ver detalle del proceso judicial",
+      "clase": "mat-icon notranslate mat-mdc-tooltip-trigger material-symbols-sharp search-icon material-icons mat-ligature-font mat-icon-no-color"
+    },
+    "accionable": {
+      "etiqueta": "MAT-ICON",
+      "texto": "folder_open",
+      "rol": "img",
+      "aria": null,
+      "titulo": null,
+      "tooltip": "Ver detalle del proceso judicial",
+      "clase": "mat-icon notranslate mat-mdc-tooltip-trigger material-symbols-sharp search-icon material-icons mat-ligature-font mat-icon-no-color"
+    },
+    "fila": null
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/movimientos",
+    "causa": null,
+    "captcha": true,
+    "buscar": null
+  },
+  "red": []
+}

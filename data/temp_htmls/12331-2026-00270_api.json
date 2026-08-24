@@ -1,0 +1,1038 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "12331202600270",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2026-03-09T15:14:13.843+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/12331202600270",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "12331202600270",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2026-03-09T15:14:13.843+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/12331202600270",
+    "data": [
+      {
+        "idJudicatura": "12331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO",
+        "ciudad": "QUEVEDO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 29983904,
+            "idMovimientoJuicioIncidente": 28574826,
+            "idJudicaturaDestino": "12331",
+            "fechaCrea": "2026-03-09T10:14:13.843",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36800677
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "SALTOS GUERRON EDGAR ELIAS",
+                "representadoPor": "SALTOS GUERRON EDGAR ELIAS",
+                "idLitigante": 44672421
+              },
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "SALTOS GUERRON JHEYLA NAOMY",
+                "representadoPor": "SALTOS GUERRON JHEYLA NAOMY",
+                "idLitigante": 45321745
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 247490206,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-07-24T19:25:12.117+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Quevedo, viernes veinte y cuatro de julio del dos mil veinte y seis, a partir de las catorce horas y veinte y cinco minutos, mediante boletas judiciales notifiqué el AUTO DE SUSTANCIACIÓN que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el casillero electrónico No.1900484534 correo electrónico  lruizg_1988@hotmail.com.  del Dr./Ab. LUCIA PAULINA RUIZ GUARNIZO;  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>ONA MUNOZ MIGUEL ANTONIO</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A (E)</strong>\r\n  </p>",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260724-142533265394-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_298220357_14_25_10_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 247490206,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-07-24T17:40:41.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"background-color:transparent; color:#000000; font-family:'Arial Narrow',sans-serif; font-size:12pt\">Agr&eacute;guese el escrito y anexo por la parte actora en atenci&oacute;n al mismo: Por medio de secretaria elabore los oficios al Consejo Nacional Electoral Provincial de Los R&iacute;os, Corporaci&oacute;n Nacional de Telecomunicaciones CNT, Movistar y Claro, requiri&eacute;ndoles informaci&oacute;n domiciliaria del accionado SALTOS GUERRON EDGAR portador de la c&eacute;dula de ciudadan&iacute;a No. 0941052714 Y ELIAS SALTOS GUERRON JHEYLA NAOMY, portador de la c&eacute;dula de ciudadan&iacute;a No. 0941052706, para conocer o determinar si ha salido del Pa&iacute;s, para lo cual, se les conceder&aacute; un t&eacute;rmino judicial de quince d&iacute;as para el cumplimiento del mandato judicial.- NOTIF&Iacute;QUESE Y C&Uacute;MPLASE.</span></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260724-124002681805-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_298209235_12_40_46_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 73545124,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-07-23T15:01:32.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "ANEXOS, Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260723-100197981987-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_73545124",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245572552,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-06-11T14:40:36.000+00:00",
+        "tipo": "RAZON (RAZON) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-size:16px\">RAZON: Se&ntilde;or Juez, siento como tal en manifestar que procedo a extraer las actas de no citaci&oacute;n y agregarlas al proceso, por lo tanto la parte demandada no se encuentra citada segun informaci&oacute;n constante en las mismas. Lo que llevo a su conocimiento para los fines legales pertinentes. Lo certifico.</span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-size:16px\">Quevedo, junio 11 del 2026</span></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260611-094143771119-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_294348327_9_41_2_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245539359,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-06-10T20:52:02.427+00:00",
+        "tipo": "SENTAR RAZON (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Quevedo, miércoles diez de junio del dos mil veinte y seis, a partir de las quince horas y cincuenta y dos minutos, mediante boletas judiciales notifiqué el AUTO DE SUSTANCIACIÓN que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el casillero electrónico No.1900484534 correo electrónico  lruizg_1988@hotmail.com.  del Dr./Ab. LUCIA PAULINA RUIZ GUARNIZO;  No se notifica a: SALTOS GUERRON EDGAR ELIAS, SALTOS GUERRON JHEYLA NAOMY,  por no haber señalado casillero electrónico.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>ONA MUNOZ MIGUEL ANTONIO</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A (RT)</strong>\r\n  </p>",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260610-155258582128-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_294298520_15_52_1_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245539359,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-06-10T20:35:44.000+00:00",
+        "tipo": "SENTAR RAZON (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"background-color:transparent; color:#000000; font-family:'Arial Narrow',sans-serif; font-size:12pt\">Forme parte del proceso el escrito presentado por el accionante en atenci&oacute;n al mismo, se dispone que la actuaria del despacho siente raz&oacute;n en autos indicando si la parte demandada se encuentra legalmente citada y si ha comparecido dentro del t&eacute;rmino legal que ten&iacute;an para hacerlo. NOTIFIQUESE Y CUMPLASE</span></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260610-153585644221-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_294293746_15_35_51_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 72837554,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-06-09T19:15:11.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260609-141557734283-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_72837554",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-21T14:15:49.877+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 21/05/2026 09:15",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-21T14:15:49.877+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 21/05/2026 09:15",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 6500102,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-21T14:15:49.000+00:00",
+        "tipo": "CITACIÓN: No realizada - CAMBIO DE DIRECCIÓN",
+        "actividad": "Acta de citación",
+        "visible": "S",
+        "origen": "CitacionIncidente",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "CLEX1.CitacionIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260521-091549383894-593792259-1648666963",
+        "alias": "HBA01",
+        "nombreArchivo": "Acta de citación",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-21T14:14:14.443+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 21/05/2026 09:14",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-21T14:14:14.443+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): GESTIÓN REALIZADA CON RAZÓN DE NO CITACIÓN (DIRECCIÓN PRINCIPAL) - 21/05/2026 09:14",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 6500094,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-21T14:14:14.000+00:00",
+        "tipo": "CITACIÓN: No realizada - CAMBIO DE DIRECCIÓN",
+        "actividad": "Acta de citación",
+        "visible": "S",
+        "origen": "CitacionIncidente",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "CLEX1.CitacionIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260521-09142355014-593792259-1648666963",
+        "alias": "HBA01",
+        "nombreArchivo": "Acta de citación",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-14T15:10:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): PROCESO ASIGNADO A UN CITADOR - 13/04/2026 11:30",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-14T15:10:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): PROCESO ASIGNADO A UN CITADOR - 13/04/2026 11:30",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-14T15:10:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): PROCESO ASIGNADO A UN CITADOR - 14/05/2026 10:10",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-05-14T15:10:00.000+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): PROCESO ASIGNADO A UN CITADOR - 14/05/2026 10:10",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-13T16:30:44.413+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): PROCESO ASIGNADO A UN CITADOR - 13/04/2026 11:30",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-13T16:30:44.407+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): PROCESO ASIGNADO A UN CITADOR - 13/04/2026 11:30",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-13T16:24:51.040+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 13/04/2026 11:24",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-13T16:24:51.040+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 13/04/2026 11:24",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-13T16:24:51.040+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 13/04/2026 11:24",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-13T16:24:51.040+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 13/04/2026 11:24",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-08T19:17:58.383+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS)",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-08T19:17:58.383+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY)",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-08T19:17:58.383+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON EDGAR ELIAS)",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242817171,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-04-08T19:17:58.383+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (SALTOS GUERRON JHEYLA NAOMY)",
+        "actividad": "<p>Providencia del Juicio 12331202600270 </p><br><p>SALTOS GUERRON JHEYLA NAOMY</p><p>SALTOS GUERRON EDGAR ELIAS</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO miércoles ocho de abril del dos mil veintiseis, a las catorce  horas y diecisiete  minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260408-141765384825-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_6500094_14_17_58_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 241566542,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-03-10T15:04:42.603+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Quevedo, martes diez de marzo del dos mil veinte y seis, a partir de las diez horas y cuatro minutos, mediante boletas judiciales notifiqué el AUTO DE SUSTANCIACIÓN que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el casillero electrónico No.1900484534 correo electrónico  lruizg_1988@hotmail.com.  del Dr./Ab. LUCIA PAULINA RUIZ GUARNIZO;  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>ONA MUNOZ MIGUEL ANTONIO</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A (RT)</strong>\r\n  </p>",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260310-10041038373-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_286306586_10_4_42_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 241566542,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-03-09T20:40:49.000+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><strong><span style=\"font-size:13pt\">VISTOS:</span><span style=\"font-size:13pt\"> </span></strong><span style=\"font-size:13pt\">En mi calidad de Juez Titular de la Unidad Judicial de lo Civil de Quevedo, mediante&nbsp;Acci&oacute;n de Personal N&deg; 8309-DNTH-2016-CIP, de fecha 28 de julio de 2016, suscrita por Doctor Tom&aacute;s Alvear Pe&ntilde;a, Director General del Consejo de la Judicatura y en base a la resoluci&oacute;n de 120-2016 emitida por el Pleno del Consejo de la Judicatura, cuya copia orden&oacute; agregar al proceso y del acta de sorteo que precede, avoco conocimiento de la presente causa en legal y debida forma y dispongo lo siguiente: 1.- CALIFICACI&Oacute;N DE LA DEMANDA</span><span style=\"font-size:13pt\">:&nbsp;La demanda que antecede, conforme disponen los Art&iacute;culos&nbsp; 142 y 143 del C&oacute;digo Org&aacute;nico General de Procesos (COGEP), se la califica de clara, precisa y cumple con los requisitos legales previstos en la ley, la misma que se fundamenta en una Pagar&eacute; a la orden, documento que constituye t&iacute;tulo ejecutivo, al tenor de lo previsto en los art&iacute;culos 347 y 348 del C&oacute;digo Org&aacute;nico General de Procesos, en concordancia con el Art 186, 187 del C&oacute;digo de Comercio, ya que contiene una obligaci&oacute;n clara, pura, determinada y actualmente exigible; Por lo que se admite a tr&aacute;mite mediante </span><span style=\"font-size:13pt\">PROCEDIMIENTO EJECUTIVO</span><span style=\"font-size:13pt\">; </span><span style=\"font-size:13pt\">2.- CITACI&Oacute;N:</span><span style=\"font-size:13pt\"> Se ordena la CITACI&Oacute;N a la parte demandada SALTOS GUERRON EDGAR ELIAS en calidad de deudor y SALTOS GUERRON JHEYLA NAOMY en calidad de garante, se le citar&aacute; en la direcci&oacute;n se&ntilde;alada por el actor en su libelo inicial para lo cual se adjuntar&aacute; la demanda, copia certificada de los documentos adjuntos, croquis y este auto inicial.&nbsp;Para efecto de la citaci&oacute;n al demandado se realizar&aacute; mediante uno de los se&ntilde;ores citadores&nbsp;del complejo judicial de Quevedo, en el lugar que se indica en&nbsp;la demanda, quien lo har&aacute; observando lo que establecen los Arts.&nbsp;54, 55 y 63 del referido Cuerpo Legal; </span><span style=\"font-size:13pt\">3.- CONTESTACI&Oacute;N A LA DEMANDA</span><span style=\"font-size:13pt\">: En aplicaci&oacute;n de los art&iacute;culos 355 y 333 numeral 3 del C&oacute;digo Org&aacute;nico General de Procesos, se concede el T&Eacute;RMINO DE QUINCE (15) d&iacute;as al demandado a fin de que cumpla con la obligaci&oacute;n&nbsp; o en el mismo t&eacute;rmino CONTESTEN LA DEMANDA Y PROPONGAN EXCEPCIONES conforme lo prev&eacute;n los art&iacute;culos 351, 352 y 353 ib&iacute;dem, bajo prevenci&oacute;n que DE NO HACERLO O DE PROPONER EXCEPCIONES DISTINTAS A LAS PERMITIDAS en el art&iacute;culo 352 ib&iacute;dem SE PRONUNCIAR&Aacute; INMEDIATAMENTE SENTENCIA la cual no ser&aacute; susceptible de recurso alguno, conforme se dispone en la parte final del invocado art&iacute;culo; </span><span style=\"font-size:13pt\">4.- DEL ANUNCIO DE LAS PRUEBAS</span><span style=\"font-size:13pt\">: T&eacute;ngase en cuenta el anuncio de prueba&nbsp;presentado por la parte accionante, a la vez p&oacute;ngase en conocimiento de la parte demandada el indicado anuncio de prueba, a fin de que pueda ejercer el derecho de contradicci&oacute;n que le asiste contemplado en el art&iacute;culo 168 de la Constituci&oacute;n de la Rep&uacute;blica en concordancia con lo previsto en el art&iacute;culo 165 del C&oacute;digo Org&aacute;nico General de Procesos; la misma que ser&aacute; considerado su admisibilidad en el momento que le asiste, la misma que ser&aacute; considerado su admisibilidad en el momento procesal oportuno&nbsp;como lo precept&uacute;a el Art. 160 del C&oacute;digo Org&aacute;nico General de Procesos que determina: &ldquo;Para ser admitida, la prueba debe reunir los requisitos de pertinencia, utilidad, conducencia y se practicar&aacute; seg&uacute;n la ley, con lealtad y veracidad. La o el juzgador dirigir&aacute; el debate probatorio con imparcialidad y estar&aacute; orientado a esclarecer la verdad procesal. En la audiencia preliminar la o el juzgador rechazar&aacute; de oficio o a petici&oacute;n de parte la prueba impertinente, in&uacute;til e inconducente; </span><span style=\"font-size:13pt\">5.- </span><span style=\"font-size:13pt\">Agr&eacute;guese a los autos los documentos que adjunta a la demanda.- </span><span style=\"font-size:13pt\">6.- </span><span style=\"font-size:13pt\">La parte actora consigne las copias necesarias para la realizaci&oacute;n de las diligencias de citaci&oacute;n ordenadas en el presente auto.- </span><span style=\"font-size:13pt\">7.- </span><span style=\"font-size:13pt\">Se recuerda que en virtud del art&iacute;culo 19 del C&oacute;digo Org&aacute;nico de la Funci&oacute;n Judicial, concordante con el art&iacute;culo 5 del C&oacute;digo Org&aacute;nico General de Procesos, as&iacute; como la Resoluci&oacute;n interpretativa No. 07-2015, de fecha 10 de junio del 2015, emitida por la Corte Nacional de Justicia del Ecuador, en el art&iacute;culo 5 establece que el impulso del proceso corresponde a las partes y la omisi&oacute;n de esta carga procesal no es atribuible a la o el juzgador; </span><span style=\"font-size:13pt\">8.- </span><span style=\"font-size:13pt\">Por ser pertinente, orden&oacute; que la se&ntilde;ora Actuaria de este Despacho proceda a poner bajo su custodia el original del Pagar&eacute; a la orden materia de esta acci&oacute;n, as&iacute; como tambi&eacute;n otros documentos originales adjuntos a la demanda, dejando copias certificadas en autos; </span><span style=\"font-size:13pt\">9.- CASILLERO JUDICIAL Y ELECTR&Oacute;NICA</span><span style=\"font-size:13pt\">: T&oacute;mese en cuenta los correos electr&oacute;nicos se&ntilde;alados por la parte actora para sus notificaciones dentro de la presente causa; </span><span style=\"font-size:13pt\">10.- Act&uacute;e en la presente causa la secretaria encargada del despacho.- </span><strong><span style=\"font-size:13pt\">NOTIF&Iacute;QUESE y C&Uacute;MPLASE</span><span style=\"font-size:13pt\">.-</span></strong></p>\n",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260309-154149571436-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "12331202600270_286245065_15_41_2_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 229494648,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270",
+        "fecha": "2026-03-09T15:14:13.000+00:00",
+        "tipo": "CARATULA DE JUICIO",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20260309-101418666231-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_28574826",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 18241185,
+        "idJudicatura": "12331",
+        "idJuicio": "12331202600270 ",
+        "fecha": "2026-03-09T15:14:09.967+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibido en la ciudad de Quevedo el día de hoy, lunes 9 de marzo de 2026, a las 10:14,  el proceso  de Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de pagaré a la orden, seguido  por: Fundacion Para el Desarrollo Integral Espoir, en contra de: Saltos Guerron Edgar Elias, Saltos Guerron Jheyla Naomy. \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO, conformado por Juez(a): Willam Patricio Panchi Chancusig. Secretaria(o): Ona Munoz Miguel Antonio. \n\nProceso número: 12331-2026-00270 (1) Primera InstanciaAl que se adjunta los siguientes documentos:\n1) PETICIÓN INICIAL (ORIGINAL)\n2) PAGARE A LA ORDEN POR EL VALOR DE $1.326,68\nLIQUIDACION DE CREDITO (ORIGINAL)\n3) PROCURACION JUDICIAL (COPIAS CERTIFICADAS/COMPULSA)\n4) RUC, CROQUIS, CEDULA DE IDENTIDAD, CREDENCIAL DEL ABOGADO (COPIA SIMPLE)\n\nTotal de fojas: 1SRTA. MARIUXI LIZBETH VERA CONTRERAS Responsable de sorteo",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 28574826,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260309-101422685846-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_28574826",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "28574826",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  }
+]

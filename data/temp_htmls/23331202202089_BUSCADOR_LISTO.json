@@ -1,0 +1,9 @@
+{
+  "causa": "23331202202089",
+  "estado": "BUSCADOR_LISTO",
+  "carpeta": null,
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+  "error": "CAUSA_NO_CONFIRMADA_EN_CAMPO",
+  "traza": "Traceback (most recent call last):\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 731, in _procesar_flujo_autonomo\n    causa = self._preparar_busqueda(causa_original)\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 324, in _preparar_busqueda\n    raise RuntimeError(\"CAUSA_NO_CONFIRMADA_EN_CAMPO\")\nRuntimeError: CAUSA_NO_CONFIRMADA_EN_CAMPO\n",
+  "ultimo_paquete_api": null
+}

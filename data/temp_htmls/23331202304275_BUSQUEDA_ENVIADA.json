@@ -1,0 +1,113 @@
+{
+  "causa": "23331202304275",
+  "estado": "BUSQUEDA_ENVIADA",
+  "carpeta": null,
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+  "error": "RESULTADOS_TIMEOUT",
+  "traza": "Traceback (most recent call last):\n  File \"c:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 717, in _procesar_flujo_autonomo\n    resultado = self._esperar_resultados(causa)\n  File \"c:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 392, in _esperar_resultados\n    raise PlaywrightTimeoutError(\"RESULTADOS_TIMEOUT\")\nplaywright._impl._errors.TimeoutError: RESULTADOS_TIMEOUT\n",
+  "ultimo_paquete_api": {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  }
+}

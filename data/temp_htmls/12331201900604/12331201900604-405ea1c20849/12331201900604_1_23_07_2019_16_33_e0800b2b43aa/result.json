@@ -1,0 +1,94 @@
+{
+  "version_esquema": 1,
+  "estado": "COMPLETA",
+  "causa": "12331201900604",
+  "intento_id": "12331201900604-405ea1c20849",
+  "clave_carpeta": "12331201900604_1_23_07_2019_16_33_e0800b2b43aa",
+  "descriptor": {
+    "causa": "12331201900604",
+    "dependencia": "Unidad Judicial Civil Con Sede En El Cantón Quevedo",
+    "ciudad": "Quevedo",
+    "numero_incidente": "1",
+    "fecha_ingreso": "23/07/2019 16:33",
+    "actores": "Ruiz Guarnizo Lucia Paulina",
+    "demandados": "Laaz Rodriguez Jose Luis, Laaz Rodriguez Ana Leopoldina",
+    "texto_normalizado": "1 23/07/2019 16:33 Ruiz Guarnizo Lucia Paulina Laaz Rodriguez Jose Luis, Laaz Rodriguez Ana Leopoldina folder_open",
+    "href_actuaciones": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "id_api": null,
+    "clave_carpeta": "12331201900604_1_23_07_2019_16_33_e0800b2b43aa",
+    "indice_visual_dependencia": 1,
+    "indice_visual_incidente": 0
+  },
+  "firma": [
+    "12331201900604",
+    0,
+    1,
+    1037,
+    null,
+    null,
+    0,
+    10,
+    false
+  ],
+  "secuencia_api_inicio": 8,
+  "secuencia_api_fin": 10,
+  "fuente": "DOM",
+  "datos": {
+    "FECHA INICIO JUICIO": "23/07/2019",
+    "FECHA INICIAL FASE ACTUAL": "23/07/2019",
+    "ETAPA_PROCESAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE_PROCESAL": "1.1 PRESENTAR DEMANDA",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "23/07/2019",
+        "detalle": "MATERIA",
+        "CAUSA": "12331201900604",
+        "CLAVE_CARPETA": "12331201900604_1_23_07_2019_16_33_e0800b2b43aa",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En El Cantón Quevedo",
+        "CIUDAD_CARPETA": "Quevedo",
+        "INSTANCIA_CARPETA": "1",
+        "ORIGEN_CARPETA": "12331201900604_1_23_07_2019_16_33_e0800b2b43aa",
+        "ORIGEN_DATA": "DOM"
+      }
+    ],
+    "ULTIMA ETAPA": "1 PRESENTACION Y CALIFICACION",
+    "ULTIMA FASE": "1.1 PRESENTAR DEMANDA",
+    "FECHA FIN ULTIMA FASE": "23/07/2019",
+    "ETAPA ACTUAL": "1 PRESENTACION Y CALIFICACION",
+    "FASE ACTUAL": "1.2 COMPLETAR/ACLARAR DEMANDA",
+    "FECHA INICIO FASE ACTUAL": "23/07/2019",
+    "ORIGEN_DATA": "DOM"
+  },
+  "advertencias": [],
+  "error": null,
+  "inicio": "2026-08-09T03:42:19.225526+00:00",
+  "duracion_s": 1.204,
+  "artefactos": {
+    "html": "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\page.html",
+    "frames": [
+      "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\frame_001.html",
+      "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\frame_002.html",
+      "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\frame_003.html",
+      "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\frame_004.html",
+      "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\frame_005.html",
+      "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\frame_006.html"
+    ],
+    "api": "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\api.json",
+    "diagnostico": "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\diagnostic.json",
+    "screenshot": "data\\temp_htmls\\12331201900604\\12331201900604-405ea1c20849\\12331201900604_1_23_07_2019_16_33_e0800b2b43aa\\screen.png"
+  },
+  "hashes": {
+    "html": "453ae3ddfb6df898a62ec7094d1de11067d04051877e14d237ffa265ea00176c",
+    "frames": [
+      "52da8e12045015004703679ec0269ac962afda085b42c41af80df694e84c18dd",
+      "aac76ad8ead8fdb9b49cc12fdd53b968da45001ddf9d39919502960e1af8f2cc",
+      "fc72692f73057ed93606162c392b99e4111e4692cba79bd1f6f60f6457faa75a",
+      "e62b8904bfb82cbb20c50ce452c5adba314a63a54c56bf3f83c14522d7ff724a",
+      "e4de67dee4c17380aa08f776f204097777b17f24798bbb37938cee540b25e068",
+      "f3a2a0d022616064cd517c456801003ebc4135110095533750d6f6cbf96549cd"
+    ],
+    "api": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "diagnostico": "6976716f8c591203ead4716b6df25d3287150484768b3169acde95dff40821db",
+    "screenshot": "81c305c8bd25d51e16bb5f745465d46a8aa5266eb5fba9cde2f2777184ce62ce"
+  }
+}

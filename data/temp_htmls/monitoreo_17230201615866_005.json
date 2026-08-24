@@ -1,0 +1,31 @@
+{
+  "evento": {
+    "instante": "2026-08-21T17:11:05.665Z",
+    "objetivo": {
+      "etiqueta": "I",
+      "texto": "folder",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "material-icons"
+    },
+    "accionable": {
+      "etiqueta": "DIV",
+      "texto": "folder",
+      "rol": "link",
+      "aria": "Vínculo para acceder a los archivos de OFICIO (OFICIO) ",
+      "titulo": null,
+      "tooltip": "Ver archivos",
+      "clase": "mat-mdc-tooltip-trigger mat-ripple ng-star-inserted cdk-focused cdk-mouse-focused"
+    },
+    "fila": null
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "causa": null,
+    "captcha": true,
+    "buscar": null
+  },
+  "red": []
+}

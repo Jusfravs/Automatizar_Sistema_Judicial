@@ -1,0 +1,12 @@
+{
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+  "firma": [
+    "17230201616770",
+    "API_ACTUACIONES",
+    120,
+    6,
+    6,
+    1773.5
+  ],
+  "intentos_navegacion_bloqueados": []
+}

@@ -1,0 +1,176 @@
+{
+  "version_esquema": 1,
+  "estado": "COMPLETA",
+  "causa": "12331202501250",
+  "intento_id": "12331202501250-c414da299315",
+  "clave_carpeta": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+  "descriptor": {
+    "causa": "12331202501250",
+    "dependencia": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+    "ciudad": "Quito",
+    "numero_incidente": "2",
+    "fecha_ingreso": "09/03/2026 14:52",
+    "actores": "Fundacion Para El Desarrollo Integral Espoir",
+    "demandados": "Ruiz Santillan Dolores Apolonia",
+    "texto_normalizado": "2 09/03/2026 14:52 Fundacion Para El Desarrollo Integral Espoir Ruiz Santillan Dolores Apolonia folder_open",
+    "href_actuaciones": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "id_api": null,
+    "clave_carpeta": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+    "indice_visual_dependencia": 0,
+    "indice_visual_incidente": 0
+  },
+  "firma": [
+    "12331202501250",
+    0,
+    5,
+    1328,
+    null,
+    null,
+    4,
+    6,
+    false
+  ],
+  "secuencia_api_inicio": 4,
+  "secuencia_api_fin": 6,
+  "fuente": "API+DOM",
+  "datos": {
+    "FECHA INICIO JUICIO": "09/03/2026",
+    "FECHA INICIAL FASE ACTUAL": "2026-03-10T21:44:57.627+00:00",
+    "ETAPA_PROCESAL": "2 CITACION",
+    "FASE_PROCESAL": "2.1 CITACION (PERSONA/BOLETA)",
+    "HISTORIAL_ACTUACIONES": [
+      {
+        "fecha": "2026-03-10T21:44:57.627+00:00",
+        "detalle": "<P STYLE=\"TEXT-ALIGN: JUSTIFY;\">EN QUITO, MARTES DIEZ DE MARZO DEL DOS MIL VEINTE Y SEIS, A PARTIR DE LAS DIECISÉIS HORAS Y CUARENTA Y CINCO MINUTOS, MEDIANTE BOLETAS JUDICIALES NOTIFIQUÉ EL AUTO DE INTERLOCUTORIO QUE ANTECEDE A: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR EN EL CASILLERO ELECTRÓNICO NO.1900484534 CORREO ELECTRÓNICO  LRUIZG_1988@HOTMAIL.COM.  DEL DR./AB. LUCIA PAULINA RUIZ GUARNIZO;  NO SE NOTIFICA A: RUIZ SANTILLAN DOLORES APOLONIA,  POR NO HABER SEÑALADO CASILLERO ELECTRÓNICO.  CERTIFICO:</P><BR /><BR /><BR /><BR /><BR /><BR /><P STYLE=\"TEXT-ALIGN:CENTER\"><STRONG>LEYTON GUAYASAMIN CLAUDIA SOLANGE</STRONG>\r\n  </P>\n\r<P STYLE=\"TEXT-ALIGN:CENTER\"><STRONG>SECRETARIO (A)</STRONG>\r\n  </P>",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "2026-03-10T21:04:13.000+00:00",
+        "detalle": "<P STYLE=\"MARGIN-LEFT:0CM; MARGIN-RIGHT:0CM; TEXT-ALIGN:JUSTIFY\">VISTOS: EN MI CALIDAD DE JUEZA DE LA UNIDAD JUDICIAL DE LO CIVIL CON SEDE EN EL DISTRITO METROPOLITANO DE QUITO, PROVINCIA DE PICHINCHA, AVOCO CONOCIMIENTO DE&NBSP; LA PRESENTE CAUSA EN VIRTUD DEL SORTEO REALIZADO Y DE CONFORMIDAD&NBSP; CON LO DISPUESTO EN EL ART&IACUTE;CULO 9 DEL C&OACUTE;DIGO ORG&AACUTE;NICO GENERAL DE PROCESOS COGEP. DE LA REVISI&OACUTE;N DEL EXPEDIENTE DEL DEPRECATORIO VIRTUAL N&ORDM; 12331 2025 01250 SE VERIFICA QUE NO SE HA CARGADO TODOS LOS ANEXOS NECESARIOS Y NO SE HA ADJUNTADO EL ESCRITO DONDE DEBER&IACUTE;A CONSTAR LA DIRECCI&OACUTE;N DONDE CITAR A LA PARTE DEMANDADA, EN TAL VIRTUD POR ESTAR INCOMPLETO SE DEVUELVE Y SE INADMITE LA PR&AACUTE;CTICA DE LA DILIGENCIA. DE MANERA INMEDIATA DEVU&EACUTE;LVASE EL DEPRECATORIO AL JUZGADO DE ORIGEN.- ACT&UACUTE;E EN CALIDAD DE SECRETARIA, LA ABG. CLAUDIA LEYTON, SECRETARIA TITULAR DE ESTA JUDICATURA. <STRONG>C&UACUTE;MPLASE Y NOTIF&IACUTE;QUESE.</STRONG></P>",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "2026-03-09T19:52:29.343+00:00",
+        "detalle": "PROCESO JUDICIAL NO: 12331-2025-01250 (2) PRIMERA INSTANCIA.\n\nREGISTRO REALIZADO EN LA PROVINCIA DE LOS RIOS, CANTÓN QUEVEDO, EL LUNES 9 DE MARZO DE 2026, A LAS 14:52, EL PROCESO: CIVIL, TIPO DE PROCEDIMIENTO: EJECUTIVO POR ASUNTO: COBRO DE PAGARÉ A LA ORDEN, SEGUIDO  POR: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR, EN CONTRA DE: RUIZ SANTILLAN DOLORES APOLONIA.\n \n\nPOR SORTEO DE LEY LA COMPETENCIA SE RADICA EN LA UNIDAD JUDICIAL CIVIL CON SEDE EN LA PARROQUIA IÑAQUITO DEL DISTRITO METROPOLITANO DE QUITO, PROVINCIA DE PICHINCHA, CONFORMADO POR EL/LA JUEZ(A): JUEZ(A) DOCTOR PILA AVENDAÑO VIVIANA JEANNETH. SECRETARIO(A): LEYTON GUAYASAMIN CLAUDIA SOLANGE.ABOGADO HERNAN ALFONSO RIVERA SOLORZANORESPONSABLE DEL SORTEOUNIDAD JUDICIAL CIVIL CON SEDE EN EL CANTÓN  QUEVEDO.",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "2026-03-09T19:52:23.000+00:00",
+        "detalle": "<B>CARATULA</B>",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "17/09/2025",
+        "detalle": "MATERIA",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "10/03/2026",
+        "detalle": "DEVOLUCIÓN DEPRECATORIO POR INCONSISTENCIAS EN LA DOCUMENTACIÓN (RAZON DE NOTIFICACION)",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "10/03/2026",
+        "detalle": "DEVOLUCIÓN DEPRECATORIO POR INCONSISTENCIAS EN LA DOCUMENTACIÓN (AUTO INTERLOCUTORIO)",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "09/03/2026",
+        "detalle": "ACTA DE SORTEO",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      },
+      {
+        "fecha": "09/03/2026",
+        "detalle": "CARATULA SORTEO DE DEPRECATORIOS",
+        "CAUSA": "12331202501250",
+        "CLAVE_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "DEPENDENCIA_JURISDICCIONAL": "Unidad Judicial Civil Con Sede En La Parroquia Iñaquito Del Distrito Metropolitano De Quito, Provincia De Pichincha",
+        "CIUDAD_CARPETA": "Quito",
+        "INSTANCIA_CARPETA": "2",
+        "ORIGEN_CARPETA": "12331202501250_2_09_03_2026_14_52_82c1e572b33f",
+        "ORIGEN_DATA": "API+DOM"
+      }
+    ],
+    "ULTIMA ETAPA": "2 CITACION",
+    "ULTIMA FASE": "2.1 CITACION (PERSONA/BOLETA)",
+    "FECHA FIN ULTIMA FASE": "2026-03-10T21:44:57.627+00:00",
+    "ETAPA ACTUAL": "2 CITACION",
+    "FASE ACTUAL": "2.2 CITACION POR PRENSA",
+    "FECHA INICIO FASE ACTUAL": "2026-03-10T21:44:57.627+00:00",
+    "ORIGEN_DATA": "API+DOM"
+  },
+  "advertencias": [],
+  "error": null,
+  "inicio": "2026-08-11T17:56:57.913092+00:00",
+  "duracion_s": 1.394,
+  "artefactos": {
+    "html": "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\page.html",
+    "frames": [
+      "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\frame_001.html",
+      "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\frame_002.html",
+      "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\frame_003.html"
+    ],
+    "api": "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\api.json",
+    "diagnostico": "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\diagnostic.json",
+    "screenshot": "data\\temp_htmls\\12331202501250\\12331202501250-c414da299315\\12331202501250_2_09_03_2026_14_52_82c1e572b33f\\screen.png"
+  },
+  "hashes": {
+    "html": "4ef728e9f30ef6fd21c45ca917a43788052f47f50a941141b35da28c42a57a02",
+    "frames": [
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "e23f43961202463d3eda49763270bac1f9f63b251a01b8299dca9fb7d59349e5",
+      "22b9234cb3e10350fbdc25411141d8fccaab51b55b45e107d39fe2fe4f8e51a4"
+    ],
+    "api": "d47d986a2ae541909bdff87155e1e2877873c0b8ce532f1b950cfa0735c82940",
+    "diagnostico": "fadd57817abdcb99dfe444005a312b05a9d6f3eb46d29a51da1b1917544cf3ff",
+    "screenshot": "cf1fa4270e17a4ace882551260507e9998179530ccceacebcf3ef75c7f672b9b"
+  }
+}

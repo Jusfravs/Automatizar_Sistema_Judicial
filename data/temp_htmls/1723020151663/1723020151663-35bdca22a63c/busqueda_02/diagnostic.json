@@ -1,0 +1,12 @@
+{
+  "causa": "1723020151663",
+  "intento_global": "1723020151663-35bdca22a63c",
+  "intento_busqueda": 2,
+  "estado_navegacion": "BUSQUEDA_TIMEOUT",
+  "error": "RESULTADOS_TIMEOUT",
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+  "valor_campo": null,
+  "texto_portal": "Saltar al contenido principal Saltar a la navegación Inicio home Búsqueda avanzada search Procesos resueltos por juez search E-SATJE 2020 - CONSULTA DE PROCESOS JUDICIALES ELECTRÓNICOS arrow_back Regresar Filtros de búsqueda Número de causa: 1723020151663 Registros encontrados: 11 Items por página: 10 Página 1 de 2 No. Fecha de ingreso No. proceso Acción /Infracción Detalle 1 02/10/2015 17230201516638 VALES CONSUMO DE TARJETA DE CRÉDITO folder_open 2 02/10/2015 17230201516637 COBRO DE PAGARÉ A LA ORDEN folder_open 3 02/10/2015 17230201516636 COBRO DE OBLIGACIONES PROVENIENTES DE TARJETAS DE CRÉDITO folder_open 4 02/10/2015 17230201516635 COBRO DE PAGARÉ A LA ORDEN folder_open 5 02/10/2015 17230201516634 VALES CONSUMO DE TARJETA DE CRÉDITO folder_open 6 02/10/2015 17230201516633 EMBARGO Y REMATE DE PRENDA folder_open 7 02/10/2015 17230201516632 AMPARO POSESORIO folder_open 8 02/10/2015 17230201516630 COBRO DE LETRA DE CAMBIO folder_open 9 02/10/2015 17230201516631 AUTORIZACIÓN PARA INSCRIPCIÓN DE ESCRITURA folder_open 10 02/10/2015 17230201516639 COBRO DE PAGARÉ A LA ORDEN folder_open accessibility_new Accesibilidad web Ajustar vista y lectura para una mejor experiencia",
+  "timestamp": "2026-08-19T17:59:04.691285+00:00",
+  "motivo_rechazo": null
+}

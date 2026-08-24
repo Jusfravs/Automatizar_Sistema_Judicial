@@ -1,0 +1,12 @@
+{
+  "causa": "12331201700065",
+  "intento_global": "12331201700065-d2e3d19ede0f",
+  "intento_busqueda": 1,
+  "estado_navegacion": "BUSQUEDA_RECHAZADA",
+  "error": "BUSQUEDA_RECHAZADA_FORMULARIO",
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+  "valor_campo": "12331-2017-00065",
+  "texto_portal": "Saltar al contenido principal Saltar a la navegación Inicio home Búsqueda avanzada search Procesos resueltos por juez search E-SATJE 2020 - CONSULTA DE PROCESOS JUDICIALES ELECTRÓNICOS Búsqueda avanzada Número de proceso Actor / Ofendido Cédula/RUC/Pasaporte Apellido(s)/Nombre(s) Demandado / Procesado Cédula/RUC/Pasaporte Apellido(s)/Nombre(s) Noticia del delito Filtros adicionales BUSCAR El formulario contiene errores. Revise los campos marcados. LIMPIAR Nota: Antes de la vigencia del Código Orgánico Integral Penal, esto es el 10 de agosto de 2014, los procesos judiciales penales tenían un número diferente en cada instancia o recurso, pese a que correspondía al mismo expediente. accessibility_new Accesibilidad web Ajustar vista y lectura para una mejor experiencia",
+  "timestamp": "2026-08-11T04:08:50.081622+00:00",
+  "motivo_rechazo": "FORMULARIO_CONTIENE_ERRORES"
+}

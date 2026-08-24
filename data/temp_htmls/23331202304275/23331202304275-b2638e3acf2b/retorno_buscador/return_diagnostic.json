@@ -1,0 +1,39 @@
+{
+  "iniciado": true,
+  "finalizado": true,
+  "confirmado": false,
+  "clicks": 1,
+  "go_back": 0,
+  "estrategia": "control",
+  "url_inicial": "https://procesosjudiciales.funcionjudicial.gob.ec/movimientos",
+  "url_final": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+  "candidatos": [
+    {
+      "class": "botones btn-regresar mdc-button mat-mdc-button mat-primary mat-mdc-button-base",
+      "aria-label": "Botón regresar",
+      "texto": "arrow_back\nRegresar"
+    }
+  ],
+  "diagnostico_inicial": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/movimientos",
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": true,
+    "actuaciones_visibles": false,
+    "listo": false
+  },
+  "error_control": "RETORNO_BUSCADOR_TIMEOUT:{\"url\": \"https://procesosjudiciales.funcionjudicial.gob.ec/causas\", \"ruta_valida\": false, \"campos_causa\": 0, \"campo_visible\": false, \"campo_habilitado\": false, \"movimientos_visibles\": false, \"actuaciones_visibles\": false, \"listo\": false}",
+  "diagnostico_final": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false
+  },
+  "error": "RETORNO_BUSCADOR_ERROR"
+}

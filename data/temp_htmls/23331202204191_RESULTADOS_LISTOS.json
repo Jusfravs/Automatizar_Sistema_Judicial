@@ -1,0 +1,51 @@
+{
+  "causa": "23331202204191",
+  "estado": "RESULTADOS_LISTOS",
+  "carpeta": null,
+  "url": "https://procesosjudiciales.funcionjudicial.gob.ec/movimientos",
+  "error": "ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO",
+  "traza": "Traceback (most recent call last):\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 834, in _procesar_flujo_autonomo\n    self._abrir_detalle_causa(causa, resultado)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales\\src\\motor_busqueda_web.py\", line 498, in _abrir_detalle_causa\n    raise RuntimeError(\"ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO\")\nRuntimeError: ENLACE_DETALLE_PROCESO_AUSENTE_O_AMBIGUO\n",
+  "ultimo_paquete_api": {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202204191",
+    "data": [
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 25879366,
+            "idMovimientoJuicioIncidente": 24526274,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2022-12-08T10:18:58.033",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "ERAZO CHALACAN FREDDY XAVIER",
+                "representadoPor": "ERAZO CHALACAN FREDDY XAVIER",
+                "idLitigante": 40127938
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "GARAICOA PEREZ FRANCISCO JOSE",
+                "representadoPor": "GARAICOA PEREZ FRANCISCO JOSE",
+                "idLitigante": 27519849
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PALACIOS GARCIA KARLA GUADALUPE",
+                "representadoPor": "PALACIOS GARCIA KARLA GUADALUPE",
+                "idLitigante": 31608289
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  }
+}

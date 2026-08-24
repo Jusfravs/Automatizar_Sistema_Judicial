@@ -1,0 +1,30 @@
+{
+  "evento": {
+    "instante": "2026-08-07T05:31:50.124Z",
+    "objetivo": {
+      "etiqueta": "SPAN",
+      "texto": "Balarezo Chipantashi Angela Paola, Caguana Balarezo Jimena Pilar, Balarezo Chipantashi Mayra Cristina, Iza Balarezo Kerly Cristina, Maisincho Taco Israel Patricio, Chipantashi Luisa Maria, Paladines Balarezo Viviana Lisbeth",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": ""
+    },
+    "accionable": null,
+    "fila": {
+      "etiqueta": "DIV",
+      "texto": "Actor/Ofendido:\nErazo Chalacan Freddy Xavier, Garaicoa Perez Francisco Jose, Fundacion Para El Desarrollo Integral Espoir\nDemandado/Procesado:\nBalarezo Chipantashi Angela Paola, Caguana Balarezo Jimena Pilar, Balarezo Chipantashi Mayra Cristina, Iza Balarezo Kerly Cristina, Maisincho Taco Israel Patricio, Chipantashi Luisa Maria, Paladines Balarezo Viviana Lisbeth",
+      "rol": null,
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "fila ng-star-inserted"
+    }
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/actuaciones",
+    "causa": null,
+    "captcha": true,
+    "buscar": null
+  }
+}

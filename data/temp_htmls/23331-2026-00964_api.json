@@ -1,0 +1,780 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202600964",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2026-04-01T19:11:36.353+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202600964",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202600964",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2026-04-01T19:11:36.353+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202600964",
+    "data": [
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 30070202,
+            "idMovimientoJuicioIncidente": 28659959,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2026-04-01T14:11:36.353",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "RIOS MENDOZA MARCOS ANTONIO",
+                "representadoPor": "RIOS MENDOZA MARCOS ANTONIO",
+                "idLitigante": 42370696
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36800677
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PALOMINO SABANDO FERNANDA MISHELL",
+                "representadoPor": "PALOMINO SABANDO FERNANDA MISHELL",
+                "idLitigante": 40939994
+              },
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "JAMA BAQUE GEOMARA ELIZABETH",
+                "representadoPor": "JAMA BAQUE GEOMARA ELIZABETH",
+                "idLitigante": 45417555
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:46:14.397+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (JAMA BAQUE GEOMARA ELIZABETH): PROCESO ASIGNADO A UN CITADOR - 05/06/2026 10:46",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:46:14.397+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PALOMINO SABANDO FERNANDA MISHELL): PROCESO ASIGNADO A UN CITADOR - 05/06/2026 10:46",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:46:14.397+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (JAMA BAQUE GEOMARA ELIZABETH): PROCESO ASIGNADO A UN CITADOR - 05/06/2026 10:46",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:46:14.397+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PALOMINO SABANDO FERNANDA MISHELL): PROCESO ASIGNADO A UN CITADOR - 05/06/2026 10:46",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:45:57.237+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (JAMA BAQUE GEOMARA ELIZABETH): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 05/06/2026 10:45",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:45:57.237+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PALOMINO SABANDO FERNANDA MISHELL): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 05/06/2026 10:45",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:45:57.237+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (JAMA BAQUE GEOMARA ELIZABETH): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 05/06/2026 10:45",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T15:45:57.237+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PALOMINO SABANDO FERNANDA MISHELL): BOLETAS RECIBIDAS POR LA OFICINA DE CITACIONES - 05/06/2026 10:45",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T13:44:34.197+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (JAMA BAQUE GEOMARA ELIZABETH)",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T13:44:34.197+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PALOMINO SABANDO FERNANDA MISHELL)",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T13:44:34.197+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (JAMA BAQUE GEOMARA ELIZABETH)",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 245305748,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-06-05T13:44:34.197+00:00",
+        "tipo": "RAZON ENVIO A CITACIONES (PALOMINO SABANDO FERNANDA MISHELL)",
+        "actividad": "<p>Providencia del Juicio 23331202600964 </p><br><p>JAMA BAQUE GEOMARA ELIZABETH</p><p>PALOMINO SABANDO FERNANDA MISHELL</p><br><p align=\"justify\">UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO viernes cinco de junio del dos mil veintiseis, a las ocho horas y cuarenta y cuatro minutos. Siento por tal que en esta fecha se genera la documentación necesaria para la recepción y validación de la Oficina/Coordinación de Citaciones. </p>",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260605-084421711447-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_6732669_8_44_34_.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243070564,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-04-14T20:12:30.487+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, martes catorce de abril del dos mil veinte y seis, a partir de las quince horas y doce minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>CAZAR ALBUJA PRISCILA FERNANDA</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260414-151244353856-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_289308082_15_12_29_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243070564,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-04-14T20:05:36.000+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#000000; font-family:Arial,sans-serif; font-size:12pt\">VISTOS: Agr&eacute;guese al proceso la documentaci&oacute;n y el escrito que antecede; y, una vez cumplido lo ordenado en decreto anterior se dispone:</span></strong></p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#222222; font-family:Arial,sans-serif; font-size:12pt\">1. La demanda que antecede se la califica de clara, completa y cumple los requisitos legales previstos en el art&iacute;culo 142 y 143 del C&oacute;digo Org&aacute;nico General de Procesos (COGEP) y se fundamenta en pagar&eacute; a la orden, al tenor de lo previsto en los art&iacute;culos 347 numeral 5 y 348 del mismo c&oacute;digo; por lo que se califica y admite a tr&aacute;mite mediante procedimiento ejecutivo.</span></strong></p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#222222; font-family:Arial,sans-serif; font-size:12pt\">2. Se ordena la citaci&oacute;n de las demandadas PALOMINO SABANDO FERNANDA MISHELL y JAMA BAQUE GEOMARA ELIZABETH, en la direcci&oacute;n se&ntilde;alada, para el efecto rem&iacute;tase las boletas a la oficina de citaciones de esta jurisdicci&oacute;n, para lo cual se adjuntar&aacute; copia de la demanda, el t&iacute;tulo ejecutivo y este auto; para el efecto la parte actora debe acercarse a esta Unidad Judicial, para proveer de las copias necesarias, a fin de elaborar el n&uacute;mero de boletas que se requieran.&nbsp;&nbsp;</span></strong></p>\n\n<p style=\"text-align:justify\"><strong><span style=\"background-color:transparent; color:#222222; font-family:Arial,sans-serif; font-size:12pt\">3. En aplicaci&oacute;n de los art&iacute;culos 355 y 333, numeral 3 del COGEP, se concede el t&eacute;rmino de quince (15) d&iacute;as para que las demandadas propongan alguna de las excepciones taxativas del art&iacute;culo 353 del c&oacute;digo citado, bajo prevenci&oacute;n que de no hacerlo se pronunciar&aacute; inmediatamente sentencia y esa resoluci&oacute;n no ser&aacute; susceptible de recurso alguno, en cumplimiento al art&iacute;culo 352 del COGEP. T&oacute;mese en cuenta el casillero judicial, el correo electr&oacute;nico se&ntilde;alado.&nbsp; </span><span style=\"background-color:transparent; color:#000000; font-family:Arial,sans-serif; font-size:12pt\">Act&uacute;e la Ab. Priscila Cazar, en calidad de secretaria de este despacho</span><span style=\"background-color:transparent; color:#222222; font-family:Arial,sans-serif; font-size:12pt\">. C&Uacute;MPLASE Y NOTIF&Iacute;QUESE. -</span></strong></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260414-150507252334-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_289306158_15_5_46_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 71869970,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-04-08T20:09:34.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260408-150905337786-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_71869970",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242618961,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-04-02T19:15:21.567+00:00",
+        "tipo": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, jueves dos de abril del dos mil veinte y seis, a partir de las catorce horas y quince minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>CAZAR ALBUJA PRISCILA FERNANDA</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIO/A</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260402-141597448625-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_288390794_14_15_20_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 242618961,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-04-02T18:54:00.000+00:00",
+        "tipo": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><strong><strong>VISTOS:</strong><span style=\"background-color:transparent; color:#000000; font-family:Arial,sans-serif; font-size:12pt\"> Ab. Alejandro Le&oacute;n Zapata, Juez de la Unidad Judicial Civil del cant&oacute;n Santo Domingo, en virtud del sorteo electr&oacute;nico avoco conocimiento de la presente causa en legal y debida forma. Revisada la demanda, se observa que no cumple los requisitos se&ntilde;alados en los art&iacute;culos 142 numeral 13; y, 143 numerales 1 y 7 del C&oacute;digo Org&aacute;nico General de Procesos. Por lo expuesto, previo a admitir la demanda a tr&aacute;mite, de acuerdo a lo establecido en el art&iacute;culo 146 del COGEP, inciso segundo, se dispone que, dentro del t&eacute;rmino de </span><strong>CINCO D&Iacute;AS</strong><span style=\"background-color:transparent; color:#000000; font-family:Arial,sans-serif; font-size:12pt\">, el accionante aclare y/o complete lo siguiente: </span><strong>1.</strong><span style=\"background-color:transparent; color:#000000; font-family:Arial,sans-serif; font-size:12pt\"> Adjunte la procuraci&oacute;n judicial en donde conste el nombramiento del representante legal debidamente actualizado y registrado, por cuanto el mismo se encuentra caducado. De manera que se d&eacute; cumplimiento a lo previsto en las normas antes indicadas, bajo las prevenciones de ley. Act&uacute;e en la presente causa la Ab. Cazar Albuja Priscila Fernanda en calidad de secretaria de esta Unidad Judicial. NOTIF&Iacute;QUESE&nbsp;y C&Uacute;MPLASE. &ndash;</span></strong></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260402-135426697090-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600964_288387065_13_54_5_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 18327118,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964 ",
+        "fecha": "2026-04-01T19:11:38.347+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibido en la ciudad de Santo domingo el día de hoy, miércoles 1 de abril de 2026, a las 14:11,  el proceso  de Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de pagaré a la orden, seguido  por: Rios Mendoza Marcos Antonio, Fundacion Para el Desarrollo Integral Espoir, en contra de: Palomino Sabando Fernanda Mishell, Jama Baque Geomara Elizabeth. \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO, conformado por Juez(a): Abg Leon Zapata Alejandro Ruperto. Secretaria(o): Cazar Albuja Priscila Fernanda. \n\nProceso número: 23331-2026-00964 (1) Primera InstanciaAl que se adjunta los siguientes documentos:\n1) PETICIÓN INICIAL (ORIGINAL)\n2) PAGARE $516,51 (ORIGINAL Y COPIA) - DATOS DEL DEUDOR (ORIGINAL)\n3) HOJA DE DATOS - TABLA DE AMORTIZACION - CONTROL DE SALDOS - PROCURACION JUDICIAL (COPIAS CERTIFICADAS/COMPULSA)\n4) FICHA - CROQUIS DE UBICACION - CREDENCIALES DEL ABOGADO (COPIA SIMPLE)\n\nTotal de fojas: 26 MARIA LUISA REY VALENCIA Responsable de sorteo",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260401-141152829961-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_28659959",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 232339083,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600964",
+        "fecha": "2026-04-01T19:11:36.000+00:00",
+        "tipo": "CARATULA DE JUICIO",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 28659959,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20260401-141127641412-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_28659959",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "28659959",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  }
+]

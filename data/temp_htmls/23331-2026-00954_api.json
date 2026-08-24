@@ -1,0 +1,576 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202600954",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2026-04-01T16:25:10.287+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202600954",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202600954",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2026-04-01T16:25:10.287+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202600954",
+    "data": [
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 30068878,
+            "idMovimientoJuicioIncidente": 28658638,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2026-04-01T11:25:10.287",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "RIOS MENDOZA MARCOS ANTONIO",
+                "representadoPor": "RIOS MENDOZA MARCOS ANTONIO",
+                "idLitigante": 42370696
+              },
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36800677
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "MOLINA PALMA LUIS ANGEL",
+                "representadoPor": "MOLINA PALMA LUIS ANGEL",
+                "idLitigante": 45196873
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 244741772,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-05-22T19:19:57.627+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, viernes veinte y dos de mayo del dos mil veinte y seis, a partir de las catorce horas y veinte minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>ZAMBRANO INTRIAGO MARIA JANINA</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIA</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260522-141913864744-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600954_292700059_14_19_57_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 244741772,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-05-22T17:26:18.000+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">VISTOS: Puesto que ha sido el proceso al despacho del Se&ntilde;or Juez&nbsp; y como Director del Proceso conforme el Art. 3 del COGEP,&nbsp; se debe estar a lo que sigue:&nbsp; &nbsp;En lo principal.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">1.- Una vez que se ha dado cumplimiento con lo ordenado en el auto anterior.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">2.-&nbsp; La demanda que antecede se califica de clara, completa y cumple los requisitos legales previstos en el art&iacute;culo 142 y 143 del C&oacute;digo Org&aacute;nico General de Procesos (COGEP) y se fundamenta en un t&iacute;tulo ejecutivo, al tenor de lo previsto en los art&iacute;culos 347 numeral 8 y 348 del mismo c&oacute;digo; por lo que se califica y admite a tr&aacute;mite mediante procedimiento EJECUTIVO.</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">3.-&nbsp; Se ordena la CITACI&Oacute;N de la parte demandada MOLINA PALMA LUIS ANGEL&nbsp; en calidad de deudor principal&nbsp; en la direcci&oacute;n que se indica en el escrito de la demanda, para lo cual se adjuntar&aacute; la demanda, copia certificada de los documentos adjuntos y este auto inicial, rem&iacute;tase las respectivas boletas a la oficina de citaciones de esta Unidad Judicial.&nbsp;</span></span></p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">4.- Se requiere a la parte actora se acerque a esta Unidad Judicial a proporcionar las copias necesarias para proceder a elaborar las respectivas boletas de citaci&oacute;n. Al responsable de la citaci&oacute;n se le concede el t&eacute;rmino judicial de 8 d&iacute;as contados desde la recepci&oacute;n de las boletas de parte de secretaria a fin de que realice la diligencia citatoria ordenada y de no haberla podido efectuar deber&aacute; informar de forma inmediata las razones.&nbsp;</span></span></p>\n\n<p style=\"text-align:justify\"><br />\n<span style=\"font-family:Tahoma,Geneva,sans-serif\">5.- En aplicaci&oacute;n de los art&iacute;culos 355 y 333, numeral 3 del COGEP, se concede el t&eacute;rmino de quince (15) d&iacute;as para que el demandado proponga alguna de las excepciones taxativas del art&iacute;culo 353 del c&oacute;digo citado, bajo prevenci&oacute;n que de no hacerlo se pronunciar&aacute; inmediatamente sentencia y esa resoluci&oacute;n no ser&aacute; susceptible de recurso alguno, en cumplimiento al art&iacute;culo 352 del COGEP.&nbsp;</span></p>\n\n<p style=\"text-align:justify\"><br />\n<span style=\"font-family:Tahoma,Geneva,sans-serif\">6.-&nbsp; &nbsp;T&oacute;mese en cuenta la calidad en que comparece dentro de &eacute;ste juicio las AB. MARCOS ANTONIO RIOS MENDOZA&nbsp; &nbsp;conforme se justifica con la documentaci&oacute;n adjunta y que sirve como documentos habilitante; as&iacute; como se toma en cuenta los correos electr&oacute;nicos se&ntilde;alados para sus notificaciones dentro de &eacute;ste juicio.</span></p>\n\n<p style=\"text-align:justify\"><br />\n<span style=\"font-family:Tahoma,Geneva,sans-serif\">7.- Validez de la firma electr&oacute;nica.- Se pone en conocimiento de las partes procesales que el presente auto, se encuentra firmado electr&oacute;nicamente por el se&ntilde;or Juez y Secretario de este despacho, seg&uacute;n lo dispuesto en el Art. 14 de la Ley de Comercio Electr&oacute;nico, Firmas y Mensajes de Datos, que textualmente nos dice: &ldquo;Art. 14.- Efectos de la firma electr&oacute;nica.- La firma electr&oacute;nica tendr&aacute; igual validez y se le reconocer&aacute;n los mismos efectos jur&iacute;dicos que a una firma manuscrita en relaci&oacute;n con los datos consignados en documentos escritos, y ser&aacute; admitida como prueba en juicio&rdquo;. Para los fines de ley pertinentes.- Act&uacute;e la Ab. Mar&iacute;a Janina Zambrano en calidad de Secretaria de esta Unidad Judicial Civil. NOTIF&Iacute;QUESE Y C&Uacute;MPLASE. -</span></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260522-122622249648-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600954_292684235_12_26_26_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 72475102,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-05-18T16:20:22.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260518-112076718660-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_72475102",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 244028602,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-05-07T21:44:48.340+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, jueves siete de mayo del dos mil veinte y seis, a partir de las dieciséis horas y cuarenta y cuatro minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>ZAMBRANO INTRIAGO MARIA JANINA</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIA</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260507-164476527574-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600954_291303868_16_44_47_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 244028602,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-05-07T21:09:54.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">VISTOS.-&nbsp; Puesto que ha sido el proceso al despacho del se&ntilde;or Juez&nbsp; &nbsp;y como Director del Proceso conforme el Art. 3 del COGEP,&nbsp; se debe estar a lo que sigue:&nbsp; &nbsp;En lo principal.&nbsp;</span></span><br />\n&nbsp;</p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">1.-&nbsp; Agr&eacute;guese al proceso el escrito que antecede, como documento adjunta, los mismos que se ponen en conocimiento del se&ntilde;or Juez para su pronunciamiento en derecho.&nbsp;</span></span><br />\n&nbsp;</p>\n\n<p style=\"text-align:justify\"><span style=\"font-family:Tahoma,Geneva,sans-serif\"><span style=\"font-size:12pt\">2 .- Validez de la firma electr&oacute;nica.- Se pone en conocimiento de las partes procesales que el presente auto, se encuentra firmado electr&oacute;nicamente por el se&ntilde;or Juez y Secretario de este despacho, seg&uacute;n lo dispuesto en el Art. 14 de la Ley de Comercio Electr&oacute;nico, Firmas y Mensajes de Datos, que textualmente nos dice: &ldquo;Art. 14.- Efectos de la firma electr&oacute;nica.- La firma electr&oacute;nica tendr&aacute; igual validez y se le reconocer&aacute;n los mismos efectos jur&iacute;dicos que a una firma manuscrita en relaci&oacute;n con los datos consignados en documentos escritos, y ser&aacute; admitida como prueba en juicio&rdquo;. Para los fines de ley.- NOTIFIQUESE.&nbsp;</span></span></p>\n\n<p>&nbsp;</p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260507-1609477412-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600954_291291352_16_9_57_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 72215319,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-04-29T18:51:43.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "ANEXOS, Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260429-135120880021-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_72215319",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243723602,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-04-28T21:57:51.693+00:00",
+        "tipo": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "<p style=\"text-align: justify;\">En Santo Domingo, martes veinte y ocho de abril del dos mil veinte y seis, a partir de las dieciséis horas y cincuenta y ocho minutos.  Certifico:</p><br /><br /><br /><br /><br /><br /><p style=\"text-align:center\"><strong>ZAMBRANO INTRIAGO MARIA JANINA</strong>\r\n  </p>\n\r<p style=\"text-align:center\"><strong>SECRETARIA</strong>\r\n  </p>",
+        "visible": "H",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260428-165782721306-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600954_290630915_16_57_50_P21.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 243723602,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-04-28T21:53:05.000+00:00",
+        "tipo": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "<p style=\"text-align:justify\"><span style=\"font-family:Arial,Helvetica,sans-serif\"><span style=\"font-size:16px\"><strong>VISTOS</strong>: Dr. German Fabricio Acurio Hidalgo, Juez de esta Unidad Judicial Civil, de este cant&oacute;n Santo Domingo, avoco conocimiento de la presente causa en legal y debida forma por el sorteo electr&oacute;nico de Ley. Revisado el contenido de la demanda, se observa que no cumple los requisitos se&ntilde;alados en el art&iacute;culo 142 numeral 7 y 13 art&iacute;culo 143 numeral 7 del COGEP. Por lo expuesto, previo a admitir la demanda a tr&aacute;mite, de acuerdo con lo establecido en el art&iacute;culo 146, inciso segundo ib&iacute;dem, se dispone que, dentro del t&eacute;rmino legal improrrogable de CINCO D&Iacute;AS, la parte actora complete y aclare, espec&iacute;ficamente en los siguientes requisitos: 1) Del anuncio de los medios de prueba, se requiere: 1.1.- Complete la demanda respecto a lo enunciado al numeral 4 y 6, respecto al informe del promotor y la ficha de solicitud de microcr&eacute;dito, los cuales no se encuentran adjuntas. 2) Aclare la demanda adjuntando el Certificado &Uacute;nico de Contribuyentes (RUC) original o autenticado, ACTUALIZADO de la FUNDACI&Oacute;N PARA EL DESARROLLO INTEGRAL ESPOIR. &nbsp;En s&iacute; la demanda debe ser redactada observando los requisitos dispuestos en el art&iacute;culo 142 y 143 del COGEP. De manera que se d&eacute; cumpliendo a lo previsto en las normas antes indicadas, de no hacerlo se dispondr&aacute; el archivo de la causa. -&nbsp; Act&uacute;e la Ab. Mar&iacute;a Janina Zambrano en calidad de Secretaria de esta Unidad Judicial Civil. <strong>NOTIF&Iacute;QUESE Y C&Uacute;MPLASE. - </strong></span></span></p>\n\n\r",
+        "visible": "A",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20260428-165339621730-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202600954_290628975_16_53_9_P20.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 18325794,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954 ",
+        "fecha": "2026-04-01T16:25:11.823+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibido en la ciudad de Santo domingo el día de hoy, miércoles 1 de abril de 2026, a las 11:25,  el proceso  de Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de pagaré a la orden, seguido  por: Rios Mendoza Marcos Antonio, Fundacion Para el Desarrollo Integral Espoir, en contra de: Molina Palma Luis Angel. \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO, conformado por Juez(a): Dr. Acurio Hidalgo German Fabricio. Secretaria(o): Zambrano Intriago Maria Janina. \n\nProceso número: 23331-2026-00954 (1) Primera InstanciaAl que se adjunta los siguientes documentos:\n1) PETICIÓN INICIAL (ORIGINAL)\n2) PAGARE $ 682,74 (ORIGINAL Y COPIA) - DATOS DEL DEUDOR (ORIGINAL)\n3) HOJA DE DATOS - TABLA DE AMORTIZACION - CONTROL DE SALDOS - PROCURACION JUDICIAL (COPIAS CERTIFICADAS/COMPULSA)\n4) FICHA DE INSCRIPCION - CROQUIS DE UBICACION - CEDULA DE IDENTIDAD - CREDENCIAL DEL ABOGADO (COPIA SIMPLE)\n\nTotal de fojas: 23 MARIA LUISA REY VALENCIA Responsable de sorteo",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20260401-112502451508-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_28658638",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 232296116,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202600954",
+        "fecha": "2026-04-01T16:25:10.000+00:00",
+        "tipo": "CARATULA DE JUICIO",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 28658638,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20260401-112576848962-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_28658638",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "28658638",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  }
+]

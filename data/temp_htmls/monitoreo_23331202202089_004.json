@@ -1,0 +1,30 @@
+{
+  "evento": {
+    "instante": "2026-08-07T05:31:21.514Z",
+    "objetivo": {
+      "etiqueta": "MAT-ICON",
+      "texto": "folder_open",
+      "rol": "img",
+      "aria": null,
+      "titulo": null,
+      "tooltip": null,
+      "clase": "mat-icon notranslate mat-mdc-tooltip-trigger material-symbols-sharp search-icon material-icons mat-ligature-font mat-icon-no-color"
+    },
+    "accionable": {
+      "etiqueta": "A",
+      "texto": "folder_open",
+      "rol": null,
+      "aria": "Vínculo para ingresar a los movimientos del proceso 23331202202089",
+      "titulo": null,
+      "tooltip": null,
+      "clase": ""
+    },
+    "fila": null
+  },
+  "estado": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/movimientos",
+    "causa": null,
+    "captcha": true,
+    "buscar": null
+  }
+}

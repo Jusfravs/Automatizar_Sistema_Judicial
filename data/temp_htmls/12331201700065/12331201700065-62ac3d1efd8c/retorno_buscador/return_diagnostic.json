@@ -1,0 +1,32 @@
+{
+  "iniciado": true,
+  "finalizado": true,
+  "confirmado": false,
+  "clicks": 0,
+  "go_back": 0,
+  "estrategia": null,
+  "url_inicial": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+  "url_final": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+  "candidatos": [],
+  "diagnostico_inicial": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false
+  },
+  "error": "RETORNO_BUSCADOR_ORIGEN_NO_VALIDO",
+  "diagnostico_final": {
+    "url": "https://procesosjudiciales.funcionjudicial.gob.ec/causas",
+    "ruta_valida": false,
+    "campos_causa": 0,
+    "campo_visible": false,
+    "campo_habilitado": false,
+    "movimientos_visibles": false,
+    "actuaciones_visibles": false,
+    "listo": false
+  }
+}

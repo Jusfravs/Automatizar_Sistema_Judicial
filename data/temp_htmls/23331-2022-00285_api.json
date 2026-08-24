@@ -1,0 +1,890 @@
+[
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-UBICACION-SERVICE/api/ubicacion/provincia/getAll",
+    "data": [
+      {
+        "idProvincia": "ECU01",
+        "nombreProvincia": "AZUAY",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU02",
+        "nombreProvincia": "BOLIVAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU03",
+        "nombreProvincia": "CAÑAR",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU04",
+        "nombreProvincia": "CARCHI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU06",
+        "nombreProvincia": "CHIMBORAZO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU05",
+        "nombreProvincia": "COTOPAXI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU97",
+        "nombreProvincia": "DESCONOCE",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU07",
+        "nombreProvincia": "EL ORO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU08",
+        "nombreProvincia": "ESMERALDAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU20",
+        "nombreProvincia": "GALAPAGOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU09",
+        "nombreProvincia": "GUAYAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU10",
+        "nombreProvincia": "IMBABURA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU11",
+        "nombreProvincia": "LOJA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU12",
+        "nombreProvincia": "LOS RIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU13",
+        "nombreProvincia": "MANABI",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU14",
+        "nombreProvincia": "MORONA SANTIAGO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU15",
+        "nombreProvincia": "NAPO",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU98",
+        "nombreProvincia": "NO ENTREGA INFORMACION",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU22",
+        "nombreProvincia": "ORELLANA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU16",
+        "nombreProvincia": "PASTAZA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU17",
+        "nombreProvincia": "PICHINCHA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU24",
+        "nombreProvincia": "SANTA ELENA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU23",
+        "nombreProvincia": "SANTO DOMINGO DE LOS TSACHILAS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU21",
+        "nombreProvincia": "SUCUMBIOS",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU18",
+        "nombreProvincia": "TUNGURAHUA",
+        "idPais": "ECU"
+      },
+      {
+        "idProvincia": "ECU19",
+        "nombreProvincia": "ZAMORA CHINCHIPE",
+        "idPais": "ECU"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CATALOGO-JURIDICO-SERVICE/api/catalogo/materia/getAll",
+    "data": [
+      {
+        "idMateria": 26,
+        "nombreMateria": "ACCIÓN DISCIPLINARIA"
+      },
+      {
+        "idMateria": 19,
+        "nombreMateria": "ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 31,
+        "nombreMateria": "ADOLESCENTE INFRACTOR COIP"
+      },
+      {
+        "idMateria": 32,
+        "nombreMateria": "CIVIL"
+      },
+      {
+        "idMateria": 2,
+        "nombreMateria": "CIVIL NO_COGEP"
+      },
+      {
+        "idMateria": 38,
+        "nombreMateria": "COACTIVAS-COA"
+      },
+      {
+        "idMateria": 9,
+        "nombreMateria": "CONSTITUCIONAL"
+      },
+      {
+        "idMateria": 37,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO"
+      },
+      {
+        "idMateria": 8,
+        "nombreMateria": "CONTENCIOSO ADMINISTRATIVO NO_COGEP"
+      },
+      {
+        "idMateria": 36,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO"
+      },
+      {
+        "idMateria": 12,
+        "nombreMateria": "CONTENCIOSO TRIBUTARIO NO_COGEP"
+      },
+      {
+        "idMateria": 10,
+        "nombreMateria": "CONTRAVENCIONES"
+      },
+      {
+        "idMateria": 29,
+        "nombreMateria": "CONTRAVENCIONES COIP"
+      },
+      {
+        "idMateria": 33,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA"
+      },
+      {
+        "idMateria": 6,
+        "nombreMateria": "FAMILIA MUJER NIÑEZ Y ADOLESCENCIA NO_COGEP"
+      },
+      {
+        "idMateria": 22,
+        "nombreMateria": "GARANTÍAS PENITENCIARIAS"
+      },
+      {
+        "idMateria": 34,
+        "nombreMateria": "INQUILINATO"
+      },
+      {
+        "idMateria": 5,
+        "nombreMateria": "INQUILINATO NO_COGEP"
+      },
+      {
+        "idMateria": 1,
+        "nombreMateria": "PENAL"
+      },
+      {
+        "idMateria": 27,
+        "nombreMateria": "PENAL COIP"
+      },
+      {
+        "idMateria": 35,
+        "nombreMateria": "TRABAJO"
+      },
+      {
+        "idMateria": 4,
+        "nombreMateria": "TRABAJO NO_COGEP"
+      },
+      {
+        "idMateria": 3,
+        "nombreMateria": "TRANSITO"
+      },
+      {
+        "idMateria": 28,
+        "nombreMateria": "TRÁNSITO COIP"
+      },
+      {
+        "idMateria": 11,
+        "nombreMateria": "VIOLENCIA CONTRA LA MUJER Y FAMILIA"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/buscarCausas?page=1&size=10",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202200285",
+        "estadoActual": "A",
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2022-01-24T21:31:18.777+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": null,
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": null,
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/contarCausas",
+    "data": 1
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/getInformacionJuicio/23331202200285",
+    "data": [
+      {
+        "id": 1,
+        "idJuicio": "23331202200285",
+        "estadoActual": null,
+        "idMateria": 32,
+        "idProvincia": null,
+        "idCanton": null,
+        "idJudicatura": null,
+        "nombreDelito": "COBRO DE PAGARÉ A LA ORDEN",
+        "fechaIngreso": "2022-01-24T21:31:18.777+00:00",
+        "nombre": null,
+        "cedula": null,
+        "idEstadoJuicio": null,
+        "nombreMateria": "CIVIL",
+        "nombreEstadoJuicio": null,
+        "nombreJudicatura": null,
+        "nombreTipoResolucion": null,
+        "nombreTipoAccion": "EJECUTIVO",
+        "fechaProvidencia": null,
+        "nombreProvidencia": null,
+        "nombreProvincia": null,
+        "iedocumentoAdjunto": "N"
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/getIncidenteJudicatura/23331202200285",
+    "data": [
+      {
+        "idJudicatura": "23331",
+        "nombreJudicatura": "UNIDAD JUDICIAL CIVIL DEL CANTÓN SANTO DOMINGO",
+        "ciudad": "SANTO DOMINGO",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 24763770,
+            "idMovimientoJuicioIncidente": 23593591,
+            "idJudicaturaDestino": "23331",
+            "fechaCrea": "2022-01-24T16:31:18.777",
+            "incidente": 1,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36925178
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PINCAY JAMA ALDAIR ALEXANDER",
+                "representadoPor": "PINCAY JAMA ALDAIR ALEXANDER",
+                "idLitigante": 27411443
+              },
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PINCAY JAMA MARELYN FRANCHESCA",
+                "representadoPor": "PINCAY JAMA MARELYN FRANCHESCA",
+                "idLitigante": 39521314
+              },
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PINCAY SOLORZANO JOSE RAFAEL",
+                "representadoPor": "PINCAY SOLORZANO JOSE RAFAEL",
+                "idLitigante": 31467609
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      },
+      {
+        "idJudicatura": "23303",
+        "nombreJudicatura": "UNIDAD JUDICIAL MULTICOMPETENTE CON SEDE EN EL CANTÓN LA CONCORDIA",
+        "ciudad": "LA CONCORDIA",
+        "lstIncidenteJudicatura": [
+          {
+            "idIncidenteJudicatura": 24857394,
+            "idMovimientoJuicioIncidente": 23677463,
+            "idJudicaturaDestino": "23303",
+            "fechaCrea": "2022-02-21T11:49:16.47",
+            "incidente": 2,
+            "lstLitiganteActor": [
+              {
+                "tipoLitigante": "ACTOR",
+                "nombresLitigante": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "representadoPor": "FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR",
+                "idLitigante": 36925178
+              }
+            ],
+            "lstLitiganteDemandado": [
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PINCAY SOLORZANO JOSE RAFAEL",
+                "representadoPor": "PINCAY SOLORZANO JOSE RAFAEL",
+                "idLitigante": 31467609
+              },
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PINCAY JAMA ALDAIR ALEXANDER",
+                "representadoPor": "PINCAY JAMA ALDAIR ALEXANDER",
+                "idLitigante": 27411443
+              },
+              {
+                "tipoLitigante": "DEMANDADO",
+                "nombresLitigante": "PINCAY JAMA MARELYN FRANCHESCA",
+                "representadoPor": "PINCAY JAMA MARELYN FRANCHESCA",
+                "idLitigante": 39521314
+              }
+            ],
+            "litiganteActor": null,
+            "litiganteDemandado": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-SERVICE/api/consulta-causas/informacion/actuacionesJudiciales",
+    "data": [
+      {
+        "codigo": 187645222,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-06-15T21:28:28.257+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, miércoles quince de junio del dos mil veinte y dos, a partir de las diez horas y treinta y tres minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220615-103327722109-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_10_33_187645222_178818032_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 187645222,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-06-15T15:22:00.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, miércoles 15 de junio del 2022, las 10h22, VISTOS.- Agréguese a los autos el escrito presentado por la parte actora.- En lo principal.-  \r\n1.- Atento a lo señalado en el escrito que se atiende  se hace la siguiente consideración: El articulo Art. 100 del Código Orgánico de Procesos en su inciso 2 dispone lo siguiente: “Los errores de escritura, como de nombres, de citas legales, de cálculo o puramente numéricos podrán ser corregidos, de oficio o a petición de parte, aun durante la ejecución de la sentencia, sin  que en caso alguno se modifique el sentido de la resolución.”, es así que en la sentencia se hizo contar lo siguiente: \r\nEn el punto 1.2.- se hizo constar lo siguiente “Como parte demandada han sido requeridos los señores (…) JOSE RAFAEL PINCAY JAMA”, siendo lo correcto lo que sigue: JOSE RAFAEL PINCAY SOLORZANO.- \r\nEn el punto 2.1.- se hizo constar lo siguiente “los hoy demandados señores (…) JOSE RAFAEL PINCAY JAMA”, siendo lo correcto lo que sigue: JOSE RAFAEL PINCAY SOLORZANO. \r\nEn el punto 6.1.- se hizo constar lo siguiente “demandados señores (…) JOSE RAFAEL PINCAY JAMA”, siendo lo correcto lo que sigue: JOSE RAFAEL PINCAY SOLORZANO.-   \r\nEn el punto 8.1. se hizo constar lo siguiente “se ordena que los señores (…) JOSE RAFAEL PINCAY JAMA”, siendo lo correcto lo que sigue: JOSE RAFAEL PINCAY SOLORZANO.-\r\n2.- Con lo cual queda corregido los errores de escritura de apellido.- En lo demás estece a que consta en sentencia de fecha viernes 03 de junio del 2022, las 08h56. \r\n3.- NOTIFÍQUESE.-   \r\n\r\n\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220615-102226299381-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_10_22_187645222_178815860_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 53136577,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-06-14T21:03:30.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20220614-160315251464-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_53136577",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 187165662,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-06-03T14:58:29.907+00:00",
+        "tipo": "SENTENCIA (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, viernes tres de junio del dos mil veinte y dos, a partir de las nueve horas y cuarenta y nueve minutos, mediante boletas judiciales notifiqué la SENTENCIA que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220603-09493795722-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_9_49_187165662_177912497_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 187165662,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-06-03T13:56:00.000+00:00",
+        "tipo": "SENTENCIA (RESOLUCION) ",
+        "actividad": "Santo Domingo, viernes 3 de junio del 2022, las 08h56, VISTOS. - \r\n1.- IDENTIFICACIÓN DE LAS PARTES\r\n\r\n1.1.- Comparece como parte actora el Ab. FREDDY XAVIER ERAZO CHALACAN, en calidad de PROCURADOR JUDICIAL del Ab. Francisco Jose Garaicoa Pérez, Coordinador de la FUNDACIÓN PARA EL DESARROLLO INTEGRAL ESPOIR REGIONAL SANTO DOMINGO. \r\n\r\n1.2.- Como parte demandada han sido requeridos los señores ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA y JOSE RAFAEL PINCAY JAMA.\r\n\r\n2.- ENUNCIACIÓN DE LOS HECHOS O CIRCUNSTANCIAS OBJETO DE LA DEMANDA \r\n2.1.- La parte actora en el libelo de su demanda manifiesta entre otras cosas lo siguiente: que conforme consta el pagare a la orden adjunto a la demanda se desprende que de fecha 23 de febrero del 2021, los hoy demandados señores ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA y JOSE RAFAEL PINCAY JAMA, suscribió un pagaré a la orden por la cantidad de USD 16.446,00 (DIECISÉIS MIL CUATROCIENTOS CUARENTA Y SEIS DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA CON 00/100) pagaderos en 12 cuotas, con un interés pactado del 18,00%. \r\n\r\nQue la hoy demandada no ha cancelado su crédito en la totalidad, pese a los múltiples requerimientos. Por todo lo anteriormente expuesto solicita que en sentencia se condene a los demandados al pago de los siguientes rubros:\r\n\r\nAl pago del capital adeudado cuya suma asciende a la cantidad de USD 2.218,95 (DOS MIL DOSCIENTOS DIECIOCHO DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA CON 95/100).\r\nAl interés pactado del 27,50% anual.\r\nEl interés de mora con el recargo máximo permitido por la Ley de conformidad con lo establecido en el pagaré.\r\nAl pago de costas procesales incluidos los honorarios profesionales.\r\n\r\n2.2.- Cabe señalar que la parte demandada no ha contestado la demanda pese a estar en debida y en legal forma citada, se la ha citado mediante boletas fijadas conforme consta el acta de citaciones obrante a fs. 33, 34 y 35 del cuaderno procesal.- Por lo tanto al no haber contestado la demanda en el término legal concedido y no haber presentado excepciones se ha configurado el presupuesto establecido en el artículo 352 del Código Orgánico General de Procesos, por lo que siendo el estado de la causa y el de resolver,  para hacerlo se considera lo que sigue.\r\n3.- DECISIÓN SOBRE LAS EXCEPCIONES PREVIAS\r\n3.1.- En el presente caso los demandados no han contestado la demanda dentro del término legal concedido para este tipo de juicio y tampoco han propuesto excepciones, por consiguiente, este juzgador nada tiene que decidir al respecto.\r\n\r\n4.- JURISDICCIÓN Y COMPETENCIA\r\n4.1.- La Potestad de Administrar Justicia emana del pueblo y se la ejerce a través de los órganos de la Función Judicial conforme a lo prescrito en el artículo 167 de la Constitución de la República del Ecuador. Por ello la Jurisdicción y la competencia nacen de la Constitución y la Ley según lo previsto en los Arts. 170, 239, 240 y 241 del Código Orgánico de la Función Judicial, otorgándose a los jueces y juezas de la Unidad Judicial Civil con sede en el Cantón Santo Domingo el ejercicio de la jurisdicción en dicha materia.\r\n5.- SOBRE LA VALIDEZ PROCESAL\r\n5.1.- De la revisión del cuaderno procesal se desprenden las siguientes conclusiones: 1).-  Durante la tramitación de la causa se ha observado y respetado las garantías al debido proceso contemplado en el artículo 76 de la Constitución de la República, ya que a la parte demandada se ha citado mediante boletas fijadas conforme consta el acta de citaciones obrante a fs. 33, 34 y 35 del cuaderno procesal.- 2).- La parte actora al presentar su demanda acompañó el título ejecutivo (pagaré a la orden) que obran a fs. 1 del cuaderno procesal.- 3).- Desde el momento que avoqué conocimiento de la causa este juzgador y al verificar que la acción procedía mediante procedimiento ejecutivo la sustancie por dicha vía con observancia de las normas legales aplicables al caso. \r\n5.2.- Por lo tanto, se concluye que no se ha omitido solemnidad sustancial alguna de las señaladas en el artículo 107 del COGEP, que pueda afectar la validez procesal, por consiguiente, se declara válido el proceso. \r\n \r\n6.- RELACIÓN DE LOS HECHOS PROBADOS RELEVANTES PARA LA RESOLUCIÓN\r\n6.1.-A fojas 1 del proceso, consta el pagaré a la orden por el valor de USD 16.446,00 (DIECISÉIS MIL CUATROCIENTOS CUARENTA Y SEIS DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA CON 00/100) cuyo beneficiario la parte actora de esta causa, de dicho valor los demandados señores demandados señores ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA y JOSE RAFAEL PINCAY JAMA, se encuentran en mora del Pagaré a la Orden por el valor de USD 2.218,95 (DOS MIL DOSCIENTOS DIECIOCHO DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA CON 95/100) con lo cual prueba su derecho la parte actora y consecuentemente los hechos expuestos en su demanda, título valor base de este juicio que genera acción ejecutiva al amparo de los artículos 347 y 348 del Código Orgánico General de Procesos, pues la obligación contenida en el título es clara, pura, determinada, y actualmente exigible, con lo cual ha quedado configurada la relación o nexo entre los hechos y la prueba aportada por la parte actora. \r\n\r\n7.- LA MOTIVACIÓN \r\n7.1.- Al respecto la motivación de la sentencia constituye un elemento intelectual, de contenido crítico, valorativo y lógico, que consiste en el conjunto de razonamientos de hecho y de derecho en que el Juez apoya su decisión. Su exigencia es una garantía de justicia a la cual se le ha reconocido Garantía Constitucional, como derivación del principio de inviolabilidad de la sentencia en juicio, previsto en la litera l) del numeral 7 del Art. 76 de la Constitución de la República del Ecuador. - La sentencia enseña, Lorihan, “no ha de ser un acto de fe, sino un acto de convicción razonada. La motivación por lo demás, es una operación lógica fundada en la certeza y el Juez debe observar los principios lógicos supremos o leyes supremas del pensamiento que gobiernan la elaboración de los juicios y dan base cierta para determinar cuáles son necesariamente verdaderos o falsos. Las leyes del pensamiento son leyes a priori que, independientemente de la experiencia, se presentan a nuestro raciocinio como evidentes, necesarias e indiscutibles cuando analizamos nuestros propios pensamientos. -  (Sentencia número 227-12-SEP-CC, caso 0227-12-EP).” \r\n7.2.- El Art. 169 de la Constitución de la República determina: “El sistema procesal es un medio para la realización de la justicia. Las normas procesales consagrarán los principios de simplificación, uniformidad, eficacia, inmediación, celeridad y economía procesal, y harán efectivas las garantías del debido proceso. No se sacrificará la justicia por la sola omisión de formalidades.”; esto en concordancia con lo que determina el art. 18 del Código Orgánico de la Función Judicial que establece el principio de celeridad al decir: “Sistema-Medio de Administración de Justicia. - El sistema procesal es un medio para la realización de la justicia. Las normas procesales consagrarán los principios de simplificación, uniformidad, eficacia, inmediación, oralidad, dispositivo, celeridad y economía procesal, y harán efectivas las garantías del debido proceso. No se sacrificará la justicia por la sola omisión de formalidades.”, mientras el Art. 20 Ibídem establece los parámetros en que actuarán los jueces al decir: “La administración de justicia será rápida y oportuna, tanto en la tramitación y resolución de la causa, como en la ejecución de lo decidido. Por lo tanto, en todas las materias, una vez iniciado un proceso, las juezas y jueces están obligados a proseguir el trámite dentro de los términos legales, sin esperar petición de parte, salvo los casos en que la ley disponga lo contrario. El retardo injustificado en la administración de justicia, imputable a las juezas, jueces y demás servidoras y servidores de la Función Judicial y auxiliares de la justicia, será sancionado de conformidad con la ley.”, debiendo recalcar que el Art. 28 del Código Orgánico de la Función Judicial establece el principio de verdad procesal que señala que las juezas y jueces resolverán únicamente atendiendo a los elementos aportados por las partes. Sobre el marco constitucional es relevante establecer en forma previa el marco jurídico, doctrinal y jurisprudencial sobre el cual se va analizar el caso,  siendo por ello la motivación parte fundamental de la sentencia así la Corte Constitucional al respecto ha referido que: \"Una de las tareas primordiales de fundamentar toda sentencia o acto administrativo es la de proporcionar un razonamiento lógico y comprensivo, de cómo las normas y entidades normativas del ordenamiento jurídico encajan en las expectativas de solucionar los problemas o conflictos presentados, conformando de esta forma un derecho inherente al debido proceso, por el cual el Estado pone a disposición de la sociedad las razones de su decisión\" (Corte Constitucional del Ecuador, para el período de transición, Sentencia N.° 025-09-SEP-CC, casos N.°0023-09- EP, 0024-09-EP y 0025-09-EP (Acumulados).\r\n7.3.- En el caso que nos ocupa El Código Orgánico General de Procesos regula sobre los títulos ejecutivos y específicamente en su artículo 347 enumera taxativamente que documentos tienen la categoría de títulos ejecutivos. Art. 347.- Títulos ejecutivos. Son títulos ejecutivos siempre que contengan obligaciones de dar o hacer: 1. Declaración de parte hecha con juramento ante una o un juzgado competente. 2. Copia y la compulsa auténtica de las escrituras públicas. 3. Documentos privados legalmente reconocidos o reconocidos por decisión judicial. 4. Letras de cambio. 5. Pagarés a la orden. 6. Testamentos. 7. Transacción extrajudicial.8. Los demás a los que otras leyes otorguen el carácter de títulos ejecutivos. \r\n7.4.- En concordancia a dicha norma legal el artículo 187 del Código de Comercio señala que requisitos debe contener el Pagaré a la Orden para su validez. “Art. 187.- El pagare contendrá:\r\n a) La denominación del documento inserta en el texto mismo y expresada en el idioma empleado en la redacción del documento.\r\nb) Los pagarés que no llevaren la referida denominación serán, sin embargo, válidos, si contuvieren la indicación expresada de ser a la orden;\r\nc) La promesa incondicional de pagar una suma determinada;\r\nd) La indicación del vencimiento;\r\ne) El lugar donde debe efectuarse el pago;\r\nf) El nombre de la persona a quien o a cuya orden debe efectuarse el pago;\r\ng) La indicación de la fecha y el lugar donde se suscribe el pagaré; y,\r\nh) La firma del que emite el documento (suscriptor).\r\n7.5.- Ahora bien, el artículo 348 establece que para que proceda perseguirse el cumplimiento mediante procedimiento ejecutivo la obligación contenida en el título deberá ser clara, pura determinada y actualmente exigible.-“Art. 348.- Procedencia. Para que proceda el procedimiento ejecutivo, la obligación contenida en el título deberá ser clara, pura, determinada y actualmente exigible…” A si como También en su artículo 352 establece que la falta de contestación a la demanda dentro del término legal obliga al juzgador a que de forma inmediata dicte sentencia y disponga que el deudor cumpla con la obligación. -  “Art. 352.- Falta de contestación a la demanda. Si la o el deudor dentro del respectivo término no cumple la obligación, ni propone excepciones o si las excepciones propuestas son distintas a las permitidas en este Código para este tipo de procesos, la o el juzgador en forma inmediata pronunciará sentencia mandando que la o el deudor cumpla con la obligación. Esta resolución no será susceptible de recurso alguno.”. - \r\n7.6.- Sobre los títulos ejecutivos la Jurisprudencia ecuatoriana ha dejado sentado lo siguiente: “Por oposición y a diferencia de los procesos de conocimiento, el proceso ejecutivo no se dirige a declarar derechos dudosos o controvertidos, sino a llevar a efecto los que se hayan reconocido por actos o en títulos de tal fuerza que determine que el derecho del actor es legítimo y está suficientemente probado para que sea atendido”. \r\n7.7.- Doctrinariamente sobre los procesos ejecutivos tomamos en consideración lo dicho por el tratadista Francisco Beceña en su obra “Los procedimientos Ejecutivos en el Derecho Procesal Español”,  pág. 82-83 explica las diferencias entre los procesos de conocimiento y los procesos de ejecución expresando en síntesis que en este último su especialidad consiste en que “en pimpinelitas” se decreta lo que en el procedimiento ordinario es contenido en la decisión final” añadiendo que: “en los procedimientos ordinarios las decisiones ejecutivas son siempre tomadas después de agotado el período de declaración y sin posibilidad de volverse a reproducir” ( Expediente de Casación No. 44, publicado en el Registro Oficial No. 344 de 28 de mayo de 2004). Ya sobre las obligaciones ejecutivas el maestro Dr. Carlos Miguel Ramírez, connotado maestro y jurista en la obra titulada: “CURSO DE LEGISLACIÓN MERCANTIL”, de forma clara desarrolla el alcance de los elementos de la obligación ejecutiva e indica: “1.- deben ser claras.- Es decir precisas: que no ofrezcan duda en cuanto a sus elementos.- 2.- determinadas.- La determinación admite modalidades y grados. Determinar significa fijar, precisar. Es obvio que para que sea ejecutable una obligación es indispensable que sea determinada; es decir, que se conozca con precisión cuál es la prestación que debe el deudor; y, que es lo que el acreedor tiene derecho a recibir.- 3.- líquidas.- Significa que la prestación tiene que ser clara y cierta en su cantidad o valor.- 4.- puras.-  (…) es aquella que produce sus efectos desde que se contrae y para siempre, sin restricciones y limitaciones de ninguna clase.- 5.- de plazo vencido.- Puede existir plazo previsto para el cumplimiento de una obligación; pero también en ciertas obligaciones puede no existir tal plazo…”.- \r\n7.8.- En consecuencia, del análisis del documento (Pagaré a la Orden) que obra del proceso a fs. 01 de los autos, el mismo que fue aparejado a la demanda por parte de la actora se concluye lo siguiente: \r\n7.8.1.- Que es un título ejecutivo por estar comprendido entre aquellos enumerados en el artículo 347 del CO.G.E.P., y reunir los requisitos señalados en el artículo 187 del Código de Comercio. -  \r\n7.8.2.- Que la parte actora escogió acertadamente la vía para la procedencia del cobro de su acreencia ya que la obligación contenida en el titulo ejecutivo se desprende que es clara ya que no existe duda en cuanto a sus elementos; es pura por cuanto ha producido sus efectos desde que se contrae y para siempre, sin restricciones y limitaciones de ninguna clase; es determinada  ya que se conoce con precisión cuál es la prestación que debe el deudor; y, que es lo que el acreedor tiene derecho a recibir; y es actualmente exigible ya que es ejecutable por ser una obligación pura y simple desde su nacimiento y más aún al encontrarse en mora más de dos dividendos la obligación se ha convertido de plazo vencido y consecuentemente la misma es actualmente exigible, por lo tanto la obligación ha reunido  todos los requisitos de procedencia  para que sea aceptada en  procedimiento ejecutivo. \r\n7.9.-Por el análisis realizado a quedado claro que la parte actora ha dejado demostrado sus asertos constantes en su demanda y que efectivamente los demandados le adeudan la cantidad en dinero demandada. Y al no haber contestado la demanda ni haber propuesto excepciones previas los demandados dentro del término legal se ha configurado el presupuesto establecido en el artículo 352 del Código Orgánico General de Procesos.\r\n8.- DECISIÓN ADOPTADA\r\n8.1.-Por todas las consideraciones expuestas, en cumplimiento de las normas antes citadas y de las previstas en los artículos 75, 76 numerales 1, 7 literal l) y 82 de la Constitución de la República del Ecuador  y al amparo de lo que establece el artículo 27 del Código Orgánico de la Función Judicial en concordancia con el artículos 95, 347, 348 y 352 del Código Orgánico General de Procesos y  artículo 187 del Código de Comercio, con lo cual dejo enunciados los preceptos jurídicos sobre los cuales motivo la presente sentencia.-  Por los razonamientos que preceden y sin que sea necesario realizar más análisis ADMINISTRANDO JUSTICIA, EN NOMBRE DEL PUEBLO SOBERANO DEL ECUADOR, Y POR AUTORIDAD DE LA CONSTITUCIÓN Y LAS LEYES DE LA REPÚBLICA, al no haberse planteado excepciones previas  y tampoco haberse verificado el pago por parte de los demandados, se acepta la acción propuesta por Ab. FREDDY XAVIER ERAZO CHALACAN, en calidad de PROCURADOR JUDICIAL del Ab. Francisco Jose Garaicoa Pérez, Coordinador de la FUNDACIÓN PARA EL DESARROLLO INTEGRAL ESPOIR REGIONAL SANTO DOMINGO, en consecuencia se ordena que los señores ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA y JOSE RAFAEL PINCAY JAMA, paguen a la parte actora de esta demanda esto es a la FUNDACIÓN PARA EL DESARROLLO INTEGRAL ESPOIR REGIONAL SANTO DOMINGO lo siguiente en atención a sus pretensiones deducidas:  \r\n\r\n8.1.1.- El capital adeudado que asciende a la cantidad del capital adeudado en la cantidad de USD 2.218,95 (DOS MIL DOSCIENTOS DIECIOCHO DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA CON 95/100).\r\n\r\n8.1.2.-El interés pactado que será calculado y liquidado pericialmente el cual no superará al fijado por el organismo regulador del Sistemas Monetario y Financiero. \r\n8.1.3.- El interés de mora pactado únicamente por el monto vencido del capital, hasta el día en que se efectué el pago total de la obligación, según el artículo 1 de la Resolución No. 047-2013, Del Directorio Del Banco Central Del Ecuador, emitida el 03 de septiembre del 2013, interés que será liquidado pericialmente el cual no superará al fijado por el organismo regulador del Sistemas Monetario y Financiero. \r\n\r\n8.1.5.- Sin costas que fijar por cuanto del análisis realizado por este juzgador de como se ha tramitado la causa no ha podido advertir que las personas o partes procesales hayan litigado de forma abusiva, maliciosa, temeraria o con deslealtad, según lo preceptuado por el artículo 284 del Código Orgánico General de Procesos.\r\n\r\n8.2.- Notifíquese y Cúmplase.-\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220603-085770966538-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_8_57_187165662_177903671_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 187085397,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-06-01T19:50:00.000+00:00",
+        "tipo": "CITACION REALIZADA (RAZON) ",
+        "actividad": "RAZÓN: Siento por tal que con fecha 12 de abril de 2022 , recibí la certificación y el acta de citación entregada por Angel Delgado delegado/responsable de la Oficina de Citaciones y Notificaciones de esta Unidad Judicial, de las cuales consta que se ha efectuado la citación mediante deprecatorio  a la parte demandada .- CERTIFICO.- Santo Domingo, 01 de junio de 2022. \r\n\r\nAb. Zaniah Nevarez Reina\r\nSECRETARIA",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220601-145099528730-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_2_50_187085397_177742174_P01.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 187004203,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-05-31T17:08:34.557+00:00",
+        "tipo": "NOTIFICACION (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, martes treinta y uno de mayo del dos mil veinte y dos, a partir de las once horas y veinte y nueve minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220531-11292341287-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_11_29_187004203_177589934_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 187004203,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-05-31T16:06:00.000+00:00",
+        "tipo": "NOTIFICACION (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, martes 31 de mayo del 2022, las 11h06, En lo principal.- \r\n1.- Agreguese al proceso las actas de citación de fecha 12 de abril mismas que se pone en conocimiento para los fines de ley.- \r\n2.-  Agreguese al proceso el escrito presentado por la parte actora y en atención a su contenido dispongo lo siguiente: En vista de que la parte demandada no ha dado contestación a la demanda en el término establecido en auto inicial, de conformidad con lo determinado en el artículo 352 del Código Orgánico General de Procesos (COGEP), pasen los autos para resolver.- \r\n3.- NOTIFIQUESE. \r\n\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220531-1106215468-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_11_6_187004203_177585158_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 52923035,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-05-30T19:54:27.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20220530-145409185155-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_52923035",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 186204397,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-05-11T19:02:47.467+00:00",
+        "tipo": "NOTIFICACION (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, miércoles once de mayo del dos mil veinte y dos, a partir de las doce horas y treinta y cuatro minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220511-123449521919-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_0_34_186204397_176075431_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 186204397,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-05-11T16:26:00.000+00:00",
+        "tipo": "NOTIFICACION (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, miércoles 11 de mayo del 2022, las 11h26, VISTOS: Dr. German Fabricio Acurio Hidalgo, Juez Subrogante de la Unidad Judicial Civil de Santo Domingo de los Tsáchilas, avoco conocimiento del presente caso por encargo del Dr. José Luis Maldonado Cando, mediante acción de personal No. DP23-CJ- 829-2022-UPTH, de fecha 11 de mayo del 2022.-  En lo principal: Agreguese al proceso el escrito presentado por la parte actora y en atención a su contenido dispongo lo siguiente: Se niega lo solicitado por el compareciente por cuanto dentro del proceso asi como del sistema Satje no constan las actas de citaciones, ni la devolucion del deprecatorio lo que se pone en conocimiento para los fines de ley.- NOTIFIQUESE. \r\n\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220511-112685483898-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_11_26_186204397_176061000_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 52664663,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-05-10T17:00:52.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20220510-120098336651-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_52664663",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 183088915,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-02-21T16:45:00.000+00:00",
+        "tipo": "OFICIO (OFICIO) ",
+        "actividad": "ADMINISTRADO JUSTICIA, EN NOMBRE DEL PUEBLO SOBERANO DEL ECUADOR Y POR AUTORIDAD DE LA CONSTITUCIÓN Y LEYES DE LA REPÚBLICA, EL DR. JOSE LUIS MALDONADO CANDO, JUEZ DE LA UNIDAD CIVIL, CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS, DEPRECA A UNO DE LOS SEÑORES JUECES DE LA UNIDAD JUDICIAL MULTICOMPETENTE CIVIL, CON SEDE EN EL CANTÓN  LA CONCORDIA, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS. DEPRECA LA PRÁCTICA DE LA SIGUIENTE DILIGENCIA DE CITACIÓN A LOS  DEMANDADOS SEÑORES  ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA Y JOSE RAFAEL PINCAY EN LA PRESENTE CAUSA 23331-2022-00285\r\n\r\nUNIDAD JUDICIAL CIVIL  DEL CANTON SANTO DOMINGO. - Santo Domingo, miércoles 2 de febrero del 2022, las 16h56, VISTOS.- En lo principal.- 1.- En razón de que la parte actora ha dado cumplimiento dentro del término legal a lo ordenado en auto anterior en vista de que el Art. 146 del COGEP, en su parte pertinente señala imperativamente: “No se ordenará el archivo de la demanda si el actor aclaró o completó en el término legal previsto en este artículo.”, se tiene que la demanda que antecede es clara, completa y reúne los requisitos previstos en los artículos 142 y 143 del Código Orgánico General de Procesos (COGEP) y se fundamenta en un PAGARÉ A LA ORDEN, documento que constituye título ejecutivo, al tenor de lo previsto en los artículos 347 y 348 del mismo código, ya que contiene una obligación clara, pura, determinada y actualmente exigible; en consecuencia se la admite a trámite mediante PROCEDIMIENTO EJECUTIVO. 3.- Se ordena la citación a los  demandados señores  ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA y JOSE RAFAEL PINCAY, en el lugar en el que se ha señalado para que sean citado,  para el efecto remítase atento DEPRECATORIO VIRTUAL a uno de los señores JUECES DE LA UNIDAD JUDICIAL MULTICOMPETENTE CIVIL, CON SEDE EN EL CANTÓN LA CONCORDIA, PROVINCIA DE SANTO DOMINGO DE LOS TSÁCHILAS,  a quien se le enviará suficiente despacho, ofreciendo reciprocidad en caso análogos, para lo cual se adjuntará la demanda, copia certificada de los documentos adjuntos, calificación y este auto, debiendo darse cumplimiento a lo previsto en las DISPOSICIONES  REFORMATORIAS, PRIMERA, numeral 2, inciso segundo del Código Orgánico General de Procesos 4.- En aplicación de los artículos 355 y 333, numeral 3 del COGEP, se concede el TÉRMINO LEGAL DE QUINCE (15) DÍAS para que los demandados propongan alguna de las excepciones taxativas del artículo 353 del código citado, bajo prevención que de no hacerlo se pronunciará inmediatamente sentencia y esa resolución no será susceptible de recurso alguno, en cumplimiento al artículo 352 del COGEP. 5.- Al responsable de la citación se le concede el término judicial de 8 días contados desde la recepción de las boletas de parte de secretaria a fin de que realice la citación ordenada y de no haberla podido efectuar deberá informar  de forma inmediata las razones.-  6.- Tómese en cuenta el casillero judicial, los correos electrónicos señalados, la Procuración Judicial y la autorización conferida al profesional del derecho.- 8.- CÍTESE Y NOTIFÍQUESE.-\r\nLo que comunico a usted para los fines legales, ofreciéndole reciprocidad en casos análogos. Aclarando que las fotocopias que anteceden son iguales a las que constan dentro del juicio N° 23331-2022-00285. Santo Domingo, a 20 de febrero del 2022 \r\n\r\n\r\n\r\nDR. JOSE LUIS MALDONADO CANDO                                              AB. ZANIAH NEVAREZ REINA\r\n                          JUEZ- \t\t                                                           SECRETARIA\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220221-114536216537-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_11_45_183088915_170131781_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 182348975,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-02-02T21:59:38.033+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, miércoles dos de febrero del dos mil veinte y dos, a partir de las dieciseis horas y cincuenta y siete minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220202-165758434945-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_4_57_182348975_168756708_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 182348975,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-02-02T21:56:00.000+00:00",
+        "tipo": "CALIFICACION DE SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, miércoles 2 de febrero del 2022, las 16h56, VISTOS.- En lo principal.- 1.- En razón de que la parte actora ha dado cumplimiento dentro del término legal a lo ordenado en auto anterior en vista de que el Art. 146 del COGEP, en su parte pertinente señala imperativamente: “No se ordenará el archivo de la demanda si el actor aclaró o completó en el término legal previsto en este artículo.”, se tiene que la demanda que antecede es clara, completa y reúne los requisitos previstos en los artículos 142 y 143 del Código Orgánico General de Procesos (COGEP) y se fundamenta en un PAGARÉ A LA ORDEN, documento que constituye título ejecutivo, al tenor de lo previsto en los artículos 347 y 348 del mismo código, ya que contiene una obligación clara, pura, determinada y actualmente exigible; en consecuencia se la admite a trámite mediante PROCEDIMIENTO EJECUTIVO. 3.- Se ordena la citación a los  demandados señores  ALDAIR ALEXANDER PINCAY JAMA, MARELYN FRANCHESCA PINCAY JAMA y JOSE RAFAEL PINCAY, en el lugar en el que se ha señalado para que sean citado,  para el efecto remítase atento DEPRECATORIO VIRTUAL a uno de los señores JUECES DE LA UNIDAD JUDICIAL MULTICOMPETENTE CIVIL, CON SEDE EN EL CANTÓN LA CONCORDIA, PROVINCIA DE SANTO DOMINGO DE LOS TSÁCHILAS,  a quien se le enviará suficiente despacho, ofreciendo reciprocidad en caso análogos, para lo cual se adjuntará la demanda, copia certificada de los documentos adjuntos, calificación y este auto, debiendo darse cumplimiento a lo previsto en las DISPOSICIONES  REFORMATORIAS, PRIMERA, numeral 2, inciso segundo del Código Orgánico General de Procesos 4.- En aplicación de los artículos 355 y 333, numeral 3 del COGEP, se concede el TÉRMINO LEGAL DE QUINCE (15) DÍAS para que los demandados propongan alguna de las excepciones taxativas del artículo 353 del código citado, bajo prevención que de no hacerlo se pronunciará inmediatamente sentencia y esa resolución no será susceptible de recurso alguno, en cumplimiento al artículo 352 del COGEP. 5.- Al responsable de la citación se le concede el término judicial de 8 días contados desde la recepción de las boletas de parte de secretaria a fin de que realice la citación ordenada y de no haberla podido efectuar deberá informar  de forma inmediata las razones.-  6.- Tómese en cuenta el casillero judicial, los correos electrónicos señalados, la Procuración Judicial y la autorización conferida al profesional del derecho.- 8.- CÍTESE Y NOTIFÍQUESE.-\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220202-165641919416-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_4_56_182348975_168756411_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 182073995,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-01-27T15:21:48.283+00:00",
+        "tipo": "ATENDER PETICION (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, jueves veinte y siete de enero del dos mil veinte y dos, a partir de las ocho horas y cincuenta y cuatro minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220127-085452916616-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_8_54_182073995_168243222_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 182073995,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-01-27T13:11:00.000+00:00",
+        "tipo": "ATENDER PETICION (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, jueves 27 de enero del 2022, las 08h11, VISTOS.- En lo principal.- Agréguese a los autos el escrito que antecede, pasen los autos al señor Juez cuando haya precluido el termino legal conferido al actor en providencia  anterior, a fin de resolver lo que en derecho corresponda.- NOTIFÍQUESE.- \r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220127-081111048604-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_8_11_182073995_168238257_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 51364323,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-01-26T20:59:30.000+00:00",
+        "tipo": "ESCRITO                                           ",
+        "actividad": "Escrito, FePresentacion",
+        "visible": "S",
+        "origen": "EscritosPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "EscritosPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20220126-155997780801-593792259-484703264",
+        "alias": "HBA01",
+        "nombreArchivo": "FE PRESENTACION_51364323",
+        "tipoIngreso": "ES",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 181977502,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-01-25T21:52:57.723+00:00",
+        "tipo": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA (RAZON DE NOTIFICACION) ",
+        "actividad": "En Santo Domingo, martes veinte y cinco de enero del dos mil veinte y dos, a partir de las doce horas y veinte y cinco minutos, mediante boletas judiciales notifiqué el AUTO que antecede a: FUNDACION PARA EL DESARROLLO INTEGRAL ESPOIR en el correo electrónico fgaraicoa@hotmail.com, en el casillero electrónico No. 1707317846 del Dr./Ab. GARAICOA PEREZ FRANCISCO JOSE;  en la casilla No. 383 y correo electrónico abxavierazo@hotmail.com, francisco.garaicoa@espoir.org.ec, en el casillero electrónico No. 1709647927 del Dr./Ab. FREDDY XAVIER ERAZO CHALACAN. No se notifica a PINCAY JAMA ALDAIR ALEXANDER, PINCAY JAMA MARELYN FRANCHESCA, PINCAY SOLORZANO JOSE RAFAEL por no haber señalado casilla.  Certifico:",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220125-122313078311-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_0_25_181977502_168070049_P02.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 181977502,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-01-25T15:56:00.000+00:00",
+        "tipo": "COMPLETAR Y/O ACLARAR LA SOLICITUD Y/O DEMANDA (AUTO DE SUSTANCIACION) ",
+        "actividad": "Santo Domingo, martes 25 de enero del 2022, las 10h56, VISTOS.- En lo principal.- 1.- Dr. Jose Luis Maldonado Cando Msc., en calidad de Juez de la Unidad Judicial Civil, con sede en el Cantón Santo Domingo.- 2.- Avoco conocimiento de la presente causa en legal y debida forma por el sorteo electrónico de Ley. 3.- Revisada ésta, se observa que no cumple el  requisito señalado en el Art. 142 numeral 4  del Código Orgánico General de Procesos (COGEP). Por lo expuesto, previo a admitir la demanda a trámite, de acuerdo a lo establecido en el artículo 146 del COGEP, inciso segundo, se dispone que dentro del término de cinco días, el actor complete su demanda, específicamente en el siguiente requisito: A) De la revisión de la demanda se tiene que los  demandados no tienen su domicilio  dentro de esta jurisdicción cantonal, por consiguiente se le dispone al actor que complete  indicando la forma de cómo serán citados los accionados,  esto es mediante DEPRECATORIO VIRTUAL, EXHORTO, COMISIÓN, entre otras formas legales.- De manera que se dé cumpliendo a lo previsto en las normas antes indicadas, de no hacerlo se dispondrá el archivo de la demanda.-  NOTIFÍQUESE.-\r\n",
+        "visible": "S",
+        "origen": "ProvPrimera",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "ProvPrimera",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "false",
+        "uuid": "20220125-105442355938-593792259-136073074",
+        "alias": "HBA01",
+        "nombreArchivo": "23331202200285_10_56_181977502_168052501_P00.pdf",
+        "tipoIngreso": "O",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 13209337,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285 ",
+        "fecha": "2022-01-24T21:31:18.777+00:00",
+        "tipo": "ACTA DE SORTEO",
+        "actividad": "Recibido en la ciudad de Santo domingo el día de hoy, lunes 24 de enero de 2022, a las 16:31,  el proceso  de Civil, Tipo de procedimiento: Ejecutivo por Asunto: Cobro de pagaré a la orden, seguido  por: Fundacion Para el Desarrollo Integral Espoir, en contra de: Pincay Jama Aldair Alexander, Pincay Jama Marelyn Franchesca, Pincay Solorzano Jose Rafael. \n\nPor sorteo de ley la competencia se radica en la UNIDAD JUDICIAL CIVIL  CON SEDE EN EL CANTÓN SANTO DOMINGO, PROVINCIA DE SANTO DOMINGO DE LOS TSACHILAS, conformado por Juez(a): Msc. Maldonado Cando Jose Luis. Secretaria(o): Abg Nevarez Reina Zaniah Olimpia. \n\nProceso número: 23331-2022-00285 (1) Primera InstanciaAl que se adjunta los siguientes documentos:\n1) PETICIÓN INICIAL (ORIGINAL)\n2) PAGARE A LA ORDEN POR 16446,00 (ORIGINAL)\n3) LIQUIDACION DE CREDITO (ORIGINAL)\n4) PROCURACION JUDICIAL (COPIAS CERTIFICADAS/COMPULSA)\n5) 3 CROQUIS Y CREDENCIAL (COPIA SIMPLE)\n\nTotal de fojas: 29 NATALY ANDREA GUAJAN ORTIZ Responsable de sorteo",
+        "visible": "S",
+        "origen": "RazonSorteo",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "S",
+        "escapeOut": "true",
+        "uuid": "20220124-162929194352-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "ACTA DE SORTEO_23593591",
+        "tipoIngreso": "AS",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      },
+      {
+        "codigo": 73028797,
+        "idJudicatura": "23331",
+        "idJuicio": "23331202200285",
+        "fecha": "2022-01-24T21:31:18.000+00:00",
+        "tipo": "CARATULA DE JUICIO",
+        "actividad": "<b>CARATULA</b>",
+        "visible": "S",
+        "origen": "IndiceElectronico",
+        "idMovimientoJuicioIncidente": 23593591,
+        "ieTablaReferencia": "MovimientoJuicioIncidente",
+        "ieDocumentoAdjunto": "N",
+        "escapeOut": "false",
+        "uuid": "20220124-163139064997-593792259-1045161820",
+        "alias": "HBA01",
+        "nombreArchivo": "CARATULA DE JUICIO_23593591",
+        "tipoIngreso": "CJ",
+        "idTablaReferencia": "23593591",
+        "nombreUsuarioModifica": "",
+        "descripcionMotivoVisible": "",
+        "cargo": ""
+      }
+    ]
+  },
+  {
+    "url": "https://api.funcionjudicial.gob.ec/EXPEL-CONSULTA-CAUSAS-CLEX-SERVICE/api/consulta-causas-clex/informacion/existeIngresoDirecto",
+    "data": {
+      "ingresado": "N"
+    }
+  }
+]
