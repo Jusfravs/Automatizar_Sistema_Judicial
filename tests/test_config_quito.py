@@ -67,7 +67,10 @@ class TestConfiguracionQuito(unittest.TestCase):
         self.assertEqual(sum(estados.values()), 128)
         self.assertTrue(
             set(estados).issubset(
-                {"PENDIENTE", "EN_PROCESO", "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR"}
+                {
+                    "PENDIENTE", "EN_PROCESO", "PROCESADO", "PARCIAL",
+                    "SIN_RESULTADOS", "ERROR", "EXCLUIDO_NO_CORRESPONDE",
+                }
             )
         )
         self.assertGreaterEqual(resultados, 0)

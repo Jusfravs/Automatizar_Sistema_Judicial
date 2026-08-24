@@ -29,6 +29,7 @@ def normalizar_texto(texto):
     """
     if not texto:
         return ""
+    texto = _decodificar_entidades_satje(texto).replace("\ufffd", "O")
     texto = unicodedata.normalize('NFD', str(texto))
     texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
     return texto.upper().strip()
@@ -267,7 +268,12 @@ class MotorInferenciaProcesal:
         (
             "2 CITACION", "2.2 CITACION POR PRENSA",
             [
-                "CITACION POR PRENSA", "PRENSA", "DIARIO", "PERIÓDICO",
+                # "DIARIO" aislado no prueba citación por prensa: también
+                # aparece en expresiones administrativas como "hoja de control
+                # diario". Se exige un contexto inequívoco de publicación.
+                "CITACION POR PRENSA", "PRENSA", "PERIÓDICO",
+                "PUBLICACION EN DIARIO", "PUBLICACION POR DIARIO",
+                "DIARIO DE MAYOR CIRCULACION", "DIARIO DE CIRCULACION NACIONAL",
                 "PUBLICACIÓN DE CITACIÓN", "EXTRACTO DE CITACIÓN", "PUBLICACION PRENSA",
                 "OFICIO PRENSA", "EDICTO"
             ]
@@ -318,6 +324,57 @@ class MotorInferenciaProcesal:
             if f in fase or fase in f:
                 return idx
         return -1
+
+    @staticmethod
+    def _causa_canonica(valor):
+        return re.sub(r"\D", "", str(valor or ""))
+
+    @classmethod
+    def _referencias_de_causa(cls, texto):
+        """Extrae nÃºmeros de juicio con formato SATJE citados en un documento."""
+        patron_formateado = re.compile(
+            r"(?<!\d)(\d{5}\s*-\s*\d{4}\s*-\s*\d{4,5})(?!\d)"
+        )
+        # Una causa SATJE sin guiones conserva: código de 5 dígitos, año
+        # válido (19xx/20xx) y secuencial. Esto evita confundir RUC de 13
+        # dígitos u otros identificadores con números de juicio.
+        patron_canonico = re.compile(
+            r"(?<!\d)(\d{5}(?:19|20)\d{2}\d{4,5})(?!\d)"
+        )
+        contenido = str(texto or "")
+        referencias = {
+            cls._causa_canonica(coincidencia.group(1))
+            for coincidencia in patron_formateado.finditer(contenido)
+        }
+        referencias.update(
+            coincidencia.group(1)
+            for coincidencia in patron_canonico.finditer(contenido)
+        )
+        return referencias
+
+    @classmethod
+    def _filtrar_evidencia_de_otra_causa(cls, actuaciones, causa):
+        """Conserva el historial, pero excluye evidencia de otra causa al inferir."""
+        causa_objetivo = cls._causa_canonica(causa)
+        if not causa_objetivo:
+            return list(actuaciones or [])
+
+        filtradas = []
+        for actuacion in actuaciones or []:
+            causa_actuacion = cls._causa_canonica(
+                actuacion.get("CAUSA")
+                or actuacion.get("NUMERO_CAUSA")
+                or actuacion.get("NUMERO_JUICIO")
+            )
+            # Una actuacion con identificador de otra causa nunca puede ser
+            # evidencia procesal de la causa consultada.
+            if causa_actuacion and causa_actuacion != causa_objetivo:
+                continue
+            referencias = cls._referencias_de_causa(actuacion.get("detalle", ""))
+            if referencias and causa_objetivo not in referencias:
+                continue
+            filtradas.append(actuacion)
+        return filtradas
 
     @classmethod
     def _termino_procesal_presente(cls, texto_normalizado, termino):
@@ -382,6 +439,19 @@ class MotorInferenciaProcesal:
 
         if termino_norm in {"CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO", "RESPONDE DEMANDA", "ESCRITO DE CONTESTACION", "OPONE EXCEPCIONES"}:
             if termino_norm not in texto_evaluable:
+                return False
+            # Una providencia que declara la falta de contestacion, que el
+            # termino precluyo o que no se presento escrito no acredita una
+            # respuesta. Se usa la raiz CONTESTACI para cubrir tanto tildes
+            # como el caracter de reemplazo que a veces devuelve SATJE.
+            if re.search(r"\bFALTA\s+DE\s+CONTESTACI", texto_limpio):
+                return False
+            if re.search(
+                r"\bNO\s+(?:HA|HAN)\s+(?:CONTESTAD[OA]|DADO\s+CONTESTACI|PRESENTADO\s+(?:NINGUN\s+)?ESCRITO|OPUESTO\s+EXCEPCIONES)",
+                texto_limpio,
+            ):
+                return False
+            if re.search(r"\bHA\s+PRECLUIDO\b.{0,160}\bCONTESTAR\b", texto_limpio):
                 return False
             if re.search(
                 r"\b(?:SE\s+CONCEDE|CONCEDASE|PARA\s+QUE|A\s+FIN\s+DE\s+QUE|DEBERA|DEBE|TERMINO\s+DE\s+\w+\s+DIAS\s+PARA\s+QUE)\b.{0,140}\b(?:CONTESTE|CONTESTAR|CONTESTA|CONTESTEN)\b",
@@ -922,6 +992,52 @@ class MotorInferenciaProcesal:
         return max(enumerate(candidatos), key=lambda item: (cls._fecha_ordenable(item[1]["fecha"]), item[0]))[1]
 
     @classmethod
+    def _hallazgo_completar_aclarar_principal(cls, hallazgos):
+        """Prioriza la orden de completar/aclarar sobre su archivo posterior."""
+        candidatos = [
+            hallazgo
+            for hallazgo in hallazgos
+            if hallazgo.get("fase") == "1.2 COMPLETAR/ACLARAR DEMANDA"
+            and hallazgo.get("fecha")
+        ]
+        if not candidatos:
+            return None
+
+        ordenes_principales = [
+            hallazgo
+            for hallazgo in candidatos
+            if "ARCHIVO POR NO COMPLETAR" not in hallazgo.get("actuacion", "")
+        ]
+        return cls._hallazgo_mas_reciente(
+            ordenes_principales or candidatos, "1.2 COMPLETAR/ACLARAR DEMANDA"
+        )
+
+    @classmethod
+    def _hallazgo_citacion_principal(cls, hallazgos):
+        """Vincula la fase de citacion con el acta practicada, no con su mención."""
+        candidatos = [
+            hallazgo
+            for hallazgo in hallazgos
+            if hallazgo.get("fase") == "2.1 CITACION (PERSONA/BOLETA)"
+            and hallazgo.get("fecha")
+        ]
+        if not candidatos:
+            return None
+
+        actas_practicadas = [
+            hallazgo
+            for hallazgo in candidatos
+            if len(hallazgo.get("actuacion", "")) <= 500
+            and bool(re.match(
+                r"^(?:CITACION\W*REALIZADA|RAZON\s+ENVIO\s+A\s+CITACIONES\b.*\bBOLETA\s*3\b|ACTA\s+DE\s+CITACION\b|BOLETA\s+DE\s+CITACION\s+NOTIFICADA|CITAD[OA]\s+EN\s+PERSONA)\b",
+                hallazgo.get("actuacion", ""),
+            ))
+        ]
+        return cls._hallazgo_mas_reciente(
+            actas_practicadas or candidatos, "2.1 CITACION (PERSONA/BOLETA)"
+        )
+
+    @classmethod
     def _hallazgos_fase_en_actuaciones(cls, actuaciones, fase):
         """Reune la evidencia fechada de una fase en todo el historial disponible."""
         candidatos = []
@@ -998,6 +1114,7 @@ class MotorInferenciaProcesal:
             or re.search(r"\bNO\s+SE\s+CITO\b", texto_normalizado)
             or re.search(r"\bCONSTA\s+QUE\s+NO\s+SE\s+HA\s+CITADO\b", texto_normalizado)
             or re.search(r"\bNO\s+SE\s+HA\s+CITADO\b", texto_normalizado)
+            or re.search(r"\bNO\s+SE\s+HA\s+PROCEDIDO\s+A\s+CITAR\b", texto_normalizado)
             or re.search(r"\bNO\s+SE\s+HA\s+EFECTUADO\b.{0,40}\bCITACI[OÓ]N\b", texto_normalizado)
             or re.search(r"\bDEVUELTA\s+SIN\s+CITAR\b", texto_normalizado)
             or "RAZON DE NO CITACION" in texto_normalizado
@@ -1024,6 +1141,10 @@ class MotorInferenciaProcesal:
         return bool(
             re.search(r"\bCITACION\W*REALIZADA\b", texto_normalizado)
             or "BOLETA DE CITACION NOTIFICADA" in texto_normalizado
+            or bool(re.search(
+                r"\bBOLETA\s+DE\s+CITACION\b.{0,160}\bNOTIFICAD[OA]\b",
+                texto_normalizado,
+            ))
             or "CITADO Y NOTIFICADO" in texto_normalizado
             or "LEGALMENTE CITADO" in texto_normalizado
             or "LEGALMENTE CITADA" in texto_normalizado
@@ -1032,6 +1153,45 @@ class MotorInferenciaProcesal:
             or "BOLETA 3" in texto_normalizado
             or "TERCERA GESTION" in texto_normalizado
         )
+
+    @staticmethod
+    def _persona_de_citacion(texto_normalizado):
+        """Obtiene el identificador de la persona citada cuando estÃ¡ visible."""
+        texto = str(texto_normalizado or "")
+        marcador = re.search(
+            r"RAZON\s+ENVIO\s+A\s+CITACIONES\s*\(([^\)]+)\)", texto
+        )
+        if marcador:
+            return marcador.group(1).strip()
+
+        marcador = re.search(r"\(PERSONA\s+[^\)]+\)", texto)
+        if marcador:
+            return marcador.group(0)
+
+        coincidencia = re.search(
+            r"\b(?:PARTE\s+)?DEMANDAD[OA](?:\s+SENORES?)?\s+"
+            r"|\bA\s+LA\s+O\s+EL\s+SENOR/?A\s+"
+            r"|\bSENOR/?A\s+",
+            texto,
+        )
+        if not coincidencia:
+            return None
+
+        texto_posterior = texto[coincidencia.end():]
+        nombre = re.match(r"([A-Z]{3,}(?:\s+[A-Z]{3,}){1,5})", texto_posterior)
+        if not nombre:
+            return None
+
+        detener = {
+            "REALIZADA", "MEDIANTE", "MISMA", "QUE", "EN", "POR", "CON",
+            "LA", "EL", "LOS", "LAS", "SE", "Y", "A",
+        }
+        palabras = []
+        for palabra in nombre.group(1).split():
+            if palabra in detener:
+                break
+            palabras.append(palabra)
+        return " ".join(palabras) if len(palabras) >= 2 else None
 
     @classmethod
     def _decision_con_evidencia(cls, regla, etapa, fase, evidencia):
@@ -1111,7 +1271,7 @@ class MotorInferenciaProcesal:
         return "PRIMERA INSTANCIA", []
 
     @classmethod
-    def inferir_estado_procesal(cls, actuaciones, texto_global=""):
+    def inferir_estado_procesal(cls, actuaciones, texto_global="", causa=None):
         """
         Analiza el estado procesal basándose ESTRICTAMENTE en la jerarquía del Árbol de Actuaciones y 7 Reglas Especiales:
         Retorna una instancia de ResultadoInferencia.
@@ -1119,9 +1279,12 @@ class MotorInferenciaProcesal:
         if not actuaciones and not texto_global:
             return ResultadoInferencia(None, None, None)
 
-        # PASO 1 & 2: Segmentar por instancia y seleccionar la rama activa
-        if actuaciones:
-            instancias = cls._segmentar_por_instancia(actuaciones)
+        # PASO 1 & 2: Segmentar por instancia y seleccionar la rama activa.
+        # Si una actuacion declara solo otro numero de juicio, permanece en el
+        # historial para auditoria pero no se usa como evidencia procesal.
+        actuaciones_validas = cls._filtrar_evidencia_de_otra_causa(actuaciones, causa)
+        if actuaciones_validas:
+            instancias = cls._segmentar_por_instancia(actuaciones_validas)
             nombre_rama, actuaciones_rama = cls._seleccionar_rama_activa(instancias)
         else:
             nombre_rama, actuaciones_rama = "TEXTO_GLOBAL", []
@@ -1141,7 +1304,13 @@ class MotorInferenciaProcesal:
 
             if any(k in norm for k in ["CALIFICACION LA DEMANDA", "CALIFICA LA DEMANDA", "AUTO DE CALIFICACION", "AUTO INICIAL", "ACEPTA A TRAMITE"]):
                 tiene_calificacion_demanda = True
-            if any(k in norm for k in ["CONTESTACION", "RESPONDE DEMANDA", "EXCEPCIONES", "ALLANAMIENTO"]):
+            if any(
+                cls._termino_procesal_presente(norm, termino)
+                for termino in (
+                    "CONTESTACION", "CONTESTA", "EXCEPCIONES", "ALLANAMIENTO",
+                    "RESPONDE DEMANDA", "ESCRITO DE CONTESTACION", "OPONE EXCEPCIONES",
+                )
+            ):
                 tiene_contestacion = True
             if tiene_contestacion and any(k in norm for k in ["CALIFICACION DE LA CONTESTACION", "CALIFICA CONTESTACION", "CONVOCATORIA", "CONVOCA A AUDIENCIA"]):
                 tiene_calificacion_contestacion = True
@@ -1169,6 +1338,14 @@ class MotorInferenciaProcesal:
                 for term in terminos:
                     term_norm = normalizar_texto(term)
                     if cls._termino_procesal_presente(norm, term_norm):
+                        # Un rótulo genérico "ACTA DE CITACIÓN" no acredita
+                        # que la diligencia se haya practicado. Para 2.1 se
+                        # exige una constancia de éxito verificable.
+                        if (
+                            fase == "2.1 CITACION (PERSONA/BOLETA)"
+                            and not cls._es_citacion_exitosa(norm)
+                        ):
+                            continue
                         prioridad = cls.obtener_indice_fase(fase)
                         hallazgos.append({
                             "etapa": etapa,
@@ -1222,7 +1399,12 @@ class MotorInferenciaProcesal:
         # PASO 4: Emitir clasificación respetando el avance en la rama activa.
         hallazgos_ordenados = sorted(hallazgos, key=lambda x: x["prioridad"], reverse=True)
         fase_mas_avanzada = hallazgos_ordenados[0]["fase"]
-        mejor = cls._hallazgo_mas_reciente(hallazgos, fase_mas_avanzada)
+        if fase_mas_avanzada == "1.2 COMPLETAR/ACLARAR DEMANDA":
+            mejor = cls._hallazgo_completar_aclarar_principal(hallazgos)
+        elif fase_mas_avanzada == "2.1 CITACION (PERSONA/BOLETA)":
+            mejor = cls._hallazgo_citacion_principal(hallazgos)
+        else:
+            mejor = cls._hallazgo_mas_reciente(hallazgos, fase_mas_avanzada)
         if mejor is None:
             mejor = hallazgos_ordenados[0]
 
@@ -1255,12 +1437,21 @@ class MotorInferenciaProcesal:
         tiene_fallo_no_resuelto = False
         if citaciones_fallidas:
             stop_words = {"DEMANDADO", "DEMANDADA", "ACTOR", "ACTORA", "SENOR", "SENORA", "SENORES", "CITADO", "CITADA", "CITACIONES", "CITACION", "RAZON", "DIRECCION", "INCORRECTA", "ENVIO", "GESTION", "REALIZADA", "CITADOR", "BOLETA", "NULIDAD", "FALTA", "DENTRO", "CAUSA", "CONSTA", "PROCESO", "AUTO", "SIDO", "PORQUE", "CONSECUENCIA", "SEGUNDO", "PRIMERO", "PRIMERA", "TERCERO", "TERCERA", "CUARTO", "CUARTA"}
+            hay_fallo_identificado = any(
+                cls._persona_de_citacion(
+                    normalizar_texto(act.get("detalle", ""))
+                )
+                for act in citaciones_fallidas
+            )
             for item_fallo in citaciones_fallidas:
                 act_fallo = item_fallo[0] if isinstance(item_fallo, tuple) else item_fallo
                 norm_fallo = item_fallo[1] if isinstance(item_fallo, tuple) else normalizar_texto(item_fallo.get("detalle", ""))
                 fecha_fallo = cls._fecha_ordenable(act_fallo.get("fecha"))
-                match_persona = re.search(r"\(PERSONA\s+[^\)]+\)", norm_fallo)
-                persona_str = match_persona.group(0) if match_persona else None
+                persona_str = cls._persona_de_citacion(norm_fallo)
+                if not persona_str and hay_fallo_identificado:
+                    # Las etiquetas genÃ©ricas duplican una razÃ³n detallada;
+                    # solo esta Ãºltima permite comprobar al demandado concreto.
+                    continue
                 palabras_fallo = [w for w in re.findall(r"\b[A-Z]{4,}\b", norm_fallo) if w not in stop_words]
 
                 exito_posterior = False
@@ -1271,7 +1462,7 @@ class MotorInferenciaProcesal:
                     es_generic_label = any(k in norm_exito for k in ("- RAZON", "(RAZON)", "RAZON")) and not any(k in norm_exito for k in ("BOLETA 3", "EN PERSONA", "NOTIFICADA", "PRENSA", "EXTRACTO"))
                     if fecha_exito > fecha_fallo or (fecha_exito == fecha_fallo and not es_generic_label):
                         if persona_str:
-                            if persona_str in norm_exito:
+                            if persona_str == cls._persona_de_citacion(norm_exito):
                                 exito_posterior = True
                                 break
                         elif palabras_fallo:
@@ -1294,11 +1485,43 @@ class MotorInferenciaProcesal:
         if (fallo_sin_exito_posterior or pendiente_sin_exito) and not evidencia_posterior_a_citacion:
             evidencia = cls._hallazgo_calificacion_principal(
                 cls._hallazgos_fase_en_actuaciones(
-                    actuaciones, "1.3 CALIFICACION"
+                    actuaciones_validas, "1.3 CALIFICACION"
                 )
             )
             decision = cls._decision_con_evidencia("regla_2_citacion_fallida", "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION", evidencia)
             regla_aplicada = "regla_2_citacion_fallida"
+
+        # El archivo por falta de copias, cuando la litis no se ha trabado y
+        # no existe citacion practicada, no acredita una citacion. Se conserva
+        # la fase base; la siguiente diligencia sigue siendo citar.
+        archivos_sin_citacion = [
+            act
+            for act, norm in actuaciones_normalizadas
+            if (
+                ("ARCHIVO DE LA PRESENTE CAUSA" in norm or "ARCHIVESE" in norm)
+                and "NO SE HA TRABADO LA LITIS" in norm
+                and "COPIAS" in norm
+            )
+        ]
+        archivo_sin_citacion = bool(archivos_sin_citacion) and not (
+            citaciones_exitosas or citaciones_prensa
+        )
+        if archivo_sin_citacion and not evidencia_posterior_a_citacion:
+            acta_archivo = max(
+                archivos_sin_citacion,
+                key=lambda act: cls._fecha_ordenable(act.get("fecha")),
+            )
+            evidencia = {
+                "fecha": acta_archivo.get("fecha"),
+                "actuacion": normalizar_texto(acta_archivo.get("detalle", "")),
+            }
+            decision = cls._decision_con_evidencia(
+                "regla_archivo_sin_citacion",
+                "1 PRESENTACION Y CALIFICACION",
+                "1.3 CALIFICACION",
+                evidencia,
+            )
+            regla_aplicada = "regla_archivo_sin_citacion"
 
         # Regla 5: Abandono por falta de impulso procesal con razón de ejecutoria
         tiene_abandono = "ABANDONO POR FALTA DE IMPULSO PROCESAL" in texto_actuaciones_unido
@@ -1306,7 +1529,7 @@ class MotorInferenciaProcesal:
         if tiene_abandono and tiene_ejecutoria:
             evidencia = cls._hallazgo_calificacion_principal(
                 cls._hallazgos_fase_en_actuaciones(
-                    actuaciones, "1.3 CALIFICACION"
+                    actuaciones_validas, "1.3 CALIFICACION"
                 )
             )
             decision = cls._decision_con_evidencia("regla_5_abandono_ejecutoria", "1 PRESENTACION Y CALIFICACION", "1.3 CALIFICACION", evidencia)

@@ -1,4 +1,5 @@
 """Monitorea las interacciones manuales en e-SATJE sin automatizar los clics."""
+import argparse
 import json
 import os
 import sys
@@ -12,10 +13,10 @@ from src.logger_config import configurar_logging
 from src.motor_busqueda_web import BotJudicial
 
 
-def cargar_navegacion():
-    ruta = os.path.join(RAIZ_PROYECTO, "config.json")
+def cargar_configuracion(ruta_config):
+    ruta = os.path.abspath(ruta_config)
     with open(ruta, encoding="utf-8") as archivo:
-        return json.load(archivo)["navegacion"]
+        return json.load(archivo)
 
 
 def estado_visible(page):
@@ -67,6 +68,30 @@ def instalar_monitor(page):
     }""")
 
 
+def instalar_monitor_red(page, eventos_red):
+    """Registra metadatos de red para descubrir la API de adjuntos sin leer PDFs."""
+    def registrar(response):
+        try:
+            tipo = response.headers.get("content-type", "")
+            if response.status < 200 or response.status >= 400:
+                return
+            url = response.url
+            if any(marca in (url + " " + tipo).lower() for marca in (
+                "archivo", "document", "adjunto", "download", "pdf", "file"
+            )):
+                eventos_red.append({
+                    "instante": monotonic(),
+                    "url": url,
+                    "estado": response.status,
+                    "content_type": tipo,
+                    "metodo": getattr(response.request, "method", None),
+                })
+        except Exception:
+            pass
+
+    page.on("response", registrar)
+
+
 def extraer_eventos(page):
     return page.evaluate("""() => {
         const eventos = window.__monitorEsatjeEventos || [];
@@ -75,27 +100,40 @@ def extraer_eventos(page):
     }""")
 
 
-def guardar_evidencia(page, directorio, causa, indice, evento, estado):
+def guardar_evidencia(page, directorio, causa, indice, evento, estado, red):
     base = os.path.join(directorio, f"monitoreo_{causa}_{indice:03d}")
     with open(f"{base}.json", "w", encoding="utf-8") as archivo:
-        json.dump({"evento": evento, "estado": estado}, archivo, ensure_ascii=False, indent=2)
+        json.dump(
+            {"evento": evento, "estado": estado, "red": list(red)},
+            archivo, ensure_ascii=False, indent=2,
+        )
     with open(f"{base}.html", "w", encoding="utf-8") as archivo:
         archivo.write(page.content())
     page.screenshot(path=f"{base}.png", full_page=True)
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Uso: python scripts/monitorear_esatje.py 23331-2022-02089")
-        return 2
+    parser = argparse.ArgumentParser(
+        description="Monitorea manualmente un expediente e-SATJE."
+    )
+    parser.add_argument("causa")
+    parser.add_argument("--config", default="config.json")
+    args = parser.parse_args()
 
-    causa_original = sys.argv[1].strip()
-    navegacion = cargar_navegacion()
+    causa_original = args.causa.strip()
+    configuracion = cargar_configuracion(args.config)
+    navegacion = configuracion["navegacion"]
     configurar_logging(
         os.path.join(RAIZ_PROYECTO, "diagnostico_esatje.log"),
         reemplazar=True,
     )
-    bot = BotJudicial(navegacion["url_portal"], navegacion)
+    # Monitor deliberadamente manual: no usa credenciales ni intenta resolver
+    # CAPTCHA. Sirve para que la persona confirme los adjuntos y para registrar
+    # la API que los entrega.
+    bot = BotJudicial(
+        navegacion["url_portal"], navegacion,
+        captcha={"modo": "manual", "fallback_manual": True},
+    )
     directorio = os.path.join(RAIZ_PROYECTO, "data", "temp_htmls")
     os.makedirs(directorio, exist_ok=True)
     causa = BotJudicial._causa_canonica(causa_original)
@@ -107,7 +145,9 @@ def main():
         bot._preparar_busqueda(causa_original)
         bot.page.bring_to_front()
         instalar_monitor(bot.page)
-        print("MONITOREO_LISTO: complete CAPTCHA y haga manualmente BUSCAR, detalle y carpetas.")
+        eventos_red = []
+        instalar_monitor_red(bot.page, eventos_red)
+        print("MONITOREO_LISTO: complete CAPTCHA y abra manualmente el archivo PDF relevante.")
         limite = monotonic() + 300
         while monotonic() < limite:
             estado = estado_visible(bot.page)
@@ -116,7 +156,9 @@ def main():
                 ultimo_estado = estado
             for evento in extraer_eventos(bot.page):
                 indice += 1
-                guardar_evidencia(bot.page, directorio, causa, indice, evento, estado)
+                guardar_evidencia(
+                    bot.page, directorio, causa, indice, evento, estado, eventos_red
+                )
                 print("EVENTO", indice, json.dumps(evento, ensure_ascii=False))
             bot.page.wait_for_timeout(250)
         return 0

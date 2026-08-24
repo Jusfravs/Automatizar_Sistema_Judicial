@@ -79,7 +79,13 @@ def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
         tipo_accion = datos_extraidos.get("ACCION/INFRACCION") or datos_extraidos.get("TIPO_ACCION")
         fecha_inicio_j = datos_extraidos.get("FECHA INICIO JUICIO") or datos_extraidos.get("FECHA_INGRESO")
         
-        estado_final = "PROCESADO" if (data.get("estado") == "COMPLETADO" or ultima_fase) else info_juicio["estado"]
+        estado_final = (
+            "EXCLUIDO_NO_CORRESPONDE"
+            if data.get("estado") == "EXCLUIDO_NO_CORRESPONDE"
+            else "PROCESADO"
+            if (data.get("estado") == "COMPLETADO" or ultima_fase)
+            else info_juicio["estado"]
+        )
 
         expedientes_insert.append((
             causa,

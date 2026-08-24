@@ -28,7 +28,16 @@
         "sondeo_estabilidad_ms": 100,
         "comprobaciones_estables": 2,
         "quietud_api_ms": 250,
-        "max_reintentos_transicion": 2
+        "max_reintentos_transicion": 2,
+        "validacion_pertenencia": {
+            "activa": true,
+            "actores_requeridos": [
+                "FUNDACION PAREA EL DESARROLLO INTEGRAL ESPOIR"
+            ],
+            "acciones_requeridas": [
+                "COBRO DE PAGARE A LA ORDEN"
+            ]
+        }
     },
     "captcha": {
         "modo": "api_supervisada",

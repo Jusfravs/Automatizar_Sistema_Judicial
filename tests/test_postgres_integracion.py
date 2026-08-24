@@ -1,10 +1,19 @@
+import os
 import unittest
-import psycopg2
-from src.db_postgres import GestorPostgres
 
+
+EJECUTAR_INTEGRACION_POSTGRES = os.getenv("RUN_POSTGRES_INTEGRATION") == "1"
+
+
+@unittest.skipUnless(
+    EJECUTAR_INTEGRACION_POSTGRES,
+    "Defina RUN_POSTGRES_INTEGRATION=1 para ejecutar pruebas contra PostgreSQL.",
+)
 class TestPostgresIntegracion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from src.db_postgres import GestorPostgres
+
         cls.gestor = GestorPostgres()
 
     def test_conexion_exitosa(self):

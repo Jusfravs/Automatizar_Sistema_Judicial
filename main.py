@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 from src.logger_config import configurar_logging, obtener_logger
@@ -10,6 +11,8 @@ from src.motor_busqueda_web import BotJudicial
 
 logger = obtener_logger("Main")
 RUTA_CASOS_FALLIDOS = os.path.join("data", "casos_fallidos.txt")
+TAMANO_BLOQUE_NAVEGADOR = 10
+MAXIMO_LOTE = 100
 
 def extraer_ruta_config(argumentos):
     """Extrae --config <ruta> sin alterar los modos de seleccion existentes."""
@@ -65,6 +68,26 @@ def _causa_comparable(valor):
     return str(valor or "").replace("-", "").strip()
 
 
+def motivo_revision_manual_por_formato(causa):
+    """Devuelve el motivo cuando una causa no tiene un formato SATJE reconocible."""
+    texto = str(causa or "").strip()
+    if re.fullmatch(r"\d{5}-\d{4}-\d{4,5}", texto):
+        return None
+    if re.fullmatch(r"\d{13,14}", texto):
+        return None
+    return "FORMATO_CAUSA_INVALIDO"
+
+
+def dividir_en_bloques(casos, tamano_bloque=TAMANO_BLOQUE_NAVEGADOR):
+    """Divide un lote largo en sesiones acotadas de navegador."""
+    if tamano_bloque < 1:
+        raise ValueError("TAMANO_BLOQUE_INVALIDO")
+    return [
+        list(casos[indice:indice + tamano_bloque])
+        for indice in range(0, len(casos), tamano_bloque)
+    ]
+
+
 def seleccionar_casos(casos, argumentos):
     """Aplica modos acotados o el inicio legado sin ampliar silenciosamente el lote."""
     argumentos = list(argumentos or [])
@@ -97,13 +120,13 @@ def seleccionar_casos(casos, argumentos):
         return resultado
     if argumentos[0] == "--lote":
         if len(argumentos) != 2:
-            raise ValueError("USO_INVALIDO: --lote <cantidad 2..10>")
+            raise ValueError("USO_INVALIDO: --lote <cantidad 2..100>")
         try:
             cantidad = int(argumentos[1])
         except (TypeError, ValueError) as exc:
-            raise ValueError("USO_INVALIDO: --lote <cantidad 2..10>") from exc
-        if cantidad < 2 or cantidad > 10:
-            raise ValueError("LOTE_FUERA_DE_RANGO:2..10")
+            raise ValueError("USO_INVALIDO: --lote <cantidad 2..100>") from exc
+        if cantidad < 2 or cantidad > MAXIMO_LOTE:
+            raise ValueError("LOTE_FUERA_DE_RANGO:2..100")
         return list(casos)[:cantidad]
     if argumentos[0].startswith("--") or len(argumentos) != 1:
         raise ValueError("ARGUMENTOS_INVALIDOS")
@@ -221,6 +244,11 @@ def main(argv=None):
         return
 
     logger.info("[*] Total de causas a procesar: %s", total)
+    bloques = dividir_en_bloques(casos)
+    logger.info(
+        "[LOTES] Se ejecutar\u00e1n %s bloque(s) de hasta %s causas; cada bloque usa una sesi\u00f3n nueva.",
+        len(bloques), TAMANO_BLOQUE_NAVEGADOR,
+    )
 
     bot = BotJudicial(
         repo.config["navegacion"]["url_portal"],
@@ -230,25 +258,55 @@ def main(argv=None):
     intervalo_guardado = repo.config.get("sistema", {}).get("intervalo_autoguardado", 5)
     exitosos = 0
     casos_fallidos = []
+    sesion_abierta = False
 
     try:
-        bot.iniciar_navegador(modo_visible=True)
-
         for i, numero_juicio in enumerate(casos, 1):
+            indice_bloque = (i - 1) // TAMANO_BLOQUE_NAVEGADOR
+            inicio_bloque = indice_bloque * TAMANO_BLOQUE_NAVEGADOR
+            fin_bloque = min(inicio_bloque + TAMANO_BLOQUE_NAVEGADOR, total)
+            motivo_formato = motivo_revision_manual_por_formato(numero_juicio)
+            if not motivo_formato and (
+                i == inicio_bloque + 1 or not sesion_abierta
+            ):
+                if i == inicio_bloque + 1:
+                    logger.info(
+                        "[BLOQUE %s/%s] Iniciando sesi\u00f3n para causas %s a %s.",
+                        indice_bloque + 1, len(bloques), inicio_bloque + 1, fin_bloque,
+                    )
+                else:
+                    logger.info(
+                        "[BLOQUE %s/%s] Reiniciando sesi\u00f3n para continuar desde la causa %s.",
+                        indice_bloque + 1, len(bloques), i,
+                    )
+                bot.iniciar_navegador(modo_visible=True)
+                sesion_abierta = True
+
             logger.info("--- CAUSA %s/%s: %s ---", i, total, numero_juicio)
 
             try:
-                resultado = bot.procesar_flujo_judicatura(numero_juicio)
+                if motivo_formato:
+                    resultado = {
+                        "estado": "ERROR_VERIFICACION_MANUAL",
+                        "error": motivo_formato,
+                        "regreso_confirmado": True,
+                    }
+                else:
+                    resultado = bot.procesar_flujo_judicatura(numero_juicio)
                 if not isinstance(resultado, dict) or not resultado.get("estado"):
                     raise RuntimeError("CONTRATO_RESULTADO_INVALIDO")
 
                 estado = resultado["estado"]
-                if estado in {"COMPLETADO", "PARCIAL"}:
+                if estado in {"COMPLETADO", "PARCIAL", "EXCLUIDO_NO_CORRESPONDE"}:
                     datos = resultado.get("datos") or {}
                     if not repo.actualizar_caso(numero_juicio, datos):
                         raise RuntimeError("PERSISTENCIA_CSV_RECHAZADA")
                     guardar_csv_o_fallar(repo)
-                    estado_sqlite = "PROCESADO" if estado == "COMPLETADO" else "PARCIAL"
+                    estado_sqlite = {
+                        "COMPLETADO": "PROCESADO",
+                        "PARCIAL": "PARCIAL",
+                        "EXCLUIDO_NO_CORRESPONDE": "EXCLUIDO_NO_CORRESPONDE",
+                    }[estado]
                     cola.registrar_resultado_transaccional(
                         numero_juicio,
                         resultado,
@@ -265,8 +323,13 @@ def main(argv=None):
                     if estado == "COMPLETADO":
                         exitosos += 1
                         logger.info("[+] Juicio %s completado y persistido.", numero_juicio)
-                    else:
+                    elif estado == "PARCIAL":
                         logger.warning("[!] Juicio %s persistido como PARCIAL.", numero_juicio)
+                    else:
+                        logger.info(
+                            "[-] Juicio %s excluido por no corresponder a la cartera.",
+                            numero_juicio,
+                        )
                 elif estado == "SIN_RESULTADOS":
                     cola.registrar_resultado_transaccional(
                         numero_juicio,
@@ -286,10 +349,17 @@ def main(argv=None):
                     "ERROR_VERIFICACION_MANUAL",
                 }:
                     detalle = resultado.get("error") or "ERROR_SIN_DETALLE"
-                    if estado == "ERROR_VERIFICACION_MANUAL":
-                        comentario = f"ERROR: {detalle}"
+                    if estado in {
+                        "ERROR_VERIFICACION_MANUAL", "ERROR_NAVEGACION"
+                    }:
+                        comentario = f"REVISION MANUAL: {detalle}"
                         if not repo.actualizar_caso(
-                            numero_juicio, {"COMENTARIO_ULTIMO": comentario}
+                            numero_juicio,
+                            {
+                                "COMENTARIO_ULTIMO": comentario,
+                                "ETAPA ACTUAL": "REVISION MANUAL",
+                                "FASE ACTUAL": "REVISION MANUAL",
+                            },
                         ):
                             raise RuntimeError("PERSISTENCIA_CSV_RECHAZADA")
                         guardar_csv_o_fallar(repo)
@@ -315,7 +385,16 @@ def main(argv=None):
                     raise RuntimeError("ESTADO_RESULTADO_DESCONOCIDO:%s" % estado)
 
                 if not resultado.get("regreso_confirmado"):
-                    raise RuntimeError("REGRESO_AL_BUSCADOR_NO_CONFIRMADO")
+                    if estado == "ERROR_NAVEGACION":
+                        logger.warning(
+                            "[REVISION MANUAL] %s sin retorno confirmado; "
+                            "se reiniciar\u00e1 la sesi\u00f3n antes de continuar.",
+                            numero_juicio,
+                        )
+                        bot.cerrar_navegador()
+                        sesion_abierta = False
+                    else:
+                        raise RuntimeError("REGRESO_AL_BUSCADOR_NO_CONFIRMADO")
 
             except Exception as exc:
                 logger.exception(
@@ -336,6 +415,21 @@ def main(argv=None):
             if i % intervalo_guardado == 0:
                 logger.info("[!] Autoguardado preventivo de seguridad (%s/%s)...", i, total)
                 guardar_csv_o_fallar(repo)
+
+            if i == fin_bloque:
+                casos_bloque = casos[inicio_bloque:fin_bloque]
+                logger.info(
+                    "[BLOQUE %s/%s] Persistiendo resultados y cerrando navegador.",
+                    indice_bloque + 1, len(bloques),
+                )
+                guardar_csv_o_fallar(repo)
+                repo.exportar_excel()
+                if modo_limitado:
+                    actualizar_casos_fallidos_piloto(
+                        casos_bloque, casos_fallidos, ruta_casos_fallidos
+                    )
+                bot.cerrar_navegador()
+                sesion_abierta = False
 
     finally:
         # Estas persistencias deben ejecutarse incluso ante una interrupción o excepción.

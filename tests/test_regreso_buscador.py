@@ -1,12 +1,16 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
+import main as main_module
 from main import (
     actualizar_casos_fallidos_piloto,
+    dividir_en_bloques,
     guardar_casos_fallidos,
     extraer_ruta_config,
     guardar_csv_o_fallar,
+    motivo_revision_manual_por_formato,
     seleccionar_casos,
 )
 from src.motor_busqueda_web import BotJudicial
@@ -383,7 +387,7 @@ class RetornoBuscadorTests(unittest.TestCase):
         self.assertEqual(ruta, "config_santo_domingo.json")
         self.assertEqual(argumentos, ["--lote", "5"])
 
-    def test_lote_limitado_se_restringe_entre_dos_y_diez(self):
+    def test_lote_limitado_se_restringe_entre_dos_y_cien(self):
         casos = [
             "23331-2022-02089",
             "23331-2022-03524",
@@ -400,12 +404,138 @@ class RetornoBuscadorTests(unittest.TestCase):
 
         self.assertEqual(seleccionar_casos(casos, ["--lote", "3"]), casos[:3])
         self.assertEqual(seleccionar_casos(casos, ["--lote", "10"]), casos[:10])
+        self.assertEqual(seleccionar_casos(casos, ["--lote", "50"]), casos)
         with self.assertRaisesRegex(ValueError, "LOTE_FUERA_DE_RANGO"):
             seleccionar_casos(casos, ["--lote", "1"])
         with self.assertRaisesRegex(ValueError, "LOTE_FUERA_DE_RANGO"):
-            seleccionar_casos(casos, ["--lote", "11"])
+            seleccionar_casos(casos, ["--lote", "101"])
         with self.assertRaisesRegex(ValueError, "USO_INVALIDO"):
             seleccionar_casos(casos, ["--lote", "tres"])
+
+    def test_lote_largo_se_divide_en_bloques_de_diez(self):
+        casos = [f"CAUSA-{indice:03d}" for indice in range(1, 26)]
+
+        self.assertEqual(
+            dividir_en_bloques(casos),
+            [casos[:10], casos[10:20], casos[20:]],
+        )
+
+    def test_formato_de_causa_invalido_se_dirige_a_revision_manual(self):
+        self.assertIsNone(motivo_revision_manual_por_formato("17230-2015-1663"))
+        self.assertIsNone(motivo_revision_manual_por_formato("17233-2025-09166"))
+        self.assertEqual(
+            motivo_revision_manual_por_formato("17233-201-8029"),
+            "FORMATO_CAUSA_INVALIDO",
+        )
+
+    def test_lote_largo_cierra_y_persiste_cada_bloque(self):
+        class RepoFalso:
+            instancias = []
+
+            def __init__(self, _ruta_config):
+                self.config = {
+                    "navegacion": {"url_portal": "https://ejemplo.local"},
+                    "sistema": {"intervalo_autoguardado": 100},
+                    "rutas": {"archivo_casos_fallidos": ruta_fallidos},
+                }
+                self.filtros = {"sucursal": "PRUEBA"}
+                self.exportaciones = 0
+                self.actualizaciones = []
+                RepoFalso.instancias.append(self)
+
+            def obtener_casos_pendientes(self):
+                return causas
+
+            def actualizar_caso(self, causa, datos):
+                self.actualizaciones.append((causa, datos))
+                return True
+
+            def guardar(self):
+                return True
+
+            def exportar_excel(self):
+                self.exportaciones += 1
+
+        class ColaFalsa:
+            def __init__(self, ruta_db):
+                pass
+
+            def verificar_esquema(self):
+                return True
+
+            def recuperar_huerfanos(self):
+                return 0
+
+            def filtrar_causas_pendientes(self, candidatas):
+                return list(candidatas)
+
+            def poblar_cola(self, _causas):
+                pass
+
+            def registrar_resultado_transaccional(self, *_args, **_kwargs):
+                pass
+
+            def registrar_error_extraccion(self, *_args, **_kwargs):
+                pass
+
+            def obtener_estadisticas(self):
+                return {"PROCESADO": len(causas)}
+
+        class BotFalso:
+            instancias = []
+
+            def __init__(self, *_args, **_kwargs):
+                self.inicios = 0
+                self.cierres = 0
+                self.causas = []
+                BotFalso.instancias.append(self)
+
+            def iniciar_navegador(self, **_kwargs):
+                self.inicios += 1
+
+            def procesar_flujo_judicatura(self, causa):
+                self.causas.append(causa)
+                if causa == "17230-2025-00011":
+                    return {
+                        "estado": "ERROR_NAVEGACION",
+                        "datos": {},
+                        "error": "RETORNO_BUSCADOR_ERROR",
+                        "regreso_confirmado": False,
+                    }
+                return {
+                    "estado": "COMPLETADO",
+                    "datos": {"HISTORIAL_ACTUACIONES": []},
+                    "regreso_confirmado": True,
+                }
+
+            def cerrar_navegador(self):
+                self.cierres += 1
+
+        causas = [f"17230-2025-{indice:05d}" for indice in range(1, 13)]
+        with tempfile.TemporaryDirectory() as temporal:
+            ruta_fallidos = os.path.join(temporal, "fallidos.txt")
+            with patch.object(main_module, "GestorCasos", RepoFalso), \
+                 patch.object(main_module, "GestorCola", ColaFalsa), \
+                 patch.object(main_module, "BotJudicial", BotFalso):
+                main_module.main(["--config", "prueba.json", "--lote", "12"])
+
+        bot = BotFalso.instancias[-1]
+        repo = RepoFalso.instancias[-1]
+        self.assertEqual(bot.causas, causas)
+        self.assertEqual(bot.inicios, 3)
+        self.assertGreaterEqual(bot.cierres, 3)
+        self.assertGreaterEqual(repo.exportaciones, 2)
+        self.assertIn(
+            (
+                "17230-2025-00011",
+                {
+                    "COMENTARIO_ULTIMO": "REVISION MANUAL: RETORNO_BUSCADOR_ERROR",
+                    "ETAPA ACTUAL": "REVISION MANUAL",
+                    "FASE ACTUAL": "REVISION MANUAL",
+                },
+            ),
+            repo.actualizaciones,
+        )
 
     def test_modo_pendientes_conserva_el_conjunto_ya_filtrado(self):
         casos = ["CAUSA-001", "CAUSA-002"]

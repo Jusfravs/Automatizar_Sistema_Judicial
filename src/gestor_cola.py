@@ -188,31 +188,79 @@ class GestorCola:
         causa_str = str(numero_causa).strip()
         datos_json = json.dumps(resultado, ensure_ascii=False)
         estados_validos = {
-            "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR"
+            "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR",
+            "EXCLUIDO_NO_CORRESPONDE",
         }
         if estado_final not in estados_validos:
             raise ValueError("Estado final SQLite no permitido: %s" % estado_final)
 
         with self._exclusive_transaction() as conn:
             cursor = conn.cursor()
+            conservar_evidencia_previa = False
+            if estado_final == "ERROR" and not self._resultado_tiene_evidencia(resultado):
+                cursor.execute(
+                    "SELECT datos_json FROM resultados_expediente WHERE numero_causa = ?",
+                    (causa_str,),
+                )
+                fila_previa = cursor.fetchone()
+                if fila_previa:
+                    try:
+                        resultado_previo = json.loads(fila_previa[0])
+                    except (TypeError, json.JSONDecodeError):
+                        logger.warning(
+                            "Resultado previo no v\u00e1lido para %s; se reemplazar\u00e1 con el error actual.",
+                            causa_str,
+                        )
+                    else:
+                        conservar_evidencia_previa = self._resultado_tiene_evidencia(
+                            resultado_previo
+                        )
+
+            if conservar_evidencia_previa:
+                logger.warning(
+                    "Se conserva la evidencia previa de %s ante un error sin datos nuevos.",
+                    causa_str,
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO resultados_expediente (numero_causa, origen, datos_json, ruta_html)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(numero_causa) DO UPDATE SET
+                        origen = excluded.origen,
+                        datos_json = excluded.datos_json,
+                        ruta_html = COALESCE(excluded.ruta_html, resultados_expediente.ruta_html),
+                        actualizado_en = CURRENT_TIMESTAMP
+                    """,
+                    (causa_str, origen, datos_json, ruta_html),
+                )
             cursor.execute(
-                """
-                INSERT INTO resultados_expediente (numero_causa, origen, datos_json, ruta_html)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(numero_causa) DO UPDATE SET
-                    origen = excluded.origen,
-                    datos_json = excluded.datos_json,
-                    ruta_html = excluded.ruta_html,
-                    actualizado_en = CURRENT_TIMESTAMP
-                """,
-                (causa_str, origen, datos_json, ruta_html),
-            )
-            cursor.execute(
-                "UPDATE juicios SET estado = ?, ruta_html = ? WHERE numero_causa = ?",
+                "UPDATE juicios SET estado = ?, ruta_html = COALESCE(?, ruta_html) WHERE numero_causa = ?",
                 (estado_final, ruta_html, causa_str),
             )
             if cursor.rowcount != 1:
                 raise LookupError("No existe una reserva para la causa '%s'." % causa_str)
+
+    @staticmethod
+    def _resultado_tiene_evidencia(resultado):
+        """Indica si un resultado conserva evidencia procesal reutilizable."""
+        if not isinstance(resultado, dict):
+            return False
+        datos = resultado.get("datos")
+        if not isinstance(datos, dict):
+            return False
+        if datos.get("HISTORIAL_ACTUACIONES"):
+            return True
+        return any(
+            datos.get(campo)
+            for campo in (
+                "ULTIMA ETAPA",
+                "ULTIMA FASE",
+                "FECHA FIN ULTIMA FASE",
+                "ETAPA_PROCESAL",
+                "FASE_PROCESAL",
+            )
+        )
 
     def registrar_error_extraccion(self, numero_causa, origen, detalle):
         """Registra fallos de captura sin cancelar la ruta de respaldo DOM."""

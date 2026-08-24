@@ -347,7 +347,18 @@ class GestorCasos:
         df_final = df_export[cols_finales]
 
         logger.info("Exportando informe final reestructurado a: %s", self.ruta_final)
-        df_final.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
+        try:
+            df_final.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
+        except PermissionError:
+            from datetime import datetime as _dt
+            base, ext = os.path.splitext(self.ruta_final)
+            ruta_alt = f"{base}_{_dt.now().strftime('%Y%m%d_%H%M%S')}{ext}"
+            logger.warning(
+                "Archivo Excel bloqueado (%s). Guardando copia en: %s",
+                self.ruta_final, ruta_alt,
+            )
+            df_final.to_excel(ruta_alt, index=False, sheet_name=self.hoja)
+            self.ruta_final = ruta_alt
 
         # 3. Aplicar formato condicional a filas con error en rojo usando openpyxl
         try:

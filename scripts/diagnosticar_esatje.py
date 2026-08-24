@@ -37,7 +37,9 @@ def main():
             "RESULTADO_DIAGNOSTICO "
             + json.dumps(resultado, ensure_ascii=False, default=str)
         )
-        estados_confirmados = {"COMPLETADO", "PARCIAL", "SIN_RESULTADOS"}
+        estados_confirmados = {
+            "COMPLETADO", "PARCIAL", "SIN_RESULTADOS", "EXCLUIDO_NO_CORRESPONDE"
+        }
         return 0 if (
             resultado.get("estado") in estados_confirmados
             and resultado.get("regreso_confirmado")

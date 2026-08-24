@@ -13,7 +13,12 @@ def actualizar_todo_quito():
         return
 
     conn = sqlite3.connect(db_path)
-    rows = conn.execute("SELECT numero_causa, datos_json FROM resultados_expediente").fetchall()
+    rows = conn.execute("""
+        SELECT r.numero_causa, r.datos_json
+        FROM resultados_expediente AS r
+        INNER JOIN juicios AS j ON j.numero_causa = r.numero_causa
+        WHERE j.estado <> 'EXCLUIDO_NO_CORRESPONDE'
+    """).fetchall()
     print(f"Total expedientes en DB Quito: {len(rows)}")
 
     gestor = GestorCasos(ruta_config="config_quito.json")
@@ -25,7 +30,9 @@ def actualizar_todo_quito():
         if not actuaciones:
             continue
         
-        inf = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        inf = MotorInferenciaProcesal.inferir_estado_procesal(
+            actuaciones, causa=causa_val
+        )
         
         datos_extraidos = data.get("datos", {})
         datos_extraidos["ETAPA_PROCESAL"] = inf.ultima_etapa

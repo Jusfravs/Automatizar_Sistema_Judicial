@@ -67,7 +67,7 @@ class FrenoNavegacionTests(unittest.TestCase):
         bot = self.crear_bot()
         bot.page = None
         bot.extractor.procesar_html_string = lambda contenido: {}
-        bot._aplicar_inferencia_consolidada = lambda datos: datos
+        bot._aplicar_inferencia_consolidada = lambda datos, causa=None: datos
 
         datos = bot._ejecutar_extraccion_detalles(
             "23331202202089",
@@ -227,7 +227,7 @@ class FrenoNavegacionTests(unittest.TestCase):
     def test_consolidacion_conserva_origen_y_conteos(self):
         bot = self.crear_bot()
         bot._descriptores_actuales = [{"clave_carpeta": "carpeta-1"}]
-        bot._aplicar_inferencia_consolidada = lambda datos: datos
+        bot._aplicar_inferencia_consolidada = lambda datos, causa=None: datos
         actuacion = {
             "fecha": "24/02/2023",
             "detalle": "SENTENCIA",
@@ -441,6 +441,46 @@ class FrenoNavegacionTests(unittest.TestCase):
         )
 
 class PersistenciaTransaccionalTests(unittest.TestCase):
+    def test_error_sin_datos_no_sobrescribe_evidencia_previa(self):
+        with tempfile.TemporaryDirectory() as temporal:
+            ruta = os.path.join(temporal, "estado.db")
+            cola = GestorCola(ruta_db=ruta)
+            cola.poblar_cola(["CAUSA-001"])
+            cola.obtener_siguiente()
+            resultado_completo = {
+                "estado": "COMPLETADO",
+                "datos": {
+                    "ULTIMA FASE": "1.3 CALIFICACION",
+                    "HISTORIAL_ACTUACIONES": [
+                        {"fecha": "01/01/2025", "detalle": "AUTO DE CALIFICACION"}
+                    ],
+                },
+            }
+            cola.registrar_resultado_transaccional(
+                "CAUSA-001", resultado_completo, "TEST", estado_final="PROCESADO"
+            )
+            cola.registrar_resultado_transaccional(
+                "CAUSA-001",
+                {"estado": "ERROR_NAVEGACION", "datos": {}, "error": "CAPTCHA_TIMEOUT"},
+                "TEST",
+                estado_final="ERROR",
+            )
+
+            conexion = sqlite3.connect(ruta)
+            try:
+                estado = conexion.execute(
+                    "SELECT estado FROM juicios WHERE numero_causa = ?", ("CAUSA-001",)
+                ).fetchone()[0]
+                datos_json = conexion.execute(
+                    "SELECT datos_json FROM resultados_expediente WHERE numero_causa = ?",
+                    ("CAUSA-001",),
+                ).fetchone()[0]
+            finally:
+                conexion.close()
+
+        self.assertEqual(estado, "ERROR")
+        self.assertEqual(json.loads(datos_json), resultado_completo)
+
     def test_estado_final_parcial_se_confirma_en_misma_transaccion(self):
         with tempfile.TemporaryDirectory() as temporal:
             ruta = os.path.join(temporal, "estado.db")

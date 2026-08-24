@@ -9,6 +9,7 @@ import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 from src.agente_extractor import AgenteExtractor, NavegadorArbolContenido
 from src.logger_config import obtener_logger
+from src.validacion_pertenencia import ESTADO_EXCLUIDO, validar_pertenencia_cartera
 from src.servicio_captcha import (
     CaptchaConfiguracionError, CaptchaDesafio, CaptchaError,
     CaptchaProveedorError, Proveedor2Captcha,
@@ -906,13 +907,15 @@ class BotJudicial:
             "CIUDAD_CARPETA": ciudad.group(1).strip() if ciudad else None,
         }
 
-    def _aplicar_inferencia_consolidada(self, datos):
+    def _aplicar_inferencia_consolidada(self, datos, causa=None):
         actuaciones = datos.get("HISTORIAL_ACTUACIONES", [])
         if not actuaciones:
             return datos
 
         from src.agente_extractor import MotorInferenciaProcesal
-        inferencia = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+        inferencia = MotorInferenciaProcesal.inferir_estado_procesal(
+            actuaciones, causa=causa
+        )
         if not inferencia or not inferencia.get("ULTIMA_ETAPA"):
             return datos
 
@@ -988,7 +991,7 @@ class BotJudicial:
         consolidado["CARPETAS_PROCESADAS"] = [d["ORIGEN_CARPETA"] for d in resultados]
         consolidado["ERRORES_CARPETAS"] = errores
         consolidado["ESTADO_NAVEGACION"] = "PARCIAL" if errores else "COMPLETADO"
-        self._aplicar_inferencia_consolidada(consolidado)
+        self._aplicar_inferencia_consolidada(consolidado, causa=causa)
         return consolidado
 
     def _procesar_flujo_autonomo(self, numero_juicio):
@@ -1214,7 +1217,9 @@ class BotJudicial:
                     if actuaciones_api:
                         datos["HISTORIAL_ACTUACIONES"] = actuaciones_api
                         from src.agente_extractor import MotorInferenciaProcesal
-                        res_api = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones_api)
+                        res_api = MotorInferenciaProcesal.inferir_estado_procesal(
+                            actuaciones_api, causa=numero_juicio
+                        )
                         if res_api and res_api.get("ULTIMA_ETAPA"):
                             etapa_api = res_api.get("ULTIMA_ETAPA")
                             fase_api = res_api.get("ULTIMA_FASE")
@@ -1373,10 +1378,20 @@ class BotJudicial:
                 self.context.close()
             except Exception:
                 pass
-        if self.browser:
-            self.browser.close()
-        if self.playwright:
-            self.playwright.stop()
+        if getattr(self, 'browser', None):
+            try:
+                self.browser.close()
+            except Exception:
+                pass
+        if getattr(self, 'playwright', None):
+            try:
+                self.playwright.stop()
+            except Exception:
+                pass
+        self.page = None
+        self.context = None
+        self.browser = None
+        self.playwright = None
         logger.info("Navegador cerrado.")
 
 
@@ -1422,7 +1437,7 @@ class BotJudicialTransaccional(BotJudicial):
         "CONSOLIDACION_EN_PROGRESO": {"RETORNANDO_AL_BUSCADOR"},
         "RETORNANDO_AL_BUSCADOR": {
             "CAUSA_COMPLETADA", "CAUSA_PARCIAL", "CAUSA_ERROR",
-            "CAUSA_SIN_RESULTADOS",
+            "CAUSA_SIN_RESULTADOS", "CAUSA_EXCLUIDA",
         },
         "SIN_RESULTADOS": {"RETORNANDO_AL_BUSCADOR"},
         "VERIFICACION_MANUAL": {"RETORNANDO_AL_BUSCADOR"},
@@ -2438,7 +2453,7 @@ class BotJudicialTransaccional(BotJudicial):
         datos["HISTORIAL_ACTUACIONES"] = actuaciones
         datos["ORIGEN_DATA"] = "API+DOM" if actuaciones_api and actuaciones_dom else ("API" if actuaciones_api else "DOM")
         if actuaciones:
-            self._aplicar_inferencia_consolidada(datos)
+            self._aplicar_inferencia_consolidada(datos, causa=numero_juicio)
         return datos
 
     @staticmethod
@@ -2973,7 +2988,7 @@ class BotJudicialTransaccional(BotJudicial):
                     vistos.add(clave)
                     datos["HISTORIAL_ACTUACIONES"].append(dict(actuacion))
         if datos["HISTORIAL_ACTUACIONES"]:
-            self._aplicar_inferencia_consolidada(datos)
+            self._aplicar_inferencia_consolidada(datos, causa=causa)
         if fechas_inicio:
             datos["FECHA INICIO JUICIO"] = min(fechas_inicio).strftime("%d/%m/%Y")
         estados = [resultado.get("estado") for resultado in resultados]
@@ -2983,6 +2998,17 @@ class BotJudicialTransaccional(BotJudicial):
             estado = "PARCIAL"
         else:
             estado = "EXTRACCION_ERROR"
+        pertenencia = validar_pertenencia_cartera(
+            datos,
+            resultados,
+            causa,
+            self.navegacion.get("validacion_pertenencia", {}),
+        )
+        if pertenencia:
+            estado = ESTADO_EXCLUIDO
+            datos["ETAPA ACTUAL"] = ESTADO_EXCLUIDO
+            datos["FASE ACTUAL"] = ESTADO_EXCLUIDO
+            datos["COMENTARIO_ULTIMO"] = pertenencia["motivo"]
         errores = [
             resultado.get("error") for resultado in resultados if resultado.get("error")
         ]
@@ -3006,6 +3032,7 @@ class BotJudicialTransaccional(BotJudicial):
             "errores": errores,
             "artefactos": artefactos,
             "error": None if estado != "EXTRACCION_ERROR" else "TODAS_LAS_CARPETAS_FALLARON",
+            "pertenencia": pertenencia,
         }
 
     def _procesar_todas_las_carpetas(self, causa):
@@ -3148,6 +3175,7 @@ class BotJudicialTransaccional(BotJudicial):
             estado_terminal = {
                 "COMPLETADO": "CAUSA_COMPLETADA",
                 "PARCIAL": "CAUSA_PARCIAL",
+                ESTADO_EXCLUIDO: "CAUSA_EXCLUIDA",
                 "EXTRACCION_ERROR": "CAUSA_ERROR",
             }[consolidado["estado"]]
             self._cambiar_estado_navegacion(

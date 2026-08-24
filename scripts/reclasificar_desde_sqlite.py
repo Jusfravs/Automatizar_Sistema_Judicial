@@ -16,6 +16,7 @@ if str(RAIZ) not in sys.path:
 
 from src.agente_extractor import MotorInferenciaProcesal
 from src.gestor_casos import GestorCasos
+from src.validacion_pertenencia import ESTADO_EXCLUIDO, validar_pertenencia_cartera
 
 
 CAMPOS_CLASIFICACION = (
@@ -58,24 +59,60 @@ def _campos_desde_inferencia(inferencia):
     }
 
 
-def _reclasificar_datos(datos):
+def _reclasificar_datos(datos, causa=None):
     actuaciones = datos.get("HISTORIAL_ACTUACIONES") or []
     if not actuaciones:
         return None
 
-    inferencia = MotorInferenciaProcesal.inferir_estado_procesal(actuaciones)
+    inferencia = MotorInferenciaProcesal.inferir_estado_procesal(
+        actuaciones, causa=causa
+    )
     if not inferencia or not inferencia.get("ULTIMA_ETAPA"):
         return None
 
-    anteriores = {campo: datos.get(campo) for campo in CAMPOS_CLASIFICACION}
+    anteriores = {
+        **{campo: datos.get(campo) for campo in CAMPOS_CLASIFICACION},
+        "COMENTARIO_ULTIMO": datos.get("COMENTARIO_ULTIMO"),
+    }
     nuevos = _campos_desde_inferencia(inferencia)
     datos.update(nuevos)
 
     mensaje = inferencia.get("MENSAJE_ESPECIAL")
     if mensaje:
         datos["COMENTARIO_ULTIMO"] = mensaje
+        # La misma señal debe llegar al CSV/Excel; de otro modo SQLite y el
+        # reporte final quedan con comentarios distintos.
+        nuevos["COMENTARIO_ULTIMO"] = mensaje
+    elif datos.get("COMENTARIO_ULTIMO") == "REVISION MANUAL":
+        # Solo se limpia una marca automática obsoleta; comentarios detallados
+        # de error y observaciones humanas permanecen intactos.
+        datos["COMENTARIO_ULTIMO"] = None
+        # GestorCasos usa ``None`` para no sobrescribir una celda. El texto
+        # vacío sí limpia el comentario heredado en CSV y Excel.
+        nuevos["COMENTARIO_ULTIMO"] = ""
 
     return anteriores, nuevos
+
+
+def _aplicar_validacion_pertenencia(resultado, datos, causa, configuracion):
+    """Actualiza solo el estado operativo cuando SATJE confirma otra cartera."""
+    pertenencia = validar_pertenencia_cartera(
+        datos,
+        resultado.get("resultados_carpetas") or resultado.get("carpetas") or [],
+        causa,
+        configuracion,
+    )
+    if not pertenencia:
+        return None
+
+    resultado["estado"] = ESTADO_EXCLUIDO
+    resultado["pertenencia"] = pertenencia
+    datos.update({
+        "ETAPA ACTUAL": ESTADO_EXCLUIDO,
+        "FASE ACTUAL": ESTADO_EXCLUIDO,
+        "COMENTARIO_ULTIMO": pertenencia["motivo"],
+    })
+    return pertenencia
 
 
 def _fecha_canonica(valor):
@@ -99,7 +136,23 @@ def _campos_equivalentes(anteriores, nuevos):
                 return False
         elif anterior != nuevo:
             return False
+    if anteriores.get("COMENTARIO_ULTIMO") != nuevos.get("COMENTARIO_ULTIMO"):
+        return False
     return True
+
+
+def _reporte_tiene_revision_manual_automatica(repo, causa):
+    """Detecta solo la marca automática exacta que puede quedar obsoleta."""
+    if "NUMERO_JUICIO" not in repo.df.columns or "COMENTARIO_ULTIMO" not in repo.df.columns:
+        return False
+    causa_normalizada = _normalizar_causa(causa)
+    coincidencias = repo.df[
+        repo.df["NUMERO_JUICIO"].astype(str).map(_normalizar_causa)
+        == causa_normalizada
+    ]
+    if coincidencias.empty:
+        return False
+    return str(coincidencias.iloc[0]["COMENTARIO_ULTIMO"] or "").strip().upper() == "REVISION MANUAL"
 
 
 def _ruta_configurada(config_path, valor):
@@ -178,6 +231,7 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
 
     cambios = []
     actualizaciones = []
+    exclusiones = []
     resultados_evaluados = 0
     for causa, datos_json in registros:
         if causas_alcance is not None and _normalizar_causa(causa) not in causas_alcance:
@@ -186,11 +240,37 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
 
         resultado = json.loads(datos_json)
         datos = resultado.get("datos") or {}
-        reclasificacion = _reclasificar_datos(datos)
+        reclasificacion = _reclasificar_datos(datos, causa=causa)
         if reclasificacion is None:
             continue
 
         anteriores, nuevos = reclasificacion
+        pertenencia = _aplicar_validacion_pertenencia(
+            resultado,
+            datos,
+            causa,
+            repo.config.get("navegacion", {}).get("validacion_pertenencia", {}),
+        )
+        estado_final = None
+        if pertenencia:
+            estado_final = ESTADO_EXCLUIDO
+            nuevos.update({
+                "ETAPA ACTUAL": ESTADO_EXCLUIDO,
+                "FASE ACTUAL": ESTADO_EXCLUIDO,
+                "COMENTARIO_ULTIMO": pertenencia["motivo"],
+            })
+            exclusiones.append({
+                "causa": causa,
+                "accion_detectada": pertenencia["accion_detectada"],
+            })
+        if (
+            "COMENTARIO_ULTIMO" not in nuevos
+            and nuevos.get("ETAPA ACTUAL") != "REVISION MANUAL"
+            and _reporte_tiene_revision_manual_automatica(repo, causa)
+        ):
+            # SQLite ya no conserva esa marca, pero el reporte antiguo puede
+            # tenerla. Se limpia solo el literal automático, no notas humanas.
+            nuevos["COMENTARIO_ULTIMO"] = ""
         if not _campos_equivalentes(anteriores, nuevos):
             cambios.append({
                 "causa": causa,
@@ -202,12 +282,13 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
 
         for carpeta in resultado.get("resultados_carpetas") or []:
             datos_carpeta = carpeta.get("datos") or {}
-            _reclasificar_datos(datos_carpeta)
+            _reclasificar_datos(datos_carpeta, causa=causa)
 
         actualizaciones.append((
             json.dumps(resultado, ensure_ascii=False),
             causa,
             nuevos,
+            estado_final,
         ))
 
     resumen = {
@@ -217,6 +298,7 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
             f"{c['fase_anterior']} -> {c['fase_nueva']}" for c in cambios
         )),
         "cambios": cambios,
+        "exclusiones": exclusiones,
     }
     if sucursal:
         resumen["sucursal"] = str(sucursal).strip().upper()
@@ -238,7 +320,7 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
 
     try:
         conexion.execute("BEGIN IMMEDIATE")
-        for datos_json, causa, nuevos in actualizaciones:
+        for datos_json, causa, nuevos, estado_final in actualizaciones:
             conexion.execute(
                 """
                 UPDATE resultados_expediente
@@ -247,6 +329,11 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
                 """,
                 (datos_json, causa),
             )
+            if estado_final:
+                conexion.execute(
+                    "UPDATE juicios SET estado = ? WHERE numero_causa = ?",
+                    (estado_final, causa),
+                )
             if not repo.actualizar_caso(causa, nuevos):
                 raise LookupError(f"CAUSA_NO_ENCONTRADA_EN_CSV:{causa}")
 

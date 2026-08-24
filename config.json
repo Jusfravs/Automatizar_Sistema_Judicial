@@ -8,7 +8,7 @@
     },
     "rutas": {
         "archivo_csv": "data/reporte_trabajo.csv",
-        "archivo_origen": "data/REPORTE JUICIOS PARA REVISIÓN JULIO.xlsx",
+        "archivo_origen": "data/REPORTE_JUICIOS_LISTO_PARA_REVISION.xlsx",
         "archivo_excel_final": "data/REPORTE_PROCESADO_FINAL.xlsx",
         "hoja_lectura": "migrado"
     },
