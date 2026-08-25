@@ -384,17 +384,20 @@ def main(argv=None):
                 else:
                     raise RuntimeError("ESTADO_RESULTADO_DESCONOCIDO:%s" % estado)
 
-                if not resultado.get("regreso_confirmado"):
-                    if estado == "ERROR_NAVEGACION":
-                        logger.warning(
-                            "[REVISION MANUAL] %s sin retorno confirmado; "
-                            "se reiniciar\u00e1 la sesi\u00f3n antes de continuar.",
-                            numero_juicio,
-                        )
-                        bot.cerrar_navegador()
-                        sesion_abierta = False
-                    else:
-                        raise RuntimeError("REGRESO_AL_BUSCADOR_NO_CONFIRMADO")
+                # Un ERROR_NAVEGACION no deja una sesión confiable, incluso
+                # cuando el DOM aparenta haber vuelto al buscador. Renovarla
+                # impide que un overlay o CAPTCHA roto contamine la siguiente
+                # causa del lote.
+                if estado == "ERROR_NAVEGACION":
+                    logger.warning(
+                        "[REVISION MANUAL] %s terminó con navegación no confiable; "
+                        "se reiniciará la sesión antes de continuar.",
+                        numero_juicio,
+                    )
+                    bot.cerrar_navegador()
+                    sesion_abierta = False
+                elif not resultado.get("regreso_confirmado"):
+                    raise RuntimeError("REGRESO_AL_BUSCADOR_NO_CONFIRMADO")
 
             except Exception as exc:
                 logger.exception(

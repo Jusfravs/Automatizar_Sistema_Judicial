@@ -1198,7 +1198,7 @@ class MotorInferenciaProcesal:
         """Crea una decisi??n at??mica y nunca reutiliza una fecha de otra fase."""
         if evidencia:
             return {**evidencia, "etapa": etapa, "fase": fase}
-        logger.warning("[DECISION_FASE] %s", json.dumps({"regla_aplicada": regla, "fase_final": fase, "advertencia": "sin_evidencia_de_fecha"}, ensure_ascii=False))
+        logger.warning("[DECISION_FASE_SIN_EVIDENCIA] %s", json.dumps({"regla_aplicada": regla, "fase_final": fase, "advertencia": "sin_evidencia_de_fecha"}, ensure_ascii=False))
         return {"etapa": etapa, "fase": fase, "fecha": None, "actuacion": None}
 
     @classmethod
@@ -1714,11 +1714,15 @@ class AgenteExtractor:
                 if res_inf.get("MENSAJE_ESPECIAL"):
                     resultado["COMENTARIO_ULTIMO"] = res_inf.get("MENSAJE_ESPECIAL")
                 
-                # Log estructurado de la decisión de fase para auditoría
+                # Esta inferencia se obtuvo solamente del DOM capturado. El flujo
+                # transaccional la contrasta después con API y/o demás carpetas
+                # antes de persistir el resultado definitivo.
                 try:
                     log_payload = {
                         "source": "dom",
                         "reason": "inferencia_autonoma",
+                        "estado_decision": "PRELIMINAR_DOM",
+                        "nota": "Pendiente de consolidación final",
                         "fase_deducida": fase_inferida,
                         "etapa": etapa_inferida,
                         "fase_original": res_inf.get("FASE_ORIGINAL"),
@@ -1730,7 +1734,7 @@ class AgenteExtractor:
                         "fecha_elegida": resultado["FECHA INICIAL FASE ACTUAL"],
                         "num_actuaciones": len(actuaciones)
                     }
-                    logger.info("[DECISION_FASE] %s", json.dumps(log_payload, ensure_ascii=False))
+                    logger.info("[DECISION_FASE_PRELIMINAR] %s", json.dumps(log_payload, ensure_ascii=False))
                 except Exception:
                     pass
             elif actuaciones:

@@ -227,7 +227,7 @@ class FrenoNavegacionTests(unittest.TestCase):
     def test_consolidacion_conserva_origen_y_conteos(self):
         bot = self.crear_bot()
         bot._descriptores_actuales = [{"clave_carpeta": "carpeta-1"}]
-        bot._aplicar_inferencia_consolidada = lambda datos, causa=None: datos
+        bot._aplicar_inferencia_consolidada = lambda datos, causa=None, alcance="carpeta": datos
         actuacion = {
             "fecha": "24/02/2023",
             "detalle": "SENTENCIA",

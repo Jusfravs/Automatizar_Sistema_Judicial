@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import sqlite3
 import sys
@@ -35,10 +36,14 @@ CAUSAS_QUITO_AUDITADAS = (
 )
 
 CAMPOS_LIMPIAR = (
+    # Salida vigente del reporte. No incluye columnas de cartera ni el
+    # comentario base que entrega el Excel de origen.
+    "HISTORIAL_ACTUACIONES", "FECHA INICIO JUICIO",
+    "FECHA FIN ULTIMA FASE", "ULTIMA ETAPA", "ULTIMA FASE",
+    "FECHA INICIO FASE ACTUAL", "ETAPA ACTUAL", "FASE ACTUAL",
+    "DIAS TRANSCURRIDOS",
+    # Salida legada que puede subsistir en el CSV de trabajo.
     "ETAPA_PROCESAL", "FASE_PROCESAL", "FECHA INICIAL FASE ACTUAL",
-    "HISTORIAL_ACTUACIONES", "ULTIMA ETAPA", "ULTIMA FASE",
-    "FECHA FIN ULTIMA FASE", "ETAPA ACTUAL", "FASE ACTUAL",
-    "FECHA INICIO FASE ACTUAL",
 )
 
 
@@ -59,6 +64,11 @@ def respaldar(ruta, directorio, marca):
     return destino
 
 
+def respaldar_si_existe(ruta, directorio, marca):
+    """Respalda un artefacto opcional sin tratar su ausencia como un error."""
+    return respaldar(ruta, directorio, marca) if ruta.exists() else None
+
+
 def verificar_archivos_libres(rutas):
     """Falla antes de tocar SQLite si Excel mantiene un bloqueo exclusivo."""
     for ruta in rutas:
@@ -71,6 +81,144 @@ def verificar_archivos_libres(rutas):
             ) from exc
 
 
+def _restaurar_comentario_base(repo, indices, causas):
+    """Restaura el comentario original, nunca un ERROR escrito por el RPA."""
+    if "COMENTARIO_ULTIMO" not in repo.df.columns:
+        return
+
+    base = repo._cargar_excel_robusto()
+    if "NUMERO_JUICIO" not in base.columns:
+        raise LookupError("COLUMNA_NUMERO_JUICIO_AUSENTE_ORIGEN")
+    if "COMENTARIO_ULTIMO" not in base.columns:
+        base["COMENTARIO_ULTIMO"] = ""
+
+    causas_exactas = {str(causa).strip() for causa in causas}
+    comentarios_base = {}
+    for _, fila in base.iterrows():
+        causa = str(fila.get("NUMERO_JUICIO") or "").strip()
+        if causa in causas_exactas:
+            comentarios_base.setdefault(causa, []).append(
+                fila.get("COMENTARIO_ULTIMO", "")
+            )
+
+    faltantes = sorted(causas_exactas - set(comentarios_base))
+    if faltantes:
+        raise LookupError(f"CAUSAS_AUSENTES_ORIGEN:{faltantes}")
+
+    ocurrencias = {}
+    for indice in indices:
+        causa = str(repo.df.at[indice, "NUMERO_JUICIO"]).strip()
+        posicion = ocurrencias.get(causa, 0)
+        comentarios = comentarios_base[causa]
+        repo.df.at[indice, "COMENTARIO_ULTIMO"] = comentarios[
+            min(posicion, len(comentarios) - 1)
+        ]
+        ocurrencias[causa] = posicion + 1
+
+
+def _conectar_postgres(config):
+    """Abre PostgreSQL solo cuando la configuración lo declara obligatorio."""
+    config_db = config.get("base_de_datos", {})
+    if config_db.get("motor") != "postgres":
+        return None
+    try:
+        import psycopg2
+    except ImportError as exc:
+        raise RuntimeError("POSTGRES_DRIVER_AUSENTE") from exc
+    return psycopg2.connect(
+        host=config_db.get("host", "localhost"),
+        port=config_db.get("puerto", 5432),
+        user=config_db.get("usuario", "postgres"),
+        password=os.getenv(config_db.get("password_env", "POSTGRES_PASSWORD"), ""),
+        dbname=config_db.get("nombre_db"),
+        connect_timeout=10,
+    )
+
+
+def _respaldar_postgres(conexion, causas, destino):
+    """Guarda un respaldo JSON de las filas que se van a retirar."""
+    if conexion is None:
+        return None
+    respaldo = {}
+    with conexion.cursor() as cursor:
+        for tabla in ("expedientes", "actuaciones", "eventos_auditoria"):
+            cursor.execute(
+                f"SELECT * FROM {tabla} WHERE numero_causa = ANY(%s)", (list(causas),)
+            )
+            columnas = [columna[0] for columna in cursor.description]
+            respaldo[tabla] = [
+                dict(zip(columnas, fila)) for fila in cursor.fetchall()
+            ]
+    destino.write_text(
+        json.dumps(respaldo, ensure_ascii=False, default=str, indent=2),
+        encoding="utf-8",
+    )
+    return destino
+
+
+def _limpiar_postgres(conexion, causas):
+    """Elimina los resultados, actuaciones y eventos anteriores del tramo."""
+    if conexion is None:
+        return {"habilitado": False, "expedientes": 0, "actuaciones": 0, "eventos": 0}
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM actuaciones WHERE numero_causa = ANY(%s)", (list(causas),)
+            )
+            actuaciones = cursor.rowcount
+            cursor.execute(
+                "DELETE FROM eventos_auditoria WHERE numero_causa = ANY(%s)",
+                (list(causas),),
+            )
+            eventos = cursor.rowcount
+            cursor.execute(
+                "DELETE FROM expedientes WHERE numero_causa = ANY(%s)", (list(causas),)
+            )
+            expedientes = cursor.rowcount
+        conexion.commit()
+    except Exception:
+        conexion.rollback()
+        raise
+    return {
+        "habilitado": True,
+        "expedientes": expedientes,
+        "actuaciones": actuaciones,
+        "eventos": eventos,
+    }
+
+
+def _eliminar_evidencias(repo, causas_norm):
+    """Elimina exclusivamente carpetas temporales de las causas reiniciadas."""
+    raiz = Path(repo.ruta_csv).resolve().parent / "temp_htmls"
+    eliminadas = []
+    bloqueadas = []
+    for causa_norm in causas_norm:
+        destino = raiz / causa_norm
+        if destino.is_dir():
+            try:
+                shutil.rmtree(destino)
+                eliminadas.append(str(destino.resolve()))
+            except PermissionError:
+                # El reinicio de datos no debe quedar a medias por una ACL de
+                # Windows sobre archivos temporales. Se informa la ruta para
+                # que el propietario pueda retirarla sin ampliar el alcance.
+                bloqueadas.append(str(destino.resolve()))
+    return eliminadas, bloqueadas
+
+
+def _limpiar_lista_fallidos(ruta, causas_norm):
+    if not ruta.exists():
+        return 0
+    existentes = ruta.read_text(encoding="utf-8").splitlines()
+    conservadas = [
+        causa for causa in existentes if normalizar_causa(causa) not in causas_norm
+    ]
+    ruta.write_text(
+        "".join(f"{causa}\n" for causa in conservadas), encoding="utf-8"
+    )
+    return len(existentes) - len(conservadas)
+
+
 def limpiar(config_path, causas):
     config_path = Path(config_path).resolve()
     repo = GestorCasos(str(config_path))
@@ -78,6 +226,10 @@ def limpiar(config_path, causas):
     ruta_db = ruta_configurada(config_path, rutas.get("archivo_db", "estado_casos.db"))
     ruta_csv = Path(repo.ruta_csv).resolve()
     ruta_excel = Path(repo.ruta_final).resolve()
+    ruta_fallidos = ruta_configurada(
+        config_path,
+        rutas.get("archivo_casos_fallidos", str(RAIZ / "data" / "casos_fallidos.txt")),
+    )
     causas = tuple(dict.fromkeys(str(c).strip() for c in causas if str(c).strip()))
     causas_norm = {normalizar_causa(c): c for c in causas}
 
@@ -86,9 +238,10 @@ def limpiar(config_path, causas):
     directorio = ruta_db.parent / "backups"
     marca = datetime.now().strftime("%Y%m%d_%H%M%S")
     directorio.mkdir(parents=True, exist_ok=True)
-    verificar_archivos_libres((ruta_csv, ruta_excel))
+    verificar_archivos_libres((ruta_csv, ruta_excel, ruta_fallidos))
 
     conexion = sqlite3.connect(ruta_db, timeout=30.0)
+    conexion_pg = _conectar_postgres(repo.config)
     try:
         placeholders = ",".join("?" for _ in causas)
         filas = conexion.execute(
@@ -104,19 +257,39 @@ def limpiar(config_path, causas):
             raise RuntimeError(f"CAUSAS_EN_PROCESO:{en_proceso}")
 
         respaldos = [respaldar(ruta_csv, directorio, marca), respaldar(ruta_excel, directorio, marca)]
+        respaldo_fallidos = respaldar_si_existe(ruta_fallidos, directorio, marca)
+        if respaldo_fallidos:
+            respaldos.append(respaldo_fallidos)
         respaldo_db = directorio / f"{ruta_db.stem}_antes_reproceso_{marca}.db"
         with sqlite3.connect(respaldo_db) as copia:
             conexion.backup(copia)
         respaldos.append(respaldo_db)
+        respaldo_pg = _respaldar_postgres(
+            conexion_pg,
+            causas,
+            directorio / f"postgres_antes_reproceso_{marca}.json",
+        )
+        if respaldo_pg:
+            respaldos.append(respaldo_pg)
 
-        mascara = repo.df["NUMERO_JUICIO"].map(normalizar_causa)
-        indices = repo.df.index[mascara.isin(causas_norm)]
-        if len(indices) != len(causas_norm):
-            raise LookupError("CAUSAS_AUSENTES_CSV_O_DUPLICADAS")
+        causas_exactas = {str(causa).strip() for causa in causas}
+        mascara = repo.df["NUMERO_JUICIO"].astype(str).str.strip().isin(causas_exactas)
+        indices = repo.df.index[mascara]
+        encontradas_csv = {
+            str(repo.df.at[indice, "NUMERO_JUICIO"]).strip() for indice in indices
+        }
+        faltantes_csv = sorted(causas_exactas - encontradas_csv)
+        if faltantes_csv:
+            raise LookupError(f"CAUSAS_AUSENTES_CSV:{faltantes_csv}")
         for indice in indices:
             for campo in CAMPOS_LIMPIAR:
                 if campo in repo.df.columns:
-                    repo.df.at[indice, campo] = ""
+                    # Pandas infiere float64 cuando una columna de salida
+                    # estaba completamente vacía. None se exporta como celda
+                    # vacía sin forzar una conversión insegura de tipo.
+                    valor_vacio = "" if repo.df[campo].dtype == object else None
+                    repo.df.at[indice, campo] = valor_vacio
+        _restaurar_comentario_base(repo, indices, causas)
 
         conexion.execute("BEGIN IMMEDIATE")
         conexion.execute(
@@ -124,20 +297,24 @@ def limpiar(config_path, causas):
             causas,
         )
         conexion.execute(
+            f"DELETE FROM eventos_extraccion WHERE numero_causa IN ({placeholders})",
+            causas,
+        )
+        conexion.execute(
             f"UPDATE juicios SET estado='PENDIENTE', reintentos=0, ruta_html=NULL "
             f"WHERE numero_causa IN ({placeholders})",
             causas,
         )
-        for causa in causas:
-            conexion.execute(
-                "INSERT INTO eventos_extraccion (numero_causa, origen, detalle) VALUES (?, ?, ?)",
-                (causa, "REPROCESO_PREPARADO", "Evidencia extraida limpiada; causa devuelta a PENDIENTE para nueva consulta."),
-            )
 
         if not repo.guardar():
             raise RuntimeError("PERSISTENCIA_ERROR:CSV")
         repo.exportar_excel()
         conexion.commit()
+        postgres = _limpiar_postgres(conexion_pg, causas)
+        evidencias_eliminadas, evidencias_bloqueadas = _eliminar_evidencias(
+            repo, causas_norm
+        )
+        fallidos_retirados = _limpiar_lista_fallidos(ruta_fallidos, causas_norm)
     except Exception:
         conexion.rollback()
         # Restaurar los reportes si la escritura de formatos falla antes del
@@ -149,11 +326,17 @@ def limpiar(config_path, causas):
         raise
     finally:
         conexion.close()
+        if conexion_pg is not None:
+            conexion_pg.close()
 
     return {
         "causas_limpiadas": len(causas),
         "estado_nuevo": "PENDIENTE",
         "resultados_sqlite_eliminados": len(causas),
+        "postgres": postgres,
+        "evidencias_eliminadas": len(evidencias_eliminadas),
+        "evidencias_bloqueadas": evidencias_bloqueadas,
+        "fallidos_retirados": fallidos_retirados,
         "respaldos": [str(r.resolve()) for r in respaldos],
         "sqlite": str(ruta_db),
         "csv": str(ruta_csv),

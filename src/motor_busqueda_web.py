@@ -108,7 +108,9 @@ class BotJudicial:
             "resolucion_timeout_ms": 300000,
             "sondeo_ms": 5000,
             "confirmacion_inyeccion_timeout_ms": 10000,
-            "espera_post_solucion_ms": 3000,
+            # El token ya fue inyectado y el botón validado; solo se deja un
+            # margen corto para que Angular estabilice el formulario.
+            "espera_post_solucion_ms": 500,
             "max_tareas_por_causa": 2,
             "max_errores_consecutivos": 3,
             "saldo_minimo_usd": 0.01,
@@ -464,6 +466,38 @@ class BotJudicial:
         self._captcha_reinicio_buscador_pendiente = False
         return True
 
+    def _escribir_causa_en_campo(self, campo, numero_juicio):
+        """Escribe la causa de inmediato y conserva un respaldo para la máscara.
+
+        ``press_sequentially`` simula un teclado físico y añade una espera por
+        carácter. El formulario actual de e-SATJE acepta ``fill`` y recibe los
+        eventos explícitos de Angular, por lo que el valor aparece de una sola
+        vez. Si una versión futura de la máscara no lo conserva, se usa la
+        escritura secuencial como respaldo antes de declarar el fallo.
+        """
+        causa = self._causa_canonica(numero_juicio)
+        valor_formulario = self._causa_para_formulario(numero_juicio)
+
+        campo.fill("")
+        campo.fill(valor_formulario)
+        campo.dispatch_event("input")
+        campo.dispatch_event("change")
+        if self._causa_canonica(campo.input_value()) == causa:
+            return "fill"
+
+        logger.warning(
+            "[NAVEGACION_ESATJE] La máscara no conservó la escritura directa; "
+            "se aplica respaldo secuencial para %s.",
+            causa,
+        )
+        campo.fill("")
+        campo.press_sequentially(valor_formulario, delay=0)
+        campo.dispatch_event("input")
+        campo.dispatch_event("change")
+        if self._causa_canonica(campo.input_value()) != causa:
+            raise RuntimeError("CAUSA_NO_CONFIRMADA_EN_CAMPO")
+        return "secuencial_respaldo"
+
     def _preparar_busqueda(self, numero_juicio):
         causa = self._causa_canonica(numero_juicio)
         if not causa:
@@ -474,13 +508,7 @@ class BotJudicial:
         self._reiniciar_buscador_si_fallo_captcha(causa)
 
         campo = self._input_causa_unico()
-        campo.fill("")
-        campo.press_sequentially(self._causa_para_formulario(numero_juicio), delay=15)
-        campo.dispatch_event("input")
-        campo.dispatch_event("change")
-
-        if self._causa_canonica(campo.input_value()) != causa:
-            raise RuntimeError("CAUSA_NO_CONFIRMADA_EN_CAMPO")
+        self._escribir_causa_en_campo(campo, numero_juicio)
 
         self._cambiar_estado_navegacion(causa, "PREPARAR_BUSCADOR", "CAUSA_ESCRITA", "escribir_causa")
         return causa
@@ -504,10 +532,7 @@ class BotJudicial:
             esperando_renderizado = not captcha_renderizado and monotonic() < limite_renderizado
 
             if captcha_renderizado and habilitado and not causa_correcta and not causa_reescrita:
-                campo.fill("")
-                campo.press_sequentially(self._causa_para_formulario(causa), delay=15)
-                campo.dispatch_event("input")
-                campo.dispatch_event("change")
+                self._escribir_causa_en_campo(campo, causa)
                 causa_reescrita = True
                 self.page.wait_for_timeout(250)
                 continue
@@ -907,7 +932,8 @@ class BotJudicial:
             "CIUDAD_CARPETA": ciudad.group(1).strip() if ciudad else None,
         }
 
-    def _aplicar_inferencia_consolidada(self, datos, causa=None):
+    def _aplicar_inferencia_consolidada(self, datos, causa=None, alcance="carpeta"):
+        """Aplica y deja trazada la inferencia definitiva del alcance indicado."""
         actuaciones = datos.get("HISTORIAL_ACTUACIONES", [])
         if not actuaciones:
             return datos
@@ -930,6 +956,23 @@ class BotJudicial:
         datos["FECHA INICIO FASE ACTUAL"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
         if inferencia.get("MENSAJE_ESPECIAL"):
             datos["COMENTARIO_ULTIMO"] = inferencia.get("MENSAJE_ESPECIAL")
+        try:
+            log_payload = {
+                "source": datos.get("ORIGEN_DATA") or "consolidado",
+                "reason": "inferencia_consolidada",
+                "estado_decision": "FINAL",
+                "alcance": alcance,
+                "causa": self._causa_canonica(causa) if causa else None,
+                "fase_deducida": datos["ULTIMA FASE"],
+                "etapa": datos["ULTIMA ETAPA"],
+                "fecha_final": datos["FECHA FIN ULTIMA FASE"],
+                "actuacion_respaldo": inferencia.get("ACTUACION_RESPALDO"),
+                "regla_aplicada": inferencia.get("REGLA_APLICADA"),
+                "num_actuaciones": len(actuaciones),
+            }
+            logger.info("[DECISION_FASE_FINAL] %s", json.dumps(log_payload, ensure_ascii=False))
+        except Exception:
+            logger.warning("No se pudo registrar la decision final de fase.", exc_info=True)
         return datos
 
     def _procesar_todas_las_carpetas(self, causa):
@@ -991,7 +1034,9 @@ class BotJudicial:
         consolidado["CARPETAS_PROCESADAS"] = [d["ORIGEN_CARPETA"] for d in resultados]
         consolidado["ERRORES_CARPETAS"] = errores
         consolidado["ESTADO_NAVEGACION"] = "PARCIAL" if errores else "COMPLETADO"
-        self._aplicar_inferencia_consolidada(consolidado, causa=causa)
+        self._aplicar_inferencia_consolidada(
+            consolidado, causa=causa, alcance="causa"
+        )
         return consolidado
 
     def _procesar_flujo_autonomo(self, numero_juicio):
@@ -1572,7 +1617,38 @@ class BotJudicialTransaccional(BotJudicial):
 
     def _click_navegacion(self, locator, contexto):
         self._asegurar_navegacion_permitida("click", contexto)
+        # e-SATJE conserva a veces un overlay Angular aunque el botón BUSCAR
+        # ya sea visible y habilitado. Playwright no debe forzar ese clic: la
+        # sesión se considera no utilizable y main.py la renovará.
+        self._esperar_overlay_inactivo(contexto)
         locator.click()
+
+    def _esperar_overlay_inactivo(self, contexto):
+        """Espera una capa de carga breve; falla de forma recuperable si persiste."""
+        # Las pruebas unitarias de transiciones usan controles aislados sin
+        # una página Playwright; allí el clic ya es el objeto bajo prueba.
+        if self.page is None or not hasattr(self.page, "locator"):
+            return
+        if self.page.is_closed():
+            raise RuntimeError("PAGINA_NO_DISPONIBLE")
+        limite_ms = int(self.navegacion.get(
+            "overlay_carga_timeout_ms",
+            self.navegacion.get("retorno_buscador_timeout_ms", 15000),
+        ))
+        limite = monotonic() + max(1000, limite_ms) / 1000
+        selector = (
+            "div.loading-overlay[aria-busy='true'], "
+            "[role='status'][aria-busy='true'].loading-overlay"
+        )
+        while monotonic() < limite:
+            try:
+                visibles = self._locators_visibles(self.page.locator(selector))
+            except Exception as exc:
+                raise RuntimeError("OVERLAY_CARGA_DIAGNOSTICO_ERROR") from exc
+            if not visibles:
+                return
+            self.page.wait_for_timeout(250)
+        raise RuntimeError(f"NAVEGACION_OVERLAY_PERSISTENTE:{contexto}")
 
     def _go_back_navegacion(self, contexto):
         self._asegurar_navegacion_permitida("go_back", contexto)
@@ -1895,7 +1971,7 @@ class BotJudicialTransaccional(BotJudicial):
             raise
 
     def _esperar_despues_captcha(self, causa):
-        espera_ms = max(0, int(self.captcha_config.get("espera_post_solucion_ms", 3000)))
+        espera_ms = max(0, int(self.captcha_config.get("espera_post_solucion_ms", 500)))
         if espera_ms:
             logger.info(
                 "[CAPTCHA] Esperando %s segundos antes de BUSCAR para %s.",
@@ -2688,6 +2764,7 @@ class BotJudicialTransaccional(BotJudicial):
             "campo_habilitado": False,
             "movimientos_visibles": False,
             "actuaciones_visibles": False,
+            "overlay_carga_visible": False,
             "listo": False,
         }
         if not self.page or self.page.is_closed():
@@ -2723,6 +2800,13 @@ class BotJudicialTransaccional(BotJudicial):
             diagnostico["actuaciones_visibles"] = bool(
                 self._locators_visibles(actuaciones)
             )
+            overlay = self.page.locator(
+                "div.loading-overlay[aria-busy='true'], "
+                "[role='status'][aria-busy='true'].loading-overlay"
+            )
+            diagnostico["overlay_carga_visible"] = bool(
+                self._locators_visibles(overlay)
+            )
         except Exception as exc:
             diagnostico["error"] = f"DIAGNOSTICO_DOM_ERROR:{exc}"
         diagnostico["listo"] = bool(
@@ -2732,6 +2816,7 @@ class BotJudicialTransaccional(BotJudicial):
             and diagnostico["campo_habilitado"]
             and not diagnostico["movimientos_visibles"]
             and not diagnostico["actuaciones_visibles"]
+            and not diagnostico["overlay_carga_visible"]
         )
         return diagnostico
 
@@ -2988,7 +3073,9 @@ class BotJudicialTransaccional(BotJudicial):
                     vistos.add(clave)
                     datos["HISTORIAL_ACTUACIONES"].append(dict(actuacion))
         if datos["HISTORIAL_ACTUACIONES"]:
-            self._aplicar_inferencia_consolidada(datos, causa=causa)
+            self._aplicar_inferencia_consolidada(
+                datos, causa=causa, alcance="causa"
+            )
         if fechas_inicio:
             datos["FECHA INICIO JUICIO"] = min(fechas_inicio).strftime("%d/%m/%Y")
         estados = [resultado.get("estado") for resultado in resultados]

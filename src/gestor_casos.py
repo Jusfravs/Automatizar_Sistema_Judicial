@@ -3,6 +3,8 @@ import os
 import sys
 import json
 import shutil
+import errno
+import time
 from datetime import datetime
 import pandas as pd
 from pandas.errors import EmptyDataError
@@ -250,16 +252,42 @@ class GestorCasos:
             return True
         return False
 
-    def guardar(self):
-        """SAVE: Persiste los cambios en la base CSV de trabajo. Retorna True en éxito."""
-        if os.path.isfile(self.ruta_csv):
-            ruta_backup = f"{self.ruta_csv}.bak"
+    @staticmethod
+    def _es_bloqueo_transitorio_archivo(error):
+        """Reconoce bloqueos habituales de Windows, OneDrive y antivirus."""
+        return (
+            getattr(error, "winerror", None) in {32, 33}
+            or getattr(error, "errno", None) in {errno.EACCES, errno.EBUSY}
+        )
+
+    def _crear_respaldo_csv(self):
+        """Crea el .bak y tolera bloqueos breves sin omitir la salvaguarda."""
+        ruta_backup = f"{self.ruta_csv}.bak"
+        max_intentos = 6
+        for intento in range(1, max_intentos + 1):
             try:
                 shutil.copy2(self.ruta_csv, ruta_backup)
                 logger.debug("Respaldo del CSV creado en: %s", ruta_backup)
-            except OSError as e:
-                logger.error("No se pudo crear respaldo del CSV: %s", e)
-                return False
+                return True
+            except OSError as error:
+                es_transitorio = self._es_bloqueo_transitorio_archivo(error)
+                es_ultimo_intento = intento == max_intentos
+                if not es_transitorio or es_ultimo_intento:
+                    logger.error("No se pudo crear respaldo del CSV: %s", error)
+                    return False
+                espera = min(0.5 * (2 ** (intento - 1)), 2.0)
+                logger.warning(
+                    "[RESPALDO_CSV_REINTENTO] Archivo temporalmente bloqueado; "
+                    "reintentando en %.1fs (%s/%s): %s",
+                    espera, intento, max_intentos, error,
+                )
+                time.sleep(espera)
+        return False
+
+    def guardar(self):
+        """SAVE: Persiste los cambios en la base CSV de trabajo. Retorna True en éxito."""
+        if os.path.isfile(self.ruta_csv) and not self._crear_respaldo_csv():
+            return False
 
         try:
             self.df.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
@@ -431,4 +459,3 @@ class GestorCasos:
     def calcular_dias_fase_actual(self):
         """Método de retrocompatibilidad que delega en calcular_dias_transcurridos."""
         self.calcular_dias_transcurridos()
-
