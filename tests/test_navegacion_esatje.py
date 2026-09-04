@@ -4,6 +4,7 @@ from unittest.mock import patch
 from src.motor_busqueda_web import BotJudicial
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from src.servicio_captcha import (
+    CaptchaConfiguracionError,
     CaptchaDesafio,
     CaptchaResolucionTimeout,
     CaptchaSolucion,
@@ -258,6 +259,41 @@ class NavegacionEsatjeTests(unittest.TestCase):
         )
         self.assertTrue(BotJudicial._boton_habilitado(BotonFalso()))
 
+    def test_mezcla_api_dom_persiste_la_decision_canonica(self):
+        bot = self.crear_bot()
+        llamadas_dom = []
+        bot._extraer_actuaciones_api = lambda paquetes: [
+            {
+                "fecha": "10/02/2025",
+                "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA",
+            },
+            {
+                "fecha": "29/05/2025",
+                "detalle": "CITACION: NO REALIZADA - CAMBIO DE DIRECCION",
+            },
+        ]
+        bot.extractor.procesar_html_string = lambda contenido, registrar_decision=True: (
+            llamadas_dom.append(registrar_decision) or {
+                "HISTORIAL_ACTUACIONES": [{
+                    "fecha": "16/07/2026",
+                    "detalle": (
+                        "EL ART. 56 TRATA DE CITACION POR LA PRENSA. PREVIO A "
+                        "PROVEER, EL ACTOR DEBE AGOTAR REGISTROS PUBLICOS."
+                    ),
+                }],
+            }
+        )
+
+        datos = bot._ejecutar_extraccion_detalles(
+            "07333-2025-00183", paquetes_api=[{}], contenido_html="<html />"
+        )
+
+        self.assertEqual(llamadas_dom, [False])
+        self.assertEqual(datos["ORIGEN_DATA"], "API+DOM")
+        self.assertEqual(datos["ULTIMA FASE"], "1.3 CALIFICACION")
+        self.assertEqual(datos["FECHA FIN ULTIMA FASE"], "10/02/2025")
+        self.assertEqual(datos["FASE ACTUAL"], "2.1 CITACION (PERSONA/BOLETA)")
+
     def test_espera_tres_segundos_y_revalida_antes_de_buscar(self):
         bot = self.crear_bot()
         bot.page = PaginaEsperaFalsa()
@@ -408,17 +444,18 @@ class NavegacionEsatjeTests(unittest.TestCase):
         self.assertEqual(aplicadas, [("23331202202089", "0", 77)])
         self.assertEqual(bot._captcha_tareas_por_causa["23331202202089"], 1)
 
-    def test_clave_ausente_hace_fallback_manual_sin_abrir_circuito(self):
+    def test_clave_ausente_da_espera_humana_limitada_sin_abrir_circuito(self):
         bot = BotJudicial(
             "https://ejemplo.local",
             captcha={
-                "modo": "api_con_fallback_manual",
+                "modo": "api_con_espera_humana_limitada",
                 "api_key_env": "VARIABLE_CAPTCHA_INEXISTENTE_TEST",
+                "espera_humana_maxima_ms": 60000,
             },
         )
         esperas = []
         bot._esperar_busqueda_habilitada = (
-            lambda causa: esperas.append(causa) or "boton"
+            lambda causa, **kwargs: esperas.append((causa, kwargs)) or "boton"
         )
 
         with patch.dict("os.environ", {}, clear=True):
@@ -427,9 +464,29 @@ class NavegacionEsatjeTests(unittest.TestCase):
             )
 
         self.assertEqual(resultado, "boton")
-        self.assertEqual(esperas, ["23331202202089"])
+        self.assertEqual(
+            esperas,
+            [(
+                "23331202202089",
+                {
+                    "timeout_ms": 30000,
+                    "accion_timeout": "espera_humana_limitada_expirada",
+                    "codigo_timeout": "CAPTCHA_ESPERA_MANUAL_30S_AGOTADA",
+                },
+            )],
+        )
         self.assertEqual(bot._captcha_errores_consecutivos, 0)
         self.assertFalse(bot._captcha_circuito_abierto)
+
+    def test_modo_manual_ya_no_esta_admitido(self):
+        bot = BotJudicial("https://ejemplo.local", captcha={"modo": "manual"})
+
+        with self.assertRaisesRegex(
+            CaptchaConfiguracionError, "CAPTCHA_MODO_MANUAL_NO_ADMITIDO"
+        ):
+            bot._resolver_o_esperar_captcha(
+                "23331202202089", "intento:busqueda-1"
+            )
 
     def test_timeout_api_supervisada_no_encadena_espera_manual(self):
         class ProveedorTimeout:

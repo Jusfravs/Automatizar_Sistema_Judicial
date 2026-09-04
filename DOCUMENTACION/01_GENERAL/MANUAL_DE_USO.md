@@ -1,22 +1,56 @@
 # Manual de uso — Sistema de Casos Judiciales e-SATJE
 
-Última actualización: 24 de agosto de 2026.
+Actualizado: 27 de agosto de 2026. Esta es la guía operativa vigente para este
+equipo. Los documentos de planes y avances conservan su contexto histórico.
 
-Este manual contiene únicamente los comandos que se usan para operar el proyecto desde Windows PowerShell. Todos se ejecutan directamente con `main.py`; no requieren herramientas internas de Codex.
+## 1. Preparar PowerShell
 
-## 1. Preparación de PowerShell
-
-Abra PowerShell y sitúese en el proyecto:
+Abra una sola ventana de PowerShell y ejecute:
 
 ```powershell
-Set-Location -LiteralPath 'C:\Users\HP\OneDrive\Desktop\Casos Judiciales'
+Set-Location -LiteralPath 'C:\Users\pasante.callcenter\OneDrive - ESPOIR\Escritorio\Automatizar_Sistema_Judicial'
 $python = '.\.venv\Scripts\python.exe'
 Test-Path -LiteralPath $python
 ```
 
-El último comando debe mostrar `True`.
+El último comando debe devolver `True`. Cierre Excel antes de ejecutar el bot;
+no abra dos instancias de `main.py` al mismo tiempo.
 
-Si la ventana de PowerShell no tiene cargada la clave de AutoCaptcha, cárguela sin mostrarla:
+## 2. Configuraciones regionales
+
+| Región | Configuración | Base SQLite | Reportes |
+|---|---|---|---|
+| Lote general activo | `config.json` | `data/estado_casos_20260827.db` | `data/reporte_trabajo_20260827.csv` y `data/REPORTE_PROCESADO_FINAL_20260827.xlsx` |
+| Quito | `config_quito.json` | `data/quito/estado_casos_quito.db` | `data/quito/` |
+| Santo Domingo | `config_santo_domingo.json` | `data/santo_domingo/estado_casos_lstodomingo.db` | `data/santo_domingo/` |
+
+No mezcle una configuración con archivos de otra región. Para el trabajo vigente
+use:
+
+```powershell
+$config = 'config.json'
+```
+
+Desde el 27/08/2026, `config.json` apunta al reporte `Reporte_jucios SIS 3
+27082026 12.40.xlsx` (hoja `Reporte`, 2.001 causas). Trabaja de forma aislada
+en `data/reporte_trabajo_20260827.csv`,
+`data/REPORTE_PROCESADO_FINAL_20260827.xlsx` y
+`data/estado_casos_20260827.db`; no modifica el lote anterior.
+
+Actualmente esta configuración usa `sucursal: "TODAS"` y
+`estado_judicial: "ACTIVO"`: el lote toma causas activas de cualquier sucursal
+según el orden del Excel.
+
+## 3. AutoCaptcha
+
+La configuración vigente usa `api_con_espera_humana_limitada`: primero solicita
+la resolución a 2Captcha. No hay modo manual permanente. Si la API falla, el
+navegador visible solo espera hasta 30 segundos para que una persona complete
+el CAPTCHA; después deja la causa en `REVISION MANUAL` y continúa el lote. La
+API key no se guarda en archivos.
+
+En la misma PowerShell desde la que ejecutará el bot, cargue la clave sin
+mostrarla:
 
 ```powershell
 $secureKey = Read-Host 'API key de 2Captcha' -AsSecureString
@@ -31,201 +65,94 @@ Remove-Variable secureKey, ptr -ErrorAction SilentlyContinue
 [bool]$env:AUTOCAPTCHA_API_KEY
 ```
 
-La última línea debe mostrar `True`. No imprima nunca el contenido de la variable.
+El último comando debe devolver `True`. No pegue la clave en `config.json`,
+`.env`, documentos, logs ni chats.
 
-Antes de ejecutar, cierre Excel si tiene abierto el CSV o el reporte final de la región. No ejecute dos ventanas de `main.py` a la vez.
+## 4. Ejecutar de forma visible
 
-## 2. Elegir la configuración correcta
+Use siempre `main.py` para una ejecución supervisada: abre Chromium visible y,
+ante un fallo de la API, permite una única intervención de hasta 30 segundos.
 
-Defina una sola configuración por sesión:
-
-| Región | Configuración | Archivo de entrada | Reporte final |
-|---|---|---|---|
-| El Oro (configuración principal) | `config.json` | `data/REPORTE_JUICIOS_LISTO_PARA_REVISION.xlsx` | `data/REPORTE_PROCESADO_FINAL.xlsx` |
-| Quito | `config_quito.json` | `data/quito/Reporte_juicios_QUITO_20260817.xlsx` | `data/quito/REPORTE_PROCESADO_QUITO.xlsx` |
-| Santo Domingo | `config_santo_domingo.json` | `data/santo_domingo/Reporte_juicios_LSTODOMINGO_20260812.xlsx` | `data/santo_domingo/REPORTE_PROCESADO_LSTODOMINGO.xlsx` |
-
-Ejemplo para El Oro:
-
-```powershell
-$config = 'config.json'
-```
-
-El Excel universal de El Oro contiene todas las sucursales, pero `config.json` aplica el filtro vigente de El Oro. No cambie filtros, Excel ni configuración mientras un lote esté ejecutándose.
-
-## 3. Comandos de ejecución
-
-### Procesar los siguientes 10 pendientes
-
-Este es el comando habitual y recomendado:
+Primero ejecute un piloto de diez causas:
 
 ```powershell
 & $python -u main.py --config $config --lote 10
 ```
 
-Solo procesa causas pendientes. Omite las que SQLite ya tenga como `PROCESADO`, `ERROR`, `PARCIAL`, `SIN_RESULTADOS` o `EXCLUIDO_NO_CORRESPONDE`.
-
-### Procesar otro tamaño de lote
-
-`--lote` acepta de 2 a 100 causas:
+Para una causa puntual:
 
 ```powershell
-& $python -u main.py --config $config --lote 2
-& $python -u main.py --config $config --lote 20
-& $python -u main.py --config $config --lote 50
+& $python -u main.py --config $config --solo 07331-2024-00277
 ```
 
-Aunque se soliciten 20, 50 o 100 causas, el sistema trabaja internamente en bloques de 10: guarda SQLite, CSV y Excel, cierra el navegador y abre una sesión nueva entre bloques.
-
-### Procesar todos los pendientes
-
-Este comando inicia el navegador de inmediato y procesa todos los pendientes de la región configurada. Úselo solo después de revisar pilotos y lotes de 10:
+Solo después de revisar el piloto puede procesar todos los pendientes:
 
 ```powershell
-& $python -u main.py --config $config --pendientes
+& $python -u main.py --config $config
 ```
 
-No reinicia ni reprocesa causas ya terminales.
+No use `python -m src.orquestador` cuando pueda necesitar esa ventana visible:
+ese orquestador se ejecuta en modo *headless* y la causa pasará directamente a
+revisión manual si la API no la resuelve.
 
-### Ejecutar una causa concreta
+## 5. Supervisar y reanudar
 
-Para probar, revisar o reintentar una sola causa:
+- La consola muestra la causa actual, la resolución del CAPTCHA y los estados
+  `COMPLETADO`, `PARCIAL`, `ERROR` o `EXCLUIDO_NO_CORRESPONDE`.
+- El estado durable se guarda en SQLite; el CSV y Excel se actualizan durante
+  la ejecución y al finalizar.
+- Si el proceso se interrumpe, no borre archivos: revise primero
+  `data/estado_casos_20260827.db`, `data/reporte_trabajo_20260827.csv`,
+  `data/REPORTE_PROCESADO_FINAL_20260827.xlsx` y
+  `data/casos_fallidos_20260827.txt`.
+- Para continuar un lote detenido, vuelva a ejecutar el mismo comando. La
+  cola evita reprocesar causas con estado terminal.
 
-```powershell
-& $python -u main.py --config $config --solo '17233-2025-09168'
-```
+## 6. Reiniciar una región desde cero
 
-Sustituya el número por la causa requerida. Use `--solo` para un piloto o para una causa que necesite revisión puntual; no use este modo como forma de procesar una región completa.
+Un reinicio elimina el estado de ejecución de esa región, por lo que debe
+autorizarse explícitamente. Antes de hacerlo, respalde coordinadamente la base,
+CSV, Excel final y lista de fallidos. El Excel de origen nunca se elimina.
 
-## 4. Qué no usar en la operación diaria
-
-No use estos comandos sin una revisión técnica previa:
+El reinicio de El Oro realizado el 26 de agosto de 2026 está preservado en:
 
 ```text
-python main.py
-python main.py --reprocesar-filtro
-python scripts/reset_db.py
-python migracion_db.py
+backups/reinicio_el_oro_20260826_095002/
 ```
 
-- Sin modo, `main.py` puede recorrer un alcance mayor al esperado.
-- `--reprocesar-filtro` ignora el flujo normal de pendientes.
-- `reset_db.py` borra la cola SQLite.
-- `migracion_db.py` es mantenimiento de esquema, no un comando para retomar un lote.
-
-Tampoco edite SQLite, CSV, estados o resultados mientras el bot esté abierto.
-
-## 5. Verificación antes de un lote amplio
-
-Compruebe que el código y sus pruebas estén correctos:
+## 7. Validación antes de cambios o ejecución masiva
 
 ```powershell
-& $python -m unittest discover -v
+& $python -m unittest discover -s tests -q
 ```
 
-El resultado final debe contener `OK` y no `FAILED` ni `ERRORS`.
+La referencia actual es `223` pruebas correctas y `3` omitidas por requerir
+PostgreSQL. `pytest` no forma parte de las dependencias instaladas en este
+equipo; la suite usa `unittest`.
 
-Para una prueba nueva o después de cambiar la inferencia, siga este orden:
+## 7.1 Reclasificar datos ya extraídos
 
-```text
-una causa con --solo → lote 2 o 5 → lote 10 → lote 20 o más → --pendientes
-```
-
-## 6. Supervisar la ejecución
-
-En una segunda ventana de PowerShell puede seguir el log sin detener el bot:
+Cuando se corrige una regla de clasificación, actualice lo ya recolectado sin
+volver a navegar SATJE. Primero haga una vista previa:
 
 ```powershell
-Set-Location -LiteralPath 'C:\Users\HP\OneDrive\Desktop\Casos Judiciales'
-Get-Content -LiteralPath '.\ejecucion_produccion.log' -Tail 80 -Wait
+& $python scripts/reclasificar_desde_sqlite.py --config $config
 ```
 
-Presione `Ctrl+C` solamente en la ventana que sigue el log para detener la visualización. Para detener el bot, vaya a su ventana y presione `Ctrl+C` una vez; espere a que termine de guardar y exportar.
-
-Al finalizar correctamente, busque una línea similar a:
-
-```text
-[OK] PROCESO COMPLETADO. 10 de 10 causas procesadas con éxito.
-```
-
-El resumen SQLite puede incluir errores históricos. Para evaluar el lote actual, use la línea final del proceso, los fallos listados y el Excel recién exportado.
-
-## 7. Resultados y estados
-
-Los resultados se conservan en conjunto: SQLite controla la cola, el CSV conserva continuidad y el Excel es el informe para revisión.
-
-Estados más habituales:
-
-- `PENDIENTE`: aún no se ha procesado.
-- `PROCESADO`: extracción e inferencia guardadas.
-- `PARCIAL`: se obtuvo información útil, pero incompleta.
-- `ERROR`: requiere revisión o un reintento puntual con `--solo`.
-- `SIN_RESULTADOS`: el portal no devolvió una causa válida.
-- `EXCLUIDO_NO_CORRESPONDE`: la carátula no pertenece a Fundación Parea / Espoir o no corresponde a cobro de pagaré a la orden.
-
-Los casos no recuperables por navegación, datos insuficientes o validación se identifican en el reporte para revisión manual; no deben hacer colapsar el resto del lote.
-
-Archivos principales de El Oro:
-
-| Archivo | Uso |
-|---|---|
-| `estado_casos.db` | Estados y resultados durables de la cola. |
-| `data/reporte_trabajo.csv` | Continuidad de los datos de trabajo. |
-| `data/REPORTE_PROCESADO_FINAL.xlsx` | Informe final de El Oro. |
-| `data/casos_fallidos.txt` | Causas fallidas del último alcance ejecutado. |
-| `data/temp_htmls/<causa>/` | Evidencia HTML, JSON y capturas de cada causa. |
-
-Quito y Santo Domingo usan sus rutas regionales indicadas en su configuración.
-
-## 8. PostgreSQL
-
-`config.json` y `config_quito.json` tienen sincronización PostgreSQL configurada. Si la contraseña no está disponible en la ventana de PowerShell, el sistema seguirá con SQLite y mostrará una advertencia.
-
-Para habilitar la sincronización en esa ventana sin revelar la contraseña en pantalla:
+Para aplicarla, generar respaldos y reconstruir CSV/Excel:
 
 ```powershell
-$securePg = Read-Host 'Contraseña de PostgreSQL' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePg)
-try {
-    $env:POSTGRES_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-}
-finally {
-    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
-}
-Remove-Variable securePg, ptr -ErrorAction SilentlyContinue
+& $python scripts/reclasificar_desde_sqlite.py --config $config --aplicar
 ```
 
-No imprima `$env:POSTGRES_PASSWORD`.
+El proceso actualiza la fase operativa que se envía y conserva `ULTIMA FASE`
+como evidencia histórica. La limpieza integrada solo borra filas idénticas en
+todas sus columnas; no borra dos registros del mismo juicio si representan
+carteras, usuarios o créditos distintos.
 
-## 9. Errores frecuentes
+## 8. Caso de regresión importante
 
-### Excel o CSV bloqueado
-
-Cierre el archivo indicado en el log y vuelva a lanzar únicamente el lote o causa pendiente. No borre SQLite.
-
-### `REGRESO_AL_BUSCADOR_NO_CONFIRMADO`
-
-El lote se detuvo por seguridad. Comparta el log desde el inicio de esa causa y la carpeta de evidencia; no inicie el siguiente bloque hasta revisarlo.
-
-### `CAPTCHA_TIMEOUT` o error de AutoCaptcha
-
-Revise conexión, saldo y que la clave esté cargada en la misma ventana de PowerShell. Cuando el sistema se estabilice, reintente solo la causa afectada:
-
-```powershell
-& $python -u main.py --config $config --solo '<NUMERO-DE-CAUSA>'
-```
-
-### Datos, fase o fecha incorrectos
-
-No consuma otro CAPTCHA de inmediato. Comparta la causa, el resultado que aparece en Excel, el resultado correcto esperado y capturas/evidencia del portal. La corrección debe ser un parche universal, no una edición manual aislada del Excel.
-
-## 10. Cierre de la sesión
-
-Cuando termine y no haya ejecuciones activas:
-
-```powershell
-Remove-Item Env:AUTOCAPTCHA_API_KEY -ErrorAction SilentlyContinue
-Remove-Item Env:POSTGRES_PASSWORD -ErrorAction SilentlyContinue
-```
-
-Conserve el log, SQLite, CSV y Excel de la región como una misma unidad. Si necesita reiniciar una región desde cero, solicite primero una preparación con respaldo de los cuatro elementos.
+La causa `07333-2023-02297` debe terminar en `2.1 CITACION
+(PERSONA/BOLETA)`, con fecha `10/03/2026` y etapa/fase actual `CONTESTACION`.
+Un despacho deprecatorio que ordena diligencias de embargo y citación no
+demuestra un embargo ejecutado. La prueba de clasificación cubre esta regla.

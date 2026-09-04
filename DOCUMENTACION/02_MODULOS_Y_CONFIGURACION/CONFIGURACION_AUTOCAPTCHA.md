@@ -1,49 +1,56 @@
-# Configuraci??n de AutoCaptcha (2Captcha)
+# Configuración de AutoCaptcha (2Captcha)
 
-La integraci??n usa la API JSON v2 de 2Captcha y resuelve el reCAPTCHA v2 del
-formulario de b??squeda e-SATJE. La credencial nunca se guarda en `config.json`,
-logs, evidencia HTML, SQLite ni control de versiones.
+El proyecto usa la API JSON v2 de 2Captcha para resolver reCAPTCHA v2 del
+portal e-SATJE. La credencial se obtiene solo desde la variable de entorno
+`AUTOCAPTCHA_API_KEY`; no se carga automáticamente desde `.env` y nunca debe
+guardarse en `config.json`, SQLite, reportes, logs o control de versiones.
 
-## Activaci??n segura
+## Modo vigente
 
-En la misma terminal de PowerShell desde la que se ejecutar?? el bot:
+La configuración principal (`config.json`) usa:
+
+```json
+"modo": "api_con_espera_humana_limitada"
+```
+
+El sistema comprueba saldo, crea una tarea proxyless, sondea su estado e inyecta
+el token en el callback de Angular. No existe un modo de operación manual. Si
+la API no puede resolver el reto, el navegador visible da como máximo 30
+segundos para que una persona lo complete. Si no queda habilitado `BUSCAR`, la
+causa se marca `REVISION MANUAL` y el lote continúa con la siguiente. Errores
+de clave, saldo insuficiente o circuito abierto no consumen más tareas.
+
+## Cargar la clave de forma segura
+
+En la misma PowerShell de ejecución:
 
 ```powershell
-$env:AUTOCAPTCHA_API_KEY = Read-Host "API key de 2Captcha"
-& '.\.venv\Scripts\python.exe' -u 'main.py' --solo '12331-2014-0845'
+$secureKey = Read-Host 'API key de 2Captcha' -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
+try {
+    $env:AUTOCAPTCHA_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+}
+finally {
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+}
+Remove-Variable secureKey, ptr -ErrorAction SilentlyContinue
 ```
 
-`Read-Host` evita dejar la clave escrita dentro del comando. La variable vive solo
-durante esa sesi??n de PowerShell. No se carga `.env` autom??ticamente.
+Para comprobar que está disponible sin revelar su contenido:
 
-## Comportamiento
-
-1. Se identifica una ??nica sitekey y el callback p??blico usado por `ngx-recaptcha2`.
-2. Se valida la disponibilidad del proveedor una vez por ejecuci??n.
-3. Se crea una tarea `RecaptchaV2TaskProxyless`.
-4. El resultado se sondea cada cinco segundos, con timeout total de dos minutos.
-5. El token se entrega al callback Angular y se confirma que `BUSCAR` se habilite.
-6. El bot espera diez segundos completos.
-7. Se vuelven a validar causa, token y bot??n antes del ??nico clic.
-
-La configuraci??n inicial es `api_con_fallback_manual`: los fallos recuperables
-vuelven a la resoluci??n manual visible. Errores de credencial, saldo, circuito
-abierto o presupuesto agotado no se ocultan como fallback.
-
-## L??mites y rollback
-
-- M??ximo dos tareas pagadas por causa, incluyendo reintentos.
-- Tres fallos consecutivos abren el circuito y evitan seguir consumiendo saldo.
-- F5/TSPD queda fuera de esta integraci??n.
-- Un rechazo se reporta como incorrecto solo si el widget vaci?? su respuesta.
-- Para desactivar todas las llamadas, cambie `captcha.modo` a `manual`.
-
-## Evidencia
-
-Los fallos de b??squeda se guardan bajo:
-
-```text
-data/temp_htmls/<causa>/<intento>/busqueda_XX/
+```powershell
+[bool]$env:AUTOCAPTCHA_API_KEY
 ```
 
-El contenido de `g-recaptcha-response` se redacta antes de guardar el HTML.
+## Límites de seguridad
+
+- Máximo dos tareas pagadas por causa.
+- Máximo tres fallos consecutivos antes de abrir el circuito.
+- Saldo mínimo configurable: USD 0,01.
+- La política vigente es API primero; no cambie `captcha.modo` a `manual`, pues
+  ese valor está bloqueado deliberadamente.
+- `captcha.espera_humana_maxima_ms` queda fijado en `30000`; el programa no
+  permite ampliarlo por encima de 30 segundos.
+
+Ejecute `main.py` en modo visible: solo así alguien puede aprovechar esa breve
+ventana de contingencia. El orquestador *headless* no es adecuado para ello.

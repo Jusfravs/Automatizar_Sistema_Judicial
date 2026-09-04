@@ -66,8 +66,8 @@ class FrenoNavegacionTests(unittest.TestCase):
     def test_extraccion_transforma_sin_pagina_ni_navegacion(self):
         bot = self.crear_bot()
         bot.page = None
-        bot.extractor.procesar_html_string = lambda contenido: {}
-        bot._aplicar_inferencia_consolidada = lambda datos, causa=None: datos
+        bot.extractor.procesar_html_string = lambda contenido, **kwargs: {}
+        bot._aplicar_inferencia_consolidada = lambda datos, causa=None, **kwargs: datos
 
         datos = bot._ejecutar_extraccion_detalles(
             "23331202202089",
@@ -180,7 +180,7 @@ class FrenoNavegacionTests(unittest.TestCase):
         bot._preparar_busqueda = (
             lambda causa: preparados.append(causa) or "1233120140845"
         )
-        bot._esperar_busqueda_habilitada = lambda causa: None
+        bot._esperar_busqueda_habilitada = lambda causa, **kwargs: None
         bot._esperar_despues_captcha = lambda causa: None
         bot._enviar_busqueda_una_vez = (
             lambda causa, intento: enviados.append(intento)
@@ -227,7 +227,7 @@ class FrenoNavegacionTests(unittest.TestCase):
     def test_consolidacion_conserva_origen_y_conteos(self):
         bot = self.crear_bot()
         bot._descriptores_actuales = [{"clave_carpeta": "carpeta-1"}]
-        bot._aplicar_inferencia_consolidada = lambda datos, causa=None: datos
+        bot._aplicar_inferencia_consolidada = lambda datos, causa=None, **kwargs: datos
         actuacion = {
             "fecha": "24/02/2023",
             "detalle": "SENTENCIA",
@@ -295,6 +295,20 @@ class FrenoNavegacionTests(unittest.TestCase):
         self.assertTrue(actualizado)
         self.assertEqual(gestor.df.loc[0, "FECHA FIN ULTIMA FASE"], "31/01/2025")
         self.assertTrue(pd.isna(gestor.df.loc[1, "FECHA FIN ULTIMA FASE"]))
+
+    def test_depurar_duplicados_exactos_preserva_coincidencias_con_datos_distintos(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "NUMERO_JUICIO": ["23331-2025-00001", "23331-2025-00001", "23331-2025-00001"],
+            "USUARIO": ["UNO", "UNO", "DOS"],
+            "ESTADO.1": ["ACTIVO", "ACTIVO", "ABANDONO"],
+        })
+
+        eliminadas = gestor.depurar_filas_duplicadas_exactas()
+
+        self.assertEqual(eliminadas, 1)
+        self.assertEqual(len(gestor.df), 2)
+        self.assertEqual(gestor.df["USUARIO"].tolist(), ["UNO", "DOS"])
 
     def test_obtener_casos_pendientes_filtra_por_usuario(self):
         gestor = GestorCasos.__new__(GestorCasos)

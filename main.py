@@ -266,25 +266,27 @@ def main(argv=None):
             inicio_bloque = indice_bloque * TAMANO_BLOQUE_NAVEGADOR
             fin_bloque = min(inicio_bloque + TAMANO_BLOQUE_NAVEGADOR, total)
             motivo_formato = motivo_revision_manual_por_formato(numero_juicio)
-            if not motivo_formato and (
-                i == inicio_bloque + 1 or not sesion_abierta
-            ):
-                if i == inicio_bloque + 1:
-                    logger.info(
-                        "[BLOQUE %s/%s] Iniciando sesi\u00f3n para causas %s a %s.",
-                        indice_bloque + 1, len(bloques), inicio_bloque + 1, fin_bloque,
-                    )
-                else:
-                    logger.info(
-                        "[BLOQUE %s/%s] Reiniciando sesi\u00f3n para continuar desde la causa %s.",
-                        indice_bloque + 1, len(bloques), i,
-                    )
-                bot.iniciar_navegador(modo_visible=True)
-                sesion_abierta = True
-
             logger.info("--- CAUSA %s/%s: %s ---", i, total, numero_juicio)
 
             try:
+                # Una falla al abrir el navegador se atribuye a esta causa y
+                # permite reintentar una sesion limpia en la siguiente.
+                if not motivo_formato and (
+                    i == inicio_bloque + 1 or not sesion_abierta
+                ):
+                    if i == inicio_bloque + 1:
+                        logger.info(
+                            "[BLOQUE %s/%s] Iniciando sesi\u00f3n para causas %s a %s.",
+                            indice_bloque + 1, len(bloques), inicio_bloque + 1, fin_bloque,
+                        )
+                    else:
+                        logger.info(
+                            "[BLOQUE %s/%s] Reiniciando sesi\u00f3n para continuar desde la causa %s.",
+                            indice_bloque + 1, len(bloques), i,
+                        )
+                    bot.iniciar_navegador(modo_visible=True)
+                    sesion_abierta = True
+
                 if motivo_formato:
                     resultado = {
                         "estado": "ERROR_VERIFICACION_MANUAL",
@@ -398,18 +400,55 @@ def main(argv=None):
 
             except Exception as exc:
                 logger.exception(
-                    "[!] Fallo no recuperable en causa %s; el lote se detiene.",
+                    "[!] Fallo no controlado en causa %s; se marca ERROR y el lote continua.",
                     numero_juicio,
                 )
                 if numero_juicio not in casos_fallidos:
                     casos_fallidos.append(numero_juicio)
                 try:
                     cola.registrar_error_extraccion(
-                        numero_juicio, "LOTE_DETENIDO", str(exc)
+                        numero_juicio, "EXCEPCION_NO_CONTROLADA", str(exc)
                     )
                 except Exception:
                     logger.exception("No se pudo registrar el motivo de detención en SQLite.")
-                raise
+                detalle = "EXCEPCION_NO_CONTROLADA:%s:%s" % (
+                    type(exc).__name__, str(exc) or "SIN_DETALLE",
+                )
+                resultado_error = {
+                    "estado": "ERROR",
+                    "error": detalle,
+                    "regreso_confirmado": False,
+                }
+                try:
+                    cola.registrar_resultado_transaccional(
+                        numero_juicio,
+                        resultado_error,
+                        origen="EXCEPCION_NO_CONTROLADA",
+                        estado_final="ERROR",
+                    )
+                except Exception:
+                    logger.exception("No se pudo persistir el resultado de error en SQLite.")
+                    try:
+                        # Respaldo: aunque falle el JSON de resultado, evitar que
+                        # la causa quede como PENDIENTE o EN_PROCESO.
+                        cola.actualizar_estado(numero_juicio, "ERROR")
+                    except Exception:
+                        logger.exception("No se pudo marcar la causa como ERROR en SQLite.")
+                if gestor_pg:
+                    try:
+                        gestor_pg.registrar_error(
+                            numero_juicio,
+                            origen="EXCEPCION_NO_CONTROLADA",
+                            error_detalle=detalle,
+                        )
+                    except Exception:
+                        logger.exception("[POSTGRES] No se pudo registrar el error de %s.", numero_juicio)
+                try:
+                    bot.cerrar_navegador()
+                except Exception:
+                    logger.exception("No se pudo cerrar el navegador despues del fallo.")
+                sesion_abierta = False
+                continue
 
             # Autoguardado preventivo.
             if i % intervalo_guardado == 0:

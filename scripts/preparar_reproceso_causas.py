@@ -42,6 +42,17 @@ CAMPOS_LIMPIAR = (
 )
 
 
+def limpiar_comentario_automatico(valor):
+    """Elimina la marca creada por el bot, sin borrar una nota humana.
+
+    ``main.py`` usa el prefijo ``REVISION MANUAL:`` para errores t\u00e9cnicos.
+    Al devolver una causa a PENDIENTE esa marca deja de ser vigente; en
+    cambio, cualquier comentario con otro origen se conserva.
+    """
+    texto = str(valor or "")
+    return "" if texto.strip().upper().startswith("REVISION MANUAL:") else texto
+
+
 def normalizar_causa(valor):
     return "".join(c for c in str(valor or "") if c.isdigit())
 
@@ -111,12 +122,24 @@ def limpiar(config_path, causas):
 
         mascara = repo.df["NUMERO_JUICIO"].map(normalizar_causa)
         indices = repo.df.index[mascara.isin(causas_norm)]
-        if len(indices) != len(causas_norm):
-            raise LookupError("CAUSAS_AUSENTES_CSV_O_DUPLICADAS")
+        causas_en_csv = set(mascara.loc[indices])
+        faltantes_csv = sorted(set(causas_norm) - causas_en_csv)
+        if faltantes_csv:
+            raise LookupError(f"CAUSAS_AUSENTES_CSV:{faltantes_csv}")
+        # Una misma causa puede figurar en varias filas por créditos o carteras
+        # distintas. Se limpia la clasificación en cada fila, preservando sus
+        # datos base y comentarios humanos, mientras SQLite se reinicia una vez
+        # por número de causa.
         for indice in indices:
             for campo in CAMPOS_LIMPIAR:
                 if campo in repo.df.columns:
                     repo.df.at[indice, campo] = ""
+            if "COMENTARIO_ULTIMO" in repo.df.columns:
+                repo.df.at[indice, "COMENTARIO_ULTIMO"] = (
+                    limpiar_comentario_automatico(
+                        repo.df.at[indice, "COMENTARIO_ULTIMO"]
+                    )
+                )
 
         conexion.execute("BEGIN IMMEDIATE")
         conexion.execute(

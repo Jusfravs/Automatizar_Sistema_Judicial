@@ -35,15 +35,15 @@ def actualizar_todo_quito():
         )
         
         datos_extraidos = data.get("datos", {})
-        datos_extraidos["ETAPA_PROCESAL"] = inf.ultima_etapa
-        datos_extraidos["FASE_PROCESAL"] = inf.ultima_fase
-        datos_extraidos["FECHA INICIAL FASE ACTUAL"] = inf.fecha_fin_ultima_fase
+        datos_extraidos["ETAPA_PROCESAL"] = inf.etapa_actual
+        datos_extraidos["FASE_PROCESAL"] = inf.fase_actual
+        datos_extraidos["FECHA INICIAL FASE ACTUAL"] = inf.fecha_inicio_fase_actual
         datos_extraidos["ULTIMA ETAPA"] = inf.ultima_etapa
         datos_extraidos["ULTIMA FASE"] = inf.ultima_fase
         datos_extraidos["FECHA FIN ULTIMA FASE"] = inf.fecha_fin_ultima_fase
         datos_extraidos["ETAPA ACTUAL"] = inf.etapa_actual
         datos_extraidos["FASE ACTUAL"] = inf.fase_actual
-        datos_extraidos["FECHA INICIO FASE ACTUAL"] = inf.fecha_fin_ultima_fase
+        datos_extraidos["FECHA INICIO FASE ACTUAL"] = inf.fecha_inicio_fase_actual
         if inf.mensaje_especial:
             datos_extraidos["COMENTARIO_ULTIMO"] = inf.mensaje_especial
         datos_extraidos["ACTUACION_RESPALDO"] = inf.actuacion_respaldo
