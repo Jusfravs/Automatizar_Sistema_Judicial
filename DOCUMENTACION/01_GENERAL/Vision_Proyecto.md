@@ -135,11 +135,15 @@ El sistema utiliza un esquema de almacenamiento multicapa para asegurar que ning
   - Script interactivo de validación sin conexión a Internet. Contiene 10 casos de prueba con diferentes escenarios de actuaciones legales para verificar que la lógica infiera la etapa procesal correcta.
 
 * **`requirements.txt`**:
-  - Lista de dependencias de Python: `playwright`, `beautifulsoup4`, `lxml`, `pandas`, `openpyxl`, `pytest`, `pyyaml`.
+  - Lista de dependencias de Python: `playwright`, `beautifulsoup4`, `lxml`, `pandas`, `openpyxl`, `psycopg2-binary` y `PyYAML`.
+  - Las pruebas usan `unittest`; `pytest` no es una dependencia requerida en este equipo.
 
 ---
 
 ### Módulo Principal (`src/`)
+
+* **`main.py`**:
+  - Punto de entrada operativo visible. Es el flujo recomendado para lotes supervisados y para la ventana de contingencia de CAPTCHA, limitada a 30 segundos.
 
 * **`src/orquestador.py`** (`Orquestador`):
   - Orquestador del ciclo de trabajo masivo e invisible (*headless*). Controla el bucle continuo de consumo de la cola, la ejecución dual, los reintentos automáticos de errores con *exponential backoff* y la llamada al reporte final.

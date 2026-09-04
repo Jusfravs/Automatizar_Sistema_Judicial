@@ -1,5 +1,12 @@
 # Plan de implementación: API de AutoCaptcha para e-SATJE
 
+> Estado operativo al 26 de agosto de 2026: la integración fue implementada en
+> `src/servicio_captcha.py` y `src/motor_busqueda_web.py`. La configuración
+> principal usa `api_con_fallback_manual`; consulte
+> `../02_MODULOS_Y_CONFIGURACION/CONFIGURACION_AUTOCAPTCHA.md` para operarla.
+> El contenido siguiente conserva el diseño y las decisiones originales de este
+> plan, incluida su condición histórica de pausa.
+
 ## 0. Estado, decisión y alcance
 
 - Fecha: 7 de agosto de 2026.

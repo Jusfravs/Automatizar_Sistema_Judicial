@@ -252,6 +252,26 @@ class GestorCasos:
             return True
         return False
 
+    def depurar_filas_duplicadas_exactas(self):
+        """Elimina solo registros iguales en todas sus columnas.
+
+        Un mismo nÃºmero de juicio puede pertenecer a mÃ¡s de una cartera,
+        usuario o crÃ©dito. Por eso las coincidencias por ``NUMERO_JUICIO`` no
+        se eliminan automÃ¡ticamente: Ãºnicamente se depuran copias exactas,
+        tratando vacÃ­os y nulos como equivalentes.
+        """
+        if self.df.empty:
+            return 0
+
+        comparable = self.df.fillna("").astype(str)
+        duplicadas = comparable.duplicated(keep="first")
+        cantidad = int(duplicadas.sum())
+        if cantidad:
+            self.df = self.df.loc[~duplicadas].copy()
+            logger.info("Se depuraron %s filas duplicadas exactas.", cantidad)
+        return cantidad
+
+
     @staticmethod
     def _es_bloqueo_transitorio_archivo(error):
         """Reconoce bloqueos habituales de Windows, OneDrive y antivirus."""

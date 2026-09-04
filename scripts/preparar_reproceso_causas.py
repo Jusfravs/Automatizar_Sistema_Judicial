@@ -47,6 +47,17 @@ CAMPOS_LIMPIAR = (
 )
 
 
+def limpiar_comentario_automatico(valor):
+    """Elimina la marca creada por el bot, sin borrar una nota humana.
+
+    ``main.py`` usa el prefijo ``REVISION MANUAL:`` para errores t\u00e9cnicos.
+    Al devolver una causa a PENDIENTE esa marca deja de ser vigente; en
+    cambio, cualquier comentario con otro origen se conserva.
+    """
+    texto = str(valor or "")
+    return "" if texto.strip().upper().startswith("REVISION MANUAL:") else texto
+
+
 def normalizar_causa(valor):
     return "".join(c for c in str(valor or "") if c.isdigit())
 
@@ -272,24 +283,23 @@ def limpiar(config_path, causas):
         if respaldo_pg:
             respaldos.append(respaldo_pg)
 
-        causas_exactas = {str(causa).strip() for causa in causas}
-        mascara = repo.df["NUMERO_JUICIO"].astype(str).str.strip().isin(causas_exactas)
-        indices = repo.df.index[mascara]
-        encontradas_csv = {
-            str(repo.df.at[indice, "NUMERO_JUICIO"]).strip() for indice in indices
-        }
-        faltantes_csv = sorted(causas_exactas - encontradas_csv)
+        mascara = repo.df["NUMERO_JUICIO"].map(normalizar_causa)
+        indices = repo.df.index[mascara.isin(causas_norm)]
+        causas_en_csv = set(mascara.loc[indices])
+        faltantes_csv = sorted(set(causas_norm) - causas_en_csv)
         if faltantes_csv:
             raise LookupError(f"CAUSAS_AUSENTES_CSV:{faltantes_csv}")
         for indice in indices:
             for campo in CAMPOS_LIMPIAR:
                 if campo in repo.df.columns:
-                    # Pandas infiere float64 cuando una columna de salida
-                    # estaba completamente vacía. None se exporta como celda
-                    # vacía sin forzar una conversión insegura de tipo.
                     valor_vacio = "" if repo.df[campo].dtype == object else None
                     repo.df.at[indice, campo] = valor_vacio
-        _restaurar_comentario_base(repo, indices, causas)
+            if "COMENTARIO_ULTIMO" in repo.df.columns:
+                repo.df.at[indice, "COMENTARIO_ULTIMO"] = (
+                    limpiar_comentario_automatico(
+                        repo.df.at[indice, "COMENTARIO_ULTIMO"]
+                    )
+                )
 
         conexion.execute("BEGIN IMMEDIATE")
         conexion.execute(

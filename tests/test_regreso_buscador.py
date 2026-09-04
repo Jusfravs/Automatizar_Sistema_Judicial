@@ -130,6 +130,18 @@ class RetornoBuscadorTests(unittest.TestCase):
         self.assertFalse(diagnostico["listo"])
         self.assertEqual(diagnostico["campos_causa"], 2)
 
+    def test_capa_de_carga_visible_impide_reutilizar_el_buscador(self):
+        pagina = PaginaRetornoFalsa(
+            url="https://ejemplo.local/busqueda-filtros", campos=1
+        )
+        bot = self.crear_bot(pagina)
+        bot._hay_carga_visible = lambda: True
+
+        diagnostico = bot._diagnosticar_buscador()
+
+        self.assertTrue(diagnostico["carga_visible"])
+        self.assertFalse(diagnostico["listo"])
+
     def test_espera_requiere_dos_observaciones_estables(self):
         bot = self.crear_bot()
         respuestas = iter([
@@ -538,6 +550,96 @@ class RetornoBuscadorTests(unittest.TestCase):
             ),
             repo.actualizaciones,
         )
+
+    def test_excepcion_no_controlada_marca_error_y_continua_con_siguiente_causa(self):
+        causas = ["17230-2025-00001", "17230-2025-00002"]
+
+        class RepoFalso:
+            def __init__(self, _ruta_config):
+                self.config = {
+                    "navegacion": {"url_portal": "https://ejemplo.local"},
+                    "sistema": {"intervalo_autoguardado": 100},
+                    "rutas": {"archivo_casos_fallidos": ruta_fallidos},
+                }
+                self.filtros = {"sucursal": "PRUEBA"}
+
+            def obtener_casos_pendientes(self):
+                return list(causas)
+
+            def actualizar_caso(self, _causa, _datos):
+                return True
+
+            def guardar(self):
+                return True
+
+            def exportar_excel(self):
+                pass
+
+        class ColaFalsa:
+            registros_error = []
+            resultados = []
+
+            def __init__(self, ruta_db):
+                pass
+
+            def verificar_esquema(self):
+                return True
+
+            def recuperar_huerfanos(self):
+                return 0
+
+            def filtrar_causas_pendientes(self, candidatas):
+                return list(candidatas)
+
+            def poblar_cola(self, _causas):
+                pass
+
+            def registrar_error_extraccion(self, causa, origen, detalle):
+                self.registros_error.append((causa, origen, detalle))
+
+            def registrar_resultado_transaccional(self, causa, resultado, **_kwargs):
+                self.resultados.append((causa, resultado))
+
+            def obtener_estadisticas(self):
+                return {"ERROR": 1, "PROCESADO": 1}
+
+        class BotFalso:
+            causas_consultadas = []
+
+            def __init__(self, *_args, **_kwargs):
+                pass
+
+            def iniciar_navegador(self, **_kwargs):
+                pass
+
+            def procesar_flujo_judicatura(self, causa):
+                self.causas_consultadas.append(causa)
+                if causa == causas[0]:
+                    raise RuntimeError("FALLO_SIMULADO")
+                return {
+                    "estado": "COMPLETADO",
+                    "datos": {"HISTORIAL_ACTUACIONES": []},
+                    "regreso_confirmado": True,
+                }
+
+            def cerrar_navegador(self):
+                pass
+
+        with tempfile.TemporaryDirectory() as temporal:
+            ruta_fallidos = os.path.join(temporal, "fallidos.txt")
+            with patch.object(main_module, "GestorCasos", RepoFalso), \
+                 patch.object(main_module, "GestorCola", ColaFalsa), \
+                 patch.object(main_module, "BotJudicial", BotFalso):
+                main_module.main(["--config", "prueba.json", "--lote", "2"])
+
+            with open(ruta_fallidos, "r", encoding="utf-8") as archivo:
+                fallidos = [linea.strip() for linea in archivo if linea.strip()]
+
+        self.assertEqual(BotFalso.causas_consultadas, causas)
+        self.assertEqual(fallidos, [causas[0]])
+        self.assertEqual(ColaFalsa.registros_error[0][0], causas[0])
+        self.assertEqual(ColaFalsa.registros_error[0][1], "EXCEPCION_NO_CONTROLADA")
+        self.assertEqual(ColaFalsa.resultados[0][1]["estado"], "ERROR")
 
     def test_modo_pendientes_conserva_el_conjunto_ya_filtrado(self):
         casos = ["CAUSA-001", "CAUSA-002"]

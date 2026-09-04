@@ -35,6 +35,21 @@ class TestReclasificarDesdeSQLite(unittest.TestCase):
         self.assertEqual(nuevos["COMENTARIO_ULTIMO"], "")
         self.assertIsNone(datos["COMENTARIO_ULTIMO"])
 
+    def test_limpia_marca_automatica_de_remate_tras_reclasificar(self):
+        datos = {
+            'COMENTARIO_ULTIMO': 'CASO SOLVENTADO POR REMATE',
+            'HISTORIAL_ACTUACIONES': [
+                {'fecha': '28/11/2017', 'detalle': 'MANDAMIENTO DE EJECUCION (AUTO)'},
+                {'fecha': '12/12/2017', 'detalle': 'SE PRETENDE EMBARGAR UN VEHICULO; NO SE ATIENDE LO PETICIONADO POR IMPROCEDENTE.'},
+            ],
+        }
+
+        _, nuevos = _reclasificar_datos(datos, causa='07333-2015-02213')
+
+        self.assertEqual(nuevos['ULTIMA FASE'], '6.2 MANDAMIENTO DE EJECUCION')
+        self.assertEqual(nuevos['COMENTARIO_ULTIMO'], '')
+        self.assertIsNone(datos['COMENTARIO_ULTIMO'])
+
     def test_detecta_solo_la_marca_automatica_exacta_en_reporte(self):
         class Repo:
             df = pd.DataFrame({
@@ -48,3 +63,31 @@ class TestReclasificarDesdeSQLite(unittest.TestCase):
         self.assertFalse(
             _reporte_tiene_revision_manual_automatica(Repo(), "17233-2024-07607")
         )
+
+    def test_persiste_revision_documental_y_limpia_marca_si_desaparece_evidencia(self):
+        datos = {
+            "HISTORIAL_ACTUACIONES": [
+                {
+                    "fecha": "15/08/2022",
+                    "detalle": "CALIFICACION DE SOLICITUD Y/O DEMANDA",
+                },
+                {
+                    "fecha": "16/12/2022",
+                    "detalle": "ESCRITO, FEPRESENTACION",
+                    "TIENE_ADJUNTO": True,
+                },
+            ],
+        }
+
+        _, nuevos = _reclasificar_datos(datos, causa="07333-2022-01899")
+
+        self.assertEqual(nuevos["ULTIMA FASE"], "1.3 CALIFICACION")
+        self.assertEqual(nuevos["FASE ACTUAL"], "REVISION MANUAL")
+        self.assertIn("ESCRITO POSTERIOR SIN TIPO CONFIRMADO", nuevos["COMENTARIO_ULTIMO"])
+
+        datos["HISTORIAL_ACTUACIONES"][-1].pop("TIENE_ADJUNTO")
+        _, nuevos_sin_adjunto = _reclasificar_datos(
+            datos, causa="07333-2022-01899"
+        )
+        self.assertEqual(nuevos_sin_adjunto["FASE ACTUAL"], "2.1 CITACION (PERSONA/BOLETA)")
+        self.assertEqual(nuevos_sin_adjunto["COMENTARIO_ULTIMO"], "")

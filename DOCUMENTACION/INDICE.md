@@ -4,13 +4,19 @@ Toda la documentación Markdown del proyecto está centralizada en esta carpeta 
 clasificada por propósito. Los nombres numerados mantienen un orden estable al
 navegar desde el explorador de archivos o GitHub.
 
+La referencia operativa vigente es el [Manual de uso](01_GENERAL/MANUAL_DE_USO.md)
+junto con el [Contexto de reanudación](01_GENERAL/CONTEXTO_REANUDACION.md).
+Los documentos en `03_PLANES`, `04_DIAGNOSTICOS_Y_CORRECCIONES` y `05_AVANCES`
+registran decisiones y hechos de su fecha; no sustituyen el estado operativo actual.
+
 ## 01_GENERAL
 
 Documentos introductorios y operativos de alcance general.
 
 - [README](01_GENERAL/README.md): descripción general, arquitectura y estructura del proyecto.
 - [Visión del proyecto](01_GENERAL/Vision_Proyecto.md): objetivos, componentes y flujo completo.
-- [Manual de uso](01_GENERAL/MANUAL_DE_USO.md): preparación, ejecución, supervisión y recuperación.
+- [Manual de uso](01_GENERAL/MANUAL_DE_USO.md): preparación, ejecución, supervisión y recuperación vigentes.
+- [Manual anterior (archivo)](01_GENERAL/MANUAL_DE_USO_ANTERIOR_20260824.md): referencia histórica; puede incluir rutas y políticas ya reemplazadas.
 - [Contexto de reanudación](01_GENERAL/CONTEXTO_REANUDACION.md): estado operativo y decisiones vigentes.
 
 ## 02_MODULOS_Y_CONFIGURACION
@@ -28,6 +34,7 @@ Planes técnicos de implementación, automatización y corrección.
 - [API de AutoCaptcha](03_PLANES/PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md).
 - [Automatización de botones e-SATJE](03_PLANES/PLAN_AUTOMATIZACION_BOTONES_ESATJE.md).
 - [Freno en Información del proceso](03_PLANES/PLAN_CORRECCION_FRENO_INFORMACION_PROCESO.md).
+- [Lectura selectiva de adjuntos PDF](03_PLANES/PLAN_IMPLEMENTACION_LECTURA_SELECTIVA_ADJUNTOS_PDF.md): propuesta de evidencia documental, límites de lectura y despliegue seguro.
 - [Regreso al buscador no confirmado](03_PLANES/PLAN_SOLUCION_REGRESO_BUSCADOR_NO_CONFIRMADO.md).
 
 ## 04_DIAGNOSTICOS_Y_CORRECCIONES

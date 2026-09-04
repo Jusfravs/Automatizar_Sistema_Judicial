@@ -1,63 +1,65 @@
 {
-    "filtros_activos": {
-        "sucursal": "EL ORO",
-        "oficina": "",
-        "estado_judicial": "ACTIVO",
-        "columna_estado_judicial": "ESTADO.1",
-        "inicio_desde_juicio": ""
-    },
-    "rutas": {
-        "archivo_csv": "data/reporte_trabajo.csv",
-        "archivo_origen": "data/REPORTE_JUICIOS_LISTO_PARA_REVISION.xlsx",
-        "archivo_excel_final": "data/REPORTE_PROCESADO_FINAL.xlsx",
-        "hoja_lectura": "migrado"
-    },
-    "navegacion": {
-        "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
-        "captcha_timeout_ms": 300000,
-        "captcha_render_timeout_ms": 15000,
-        "resultados_timeout_ms": 30000,
-        "datos_generales_timeout_ms": 30000,
-        "actuaciones_timeout_ms": 30000,
-        "movimientos_timeout_ms": 30000,
-        "retorno_buscador_timeout_ms": 15000,
-        "pantalla_final_timeout_ms": 30000,
-        "sondeo_estabilidad_ms": 250,
-        "comprobaciones_estables": 3,
-        "quietud_api_ms": 750,
-        "max_reintentos_transicion": 2
-    },
-    "captcha": {
-        "modo": "api_supervisada",
-        "proveedor": "2captcha",
-        "api_key_env": "AUTOCAPTCHA_API_KEY",
-        "tipo_tarea": "recaptcha_v2_proxyless",
-        "http_timeout_ms": 10000,
-        "max_intentos_red": 3,
-        "reintento_red_ms": 1000,
-        "resolucion_timeout_ms": 300000,
-        "sondeo_ms": 5000,
-        "confirmacion_inyeccion_timeout_ms": 10000,
-        "espera_post_solucion_ms": 500,
-        "max_tareas_por_causa": 2,
-        "max_errores_consecutivos": 3,
-        "saldo_minimo_usd": 0.01,
-        "fallback_manual": false,
-        "reportar_incorrecta": true,
-        "reportar_correcta": true
-    },
-    "sistema": {
-        "intervalo_autoguardado": 1
-    },
-    "auditoria": {
-        "total_esperado": 4017
-    },
-    "base_de_datos": {
-        "motor": "postgres",
-        "host": "localhost",
-        "puerto": 5432,
-        "nombre_db": "casos_judiciales",
-        "usuario": "postgres",
-        "password_env": "POSTGRES_PASSWORD"
-    }
+  "filtros_activos": {
+    "sucursal": "TODAS",
+    "oficina": "",
+    "estado_judicial": "ACTIVO",
+    "columna_estado_judicial": "ESTADO",
+    "inicio_desde_juicio": ""
+  },
+  "rutas": {
+    "archivo_csv": "data/reporte_trabajo_20260827.csv",
+    "archivo_origen": "C:\\Users\\pasante.callcenter\\Downloads\\Reporte_jucios SIS 3 27082026 12.40.xlsx",
+    "archivo_excel_final": "data/REPORTE_PROCESADO_FINAL_IMPRESION_CORREGIDO_20260902.xlsx",
+    "archivo_db": "data/estado_casos_20260827.db",
+    "archivo_casos_fallidos": "data/casos_fallidos_20260827.txt",
+    "hoja_lectura": "Reporte"
+  },
+  "navegacion": {
+    "url_portal": "https://procesosjudiciales.funcionjudicial.gob.ec/busqueda-filtros",
+    "captcha_timeout_ms": 300000,
+    "captcha_render_timeout_ms": 15000,
+    "resultados_timeout_ms": 30000,
+    "datos_generales_timeout_ms": 30000,
+    "actuaciones_timeout_ms": 30000,
+    "movimientos_timeout_ms": 30000,
+    "retorno_buscador_timeout_ms": 15000,
+    "pantalla_final_timeout_ms": 30000,
+    "sondeo_estabilidad_ms": 250,
+    "comprobaciones_estables": 3,
+    "quietud_api_ms": 750,
+    "max_reintentos_transicion": 2
+  },
+  "captcha": {
+    "modo": "api_con_espera_humana_limitada",
+    "proveedor": "2captcha",
+    "api_key_env": "AUTOCAPTCHA_API_KEY",
+    "tipo_tarea": "recaptcha_v2_proxyless",
+    "http_timeout_ms": 10000,
+    "max_intentos_red": 3,
+    "reintento_red_ms": 1000,
+    "resolucion_timeout_ms": 300000,
+    "sondeo_ms": 5000,
+    "confirmacion_inyeccion_timeout_ms": 10000,
+    "espera_post_solucion_ms": 3000,
+    "max_tareas_por_causa": 2,
+    "max_errores_consecutivos": 3,
+    "saldo_minimo_usd": 0.01,
+    "espera_humana_maxima_ms": 30000,
+    "reportar_incorrecta": true,
+    "reportar_correcta": true
+  },
+  "sistema": {
+    "intervalo_autoguardado": 1
+  },
+  "auditoria": {
+    "total_esperado": 2001
+  },
+  "base_de_datos": {
+    "motor": "sqlite",
+    "host": "localhost",
+    "puerto": 5432,
+    "nombre_db": "casos_judiciales",
+    "usuario": "postgres",
+    "password_env": "POSTGRES_PASSWORD"
+  }
 }

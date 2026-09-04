@@ -7,7 +7,9 @@ from time import monotonic
 from traceback import format_exc
 import pandas as pd
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
-from src.agente_extractor import AgenteExtractor, NavegadorArbolContenido
+from src.agente_extractor import (
+    AgenteExtractor, NavegadorArbolContenido, normalizar_texto,
+)
 from src.logger_config import obtener_logger
 from src.validacion_pertenencia import ESTADO_EXCLUIDO, validar_pertenencia_cartera
 from src.servicio_captcha import (
@@ -99,7 +101,7 @@ class BotJudicial:
         }
         self.navegacion.update(navegacion or {})
         self.captcha_config = {
-            "modo": "manual",
+            "modo": "api_con_espera_humana_limitada",
             "proveedor": "2captcha",
             "api_key_env": "AUTOCAPTCHA_API_KEY",
             "http_timeout_ms": 10000,
@@ -114,7 +116,9 @@ class BotJudicial:
             "max_tareas_por_causa": 2,
             "max_errores_consecutivos": 3,
             "saldo_minimo_usd": 0.01,
-            "fallback_manual": True,
+            # La intervencion humana nunca es un modo de operacion: solo es
+            # una ventana breve de contingencia despues de un fallo de la API.
+            "espera_humana_maxima_ms": 30000,
             "reportar_incorrecta": True,
             "reportar_correcta": True,
         }
@@ -513,8 +517,15 @@ class BotJudicial:
         self._cambiar_estado_navegacion(causa, "PREPARAR_BUSCADOR", "CAUSA_ESCRITA", "escribir_causa")
         return causa
 
-    def _esperar_busqueda_habilitada(self, causa):
-        limite = monotonic() + (self.navegacion["captcha_timeout_ms"] / 1000)
+    def _esperar_busqueda_habilitada(
+        self, causa, timeout_ms=None, accion_timeout="espera_pasiva_timeout",
+        codigo_timeout="CAPTCHA_TIMEOUT",
+    ):
+        espera_ms = (
+            self.navegacion["captcha_timeout_ms"]
+            if timeout_ms is None else max(0, int(timeout_ms))
+        )
+        limite = monotonic() + (espera_ms / 1000)
         limite_renderizado = min(
             limite,
             monotonic() + (self.navegacion.get("captcha_render_timeout_ms", 15000) / 1000),
@@ -551,9 +562,12 @@ class BotJudicial:
 
         self._captcha_reinicio_buscador_pendiente = True
         self._cambiar_estado_navegacion(
-            causa, estado_espera, "CAPTCHA_TIMEOUT", "espera_pasiva_timeout"
+            causa, estado_espera, "CAPTCHA_TIMEOUT", accion_timeout,
+            timeout_ms=espera_ms,
         )
-        raise PlaywrightTimeoutError("CAPTCHA_TIMEOUT: BUSCAR no quedo habilitado")
+        raise PlaywrightTimeoutError(
+            "%s: BUSCAR no quedo habilitado" % codigo_timeout
+        )
 
     def _enviar_busqueda_una_vez(self, causa, intento_id):
         clave = (causa, intento_id)
@@ -932,7 +946,9 @@ class BotJudicial:
             "CIUDAD_CARPETA": ciudad.group(1).strip() if ciudad else None,
         }
 
-    def _aplicar_inferencia_consolidada(self, datos, causa=None, alcance="carpeta"):
+    def _aplicar_inferencia_consolidada(
+        self, datos, causa=None, demandados=None, alcance="carpeta"
+    ):
         """Aplica y deja trazada la inferencia definitiva del alcance indicado."""
         actuaciones = datos.get("HISTORIAL_ACTUACIONES", [])
         if not actuaciones:
@@ -940,20 +956,22 @@ class BotJudicial:
 
         from src.agente_extractor import MotorInferenciaProcesal
         inferencia = MotorInferenciaProcesal.inferir_estado_procesal(
-            actuaciones, causa=causa
+            actuaciones, causa=causa, demandados=demandados
         )
         if not inferencia or not inferencia.get("ULTIMA_ETAPA"):
             return datos
 
-        datos["ETAPA_PROCESAL"] = inferencia.get("ULTIMA_ETAPA")
-        datos["FASE_PROCESAL"] = inferencia.get("ULTIMA_FASE")
-        datos["FECHA INICIAL FASE ACTUAL"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
+        etapa_operativa = inferencia.get("ETAPA_ACTUAL") or inferencia.get("ULTIMA_ETAPA")
+        fase_operativa = inferencia.get("FASE_ACTUAL") or inferencia.get("ULTIMA_FASE")
+        datos["ETAPA_PROCESAL"] = etapa_operativa
+        datos["FASE_PROCESAL"] = fase_operativa
+        datos["FECHA INICIAL FASE ACTUAL"] = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
         datos["ULTIMA ETAPA"] = inferencia.get("ULTIMA_ETAPA")
         datos["ULTIMA FASE"] = inferencia.get("ULTIMA_FASE")
         datos["FECHA FIN ULTIMA FASE"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
-        datos["ETAPA ACTUAL"] = inferencia.get("ETAPA_ACTUAL") or inferencia.get("ULTIMA_ETAPA")
-        datos["FASE ACTUAL"] = inferencia.get("FASE_ACTUAL") or inferencia.get("ULTIMA_FASE")
-        datos["FECHA INICIO FASE ACTUAL"] = inferencia.get("FECHA_FIN_ULTIMA_FASE")
+        datos["ETAPA ACTUAL"] = etapa_operativa
+        datos["FASE ACTUAL"] = fase_operativa
+        datos["FECHA INICIO FASE ACTUAL"] = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
         if inferencia.get("MENSAJE_ESPECIAL"):
             datos["COMENTARIO_ULTIMO"] = inferencia.get("MENSAJE_ESPECIAL")
         try:
@@ -966,7 +984,13 @@ class BotJudicial:
                 "fase_deducida": datos["ULTIMA FASE"],
                 "etapa": datos["ULTIMA ETAPA"],
                 "fecha_final": datos["FECHA FIN ULTIMA FASE"],
-                "actuacion_respaldo": inferencia.get("ACTUACION_RESPALDO"),
+                "fase_actual": inferencia.get("FASE_ACTUAL"),
+                "actuacion_respaldo": str(
+                    inferencia.get("ACTUACION_RESPALDO") or ""
+                )[:500],
+                "actuacion_pendiente_revision": inferencia.get(
+                    "ACTUACION_PENDIENTE_REVISION"
+                ),
                 "regla_aplicada": inferencia.get("REGLA_APLICADA"),
                 "num_actuaciones": len(actuaciones),
             }
@@ -1270,14 +1294,16 @@ class BotJudicial:
                             fase_api = res_api.get("ULTIMA_FASE")
                             fecha_api = res_api.get("FECHA_FIN_ULTIMA_FASE")
                             
-                            datos["ETAPA_PROCESAL"] = etapa_api
-                            datos["FASE_PROCESAL"] = fase_api
+                            etapa_operativa = res_api.get("ETAPA_ACTUAL") or etapa_api
+                            fase_operativa = res_api.get("FASE_ACTUAL") or fase_api
+                            datos["ETAPA_PROCESAL"] = etapa_operativa
+                            datos["FASE_PROCESAL"] = fase_operativa
                             datos["FECHA INICIAL FASE ACTUAL"] = fecha_api
                             datos["ULTIMA ETAPA"] = etapa_api
                             datos["ULTIMA FASE"] = fase_api
                             datos["FECHA FIN ULTIMA FASE"] = fecha_api
-                            datos["ETAPA ACTUAL"] = res_api.get("ETAPA_ACTUAL") or etapa_api
-                            datos["FASE ACTUAL"] = res_api.get("FASE_ACTUAL") or fase_api
+                            datos["ETAPA ACTUAL"] = etapa_operativa
+                            datos["FASE ACTUAL"] = fase_operativa
                             datos["FECHA INICIO FASE ACTUAL"] = fecha_api
                             if res_api.get("MENSAJE_ESPECIAL"):
                                 datos["COMENTARIO_ULTIMO"] = res_api.get("MENSAJE_ESPECIAL")
@@ -1906,14 +1932,16 @@ class BotJudicialTransaccional(BotJudicial):
             self._captcha_circuito_abierto = True
 
     def _resolver_o_esperar_captcha(self, causa, intento_id):
-        modo = str(self.captcha_config.get("modo", "manual")).strip().lower()
+        modo = str(
+            self.captcha_config.get("modo", "api_con_espera_humana_limitada")
+        ).strip().lower()
         self._captcha_solucion_actual = None
         logger.info(
             "[CAPTCHA] Inicio de resolucion para %s: modo=%s proveedor=%s.",
             causa, modo, self.captcha_config.get("proveedor", "2captcha"),
         )
         if modo == "manual":
-            return self._esperar_busqueda_habilitada(causa)
+            raise CaptchaConfiguracionError("CAPTCHA_MODO_MANUAL_NO_ADMITIDO")
         try:
             if self._captcha_circuito_abierto:
                 raise CaptchaProveedorError(
@@ -1956,18 +1984,35 @@ class BotJudicialTransaccional(BotJudicial):
             self._captcha_reinicio_buscador_pendiente = True
             if not isinstance(exc, CaptchaConfiguracionError):
                 self._registrar_error_proveedor_captcha()
-            fallback = (
-                modo == "api_con_fallback_manual"
-                and bool(self.captcha_config.get("fallback_manual", True))
-                and exc.recuperable
-            )
+            espera_humana_limitada = modo in {
+                "api_con_espera_humana_limitada",
+                # Compatibilidad con configuraciones anteriores: ya no abre
+                # una espera ilimitada; aplica exactamente la misma ventana.
+                "api_con_fallback_manual",
+            }
             logger.warning(
-                "[CAPTCHA] Fallo controlado para %s: %s; fallback_manual=%s",
-                causa, exc.codigo, fallback,
+                "[CAPTCHA] Fallo controlado para %s: %s; espera_humana_30s=%s",
+                causa, exc.codigo, espera_humana_limitada,
             )
-            if fallback:
+            if espera_humana_limitada:
                 self._captcha_solucion_actual = None
-                return self._esperar_busqueda_habilitada(causa)
+                # Nunca retener el lote mas de treinta segundos por una
+                # intervencion humana; una configuracion mayor se limita.
+                espera_ms = min(
+                    30000,
+                    max(0, int(self.captcha_config.get("espera_humana_maxima_ms", 30000))),
+                )
+                logger.warning(
+                    "[CAPTCHA] La API no resolvio %s. Hay %s segundos para "
+                    "completarlo en el navegador; luego se enviara a revision manual.",
+                    causa, espera_ms / 1000,
+                )
+                return self._esperar_busqueda_habilitada(
+                    causa,
+                    timeout_ms=espera_ms,
+                    accion_timeout="espera_humana_limitada_expirada",
+                    codigo_timeout="CAPTCHA_ESPERA_MANUAL_30S_AGOTADA",
+                )
             raise
 
     def _esperar_despues_captcha(self, causa):
@@ -2141,6 +2186,21 @@ class BotJudicialTransaccional(BotJudicial):
                     "[NAVEGACION_ESATJE] Búsqueda %s/%s rechazada para %s: %s. Evidencia: %s",
                     intento_numero, max_intentos, causa, exc, evidencia,
                 )
+                # El portal puede quedarse indefinidamente con la capa
+                # "Buscando..." encima del formulario. Reintentar dentro de
+                # la misma p\u00e1gina solo encadena timeouts: los clics posteriores
+                # quedan interceptados por esa capa. Se aborta la causa para
+                # que el orquestador reinicie la sesi\u00f3n antes de la siguiente.
+                if (
+                    str(exc) == "RESULTADOS_TIMEOUT"
+                    and self._hay_carga_visible()
+                ):
+                    logger.error(
+                        "[NAVEGACION_ESATJE] Carga persistente tras timeout de %s; "
+                        "se requiere reiniciar la sesi\u00f3n.",
+                        causa,
+                    )
+                    raise RuntimeError("BUSQUEDA_BLOQUEADA_CARGA_PERSISTENTE")
                 if intento_numero >= max_intentos:
                     raise
         raise ultimo_error or RuntimeError("BUSQUEDA_SIN_RESULTADO")
@@ -2178,7 +2238,9 @@ class BotJudicialTransaccional(BotJudicial):
     def _hay_carga_visible(self):
         selectores = (
             "mat-spinner", "mat-progress-spinner", "[role='progressbar']",
-            ".loading", ".spinner", "text=/^\\s*Buscando\\.\\.\\.\\s*$/i",
+            ".loading", ".loading-overlay", ".spinner",
+            "[role='status'][aria-busy='true']", "[aria-busy='true']",
+            "text=/^\\s*Buscando\\.\\.\\.\\s*$/i",
         )
         for selector in selectores:
             try:
@@ -2500,7 +2562,10 @@ class BotJudicialTransaccional(BotJudicial):
             recorrer(paquete.get("data"))
         return actuaciones
 
-    def _ejecutar_extraccion_detalles(self, numero_juicio=None, paquetes_api=None, carpeta=None, contenido_html=None):
+    def _ejecutar_extraccion_detalles(
+        self, numero_juicio=None, paquetes_api=None, carpeta=None,
+        contenido_html=None, demandados=None, adjuntos_por_actuacion=None,
+    ):
         """Transforma API/DOM sin hacer clic ni navegar."""
         paquetes = self.paquetes_api_interceptados if paquetes_api is None else paquetes_api
         datos = {
@@ -2514,22 +2579,39 @@ class BotJudicialTransaccional(BotJudicial):
         datos_dom = {}
         if contenido_html:
             try:
-                datos_dom = self.extractor.procesar_html_string(contenido_html) or {}
+                datos_dom = self.extractor.procesar_html_string(
+                    contenido_html, registrar_decision=False
+                ) or {}
             except Exception as exc:
                 logger.warning("[RUTA RESPALDO DOM] No se pudo transformar HTML: %s", exc)
         actuaciones_dom = datos_dom.get("HISTORIAL_ACTUACIONES", [])
         actuaciones = []
-        vistos = set()
+        por_clave = {}
         for actuacion in list(actuaciones_api) + list(actuaciones_dom):
             clave = (actuacion.get("fecha"), str(actuacion.get("detalle", "")).strip().upper())
-            if clave not in vistos and clave[1]:
-                vistos.add(clave)
-                actuaciones.append(dict(actuacion))
+            if not clave[1]:
+                continue
+            existente = por_clave.get(clave)
+            if existente is None:
+                existente = dict(actuacion)
+                por_clave[clave] = existente
+                actuaciones.append(existente)
+                continue
+            # API suele aportar la misma actuación antes que el DOM. Al
+            # combinar ambas fuentes se preservan los metadatos exclusivos del
+            # DOM, como TIENE_ADJUNTO, que permiten detectar evidencia
+            # documental pendiente sin descargar el archivo.
+            for campo, valor in actuacion.items():
+                if valor not in (None, "", False) and not existente.get(campo):
+                    existente[campo] = valor
+        self._asociar_nombres_adjuntos(actuaciones, adjuntos_por_actuacion)
         datos.update(datos_dom)
         datos["HISTORIAL_ACTUACIONES"] = actuaciones
         datos["ORIGEN_DATA"] = "API+DOM" if actuaciones_api and actuaciones_dom else ("API" if actuaciones_api else "DOM")
         if actuaciones:
-            self._aplicar_inferencia_consolidada(datos, causa=numero_juicio)
+            self._aplicar_inferencia_consolidada(
+                datos, causa=numero_juicio, demandados=demandados
+            )
         return datos
 
     @staticmethod
@@ -2603,6 +2685,188 @@ class BotJudicialTransaccional(BotJudicial):
                 continue
         return contenido, frames
 
+    @staticmethod
+    def _fecha_clave_adjunto(valor):
+        """Normaliza una fecha SATJE para asociar fila y actuación."""
+        texto = str(valor or "").strip()
+        for patron, formato in (
+            (r"\b\d{4}-\d{2}-\d{2}", "%Y-%m-%d"),
+            (r"\b\d{2}/\d{2}/\d{4}", "%d/%m/%Y"),
+        ):
+            encontrado = re.search(patron, texto)
+            if not encontrado:
+                continue
+            try:
+                return datetime.strptime(encontrado.group(0), formato).date().isoformat()
+            except ValueError:
+                continue
+        return None
+
+    @staticmethod
+    def _es_nombramiento_perito(detalle):
+        texto = normalizar_texto(detalle)
+        return any(marca in texto for marca in (
+            "NOMBRAMIENTO DE PERITO", "ACTA SORTEO PERITO",
+            "SORTEO DE PERITO", "SORTEO PERITO", "PERITO LIQUIDADOR NOMBRADO",
+        ))
+
+    @staticmethod
+    def _es_actuacion_documental_perito(detalle):
+        texto = normalizar_texto(detalle)
+        return (
+            "DOC. GENERAL" in texto
+            or "DOC GENERAL" in texto
+            or "ESCRITO" in texto
+        )
+
+    @staticmethod
+    def _es_nombre_evidencia_pago_perito(nombre):
+        """Acepta factura o pago que identifique el servicio pericial."""
+        texto = normalizar_texto(nombre)
+        if "FACTURA" in texto:
+            return True
+        tiene_pago = any(marca in texto for marca in (
+            "PAGO", "COMPROBANTE", "RECIBO", "TRANSFERENCIA", "DEPOSITO",
+        ))
+        tiene_servicio_pericial = any(marca in texto for marca in (
+            "PERITO", "PERICIAL", "LIQUIDADOR", "HONORARIO", "SERVICIO",
+            "PROFESIONAL",
+        ))
+        return tiene_pago and tiene_servicio_pericial
+
+    def _nombres_archivos_dialogo(self, dialogo):
+        """Lee los nombres visibles sin descargar documentos de SATJE."""
+        nombres = []
+        try:
+            textos = [linea.strip() for linea in dialogo.inner_text().splitlines()]
+        except Exception:
+            textos = []
+        for texto in textos:
+            if self._es_nombre_evidencia_pago_perito(texto):
+                nombres.append(texto)
+        try:
+            enlaces = dialogo.locator("a, button, [role='link']")
+            for indice in range(enlaces.count()):
+                enlace = enlaces.nth(indice)
+                etiqueta = " ".join(str(valor).strip() for valor in (
+                    enlace.inner_text(),
+                    enlace.get_attribute("title"),
+                    enlace.get_attribute("download"),
+                    enlace.get_attribute("aria-label"),
+                ) if valor).strip()
+                if self._es_nombre_evidencia_pago_perito(etiqueta):
+                    nombres.append(etiqueta)
+        except Exception:
+            pass
+        return list(dict.fromkeys(nombre for nombre in nombres if nombre))
+
+    def _cerrar_dialogo_adjuntos(self, dialogo):
+        try:
+            cierre = dialogo.locator(
+                "button[aria-label*='cerrar' i], button[title*='cerrar' i], "
+                "button:has-text('Cerrar'), [mattooltip*='Cerrar' i]"
+            )
+            if cierre.count():
+                cierre.first.click()
+                self.page.wait_for_timeout(150)
+                return
+        except Exception:
+            pass
+        try:
+            self.page.keyboard.press("Escape")
+            self.page.wait_for_timeout(150)
+        except Exception:
+            pass
+
+    def _capturar_adjuntos_pago_perito(self, contenido_html):
+        """Obtiene evidencia de pago en actuaciones posteriores al perito.
+
+        Solo abre el listado de archivos de la actuación, sin descargar ni
+        leer los documentos. La ausencia de evidencia no altera la fecha.
+        """
+        try:
+            datos = self.extractor.procesar_html_string(
+                contenido_html, registrar_decision=False
+            ) or {}
+        except Exception:
+            return []
+        actuaciones = datos.get("HISTORIAL_ACTUACIONES") or []
+        fechas_nombramiento = [
+            self._fecha_clave_adjunto(actuacion.get("fecha"))
+            for actuacion in actuaciones
+            if self._es_nombramiento_perito(actuacion.get("detalle"))
+        ]
+        fechas_nombramiento = [fecha for fecha in fechas_nombramiento if fecha]
+        if not fechas_nombramiento:
+            return []
+        fecha_nombramiento = max(fechas_nombramiento)
+
+        filas = self.page.locator("table tbody tr, table tr, [role='row'], mat-row, .fila")
+        hallazgos = []
+        vistos = set()
+        for indice in range(filas.count()):
+            fila = filas.nth(indice)
+            try:
+                texto_fila = fila.inner_text()
+                fecha = self._fecha_clave_adjunto(texto_fila)
+                if (
+                    not fecha or fecha < fecha_nombramiento
+                    or not self._es_actuacion_documental_perito(texto_fila)
+                ):
+                    continue
+                boton = fila.locator(
+                    "[mattooltip='Ver archivos'], [mattooltip*='Ver archivo' i], "
+                    "[aria-label*='ver archivo' i], [aria-label*='archivos' i]"
+                )
+                if boton.count() != 1:
+                    continue
+                boton.first.click()
+                self.page.wait_for_timeout(200)
+                dialogos = self.page.locator("mat-dialog-container, [role='dialog']")
+                dialogo = None
+                for posicion in range(dialogos.count() - 1, -1, -1):
+                    candidato = dialogos.nth(posicion)
+                    if candidato.is_visible():
+                        dialogo = candidato
+                        break
+                if dialogo is None:
+                    continue
+                nombres = self._nombres_archivos_dialogo(dialogo)
+                self._cerrar_dialogo_adjuntos(dialogo)
+                if not nombres:
+                    continue
+                clave = (fecha, normalizar_texto(texto_fila)[:160])
+                if clave not in vistos:
+                    vistos.add(clave)
+                    hallazgos.append({
+                        "fecha": fecha,
+                        "detalle_fila": texto_fila,
+                        "NOMBRES_ADJUNTOS": nombres,
+                    })
+            except Exception as exc:
+                logger.debug("No se pudieron leer adjuntos de una actuación: %s", exc)
+        return hallazgos
+
+    def _asociar_nombres_adjuntos(self, actuaciones, adjuntos_por_actuacion):
+        """Propaga nombres de archivo a la actuación persistida equivalente."""
+        for metadato in adjuntos_por_actuacion or []:
+            fecha = self._fecha_clave_adjunto(metadato.get("fecha"))
+            texto_fila = normalizar_texto(metadato.get("detalle_fila"))
+            for actuacion in actuaciones:
+                if self._fecha_clave_adjunto(actuacion.get("fecha")) != fecha:
+                    continue
+                detalle = normalizar_texto(actuacion.get("detalle"))
+                if not detalle or not (detalle in texto_fila or texto_fila in detalle):
+                    continue
+                existentes = actuacion.get("NOMBRES_ADJUNTOS") or []
+                if isinstance(existentes, str):
+                    existentes = [existentes]
+                actuacion["NOMBRES_ADJUNTOS"] = list(dict.fromkeys(
+                    [*existentes, *(metadato.get("NOMBRES_ADJUNTOS") or [])]
+                ))
+                actuacion["TIENE_ADJUNTO"] = True
+                break
+
     def _extraer_informacion_proceso(self, causa, descriptor, secuencia_inicio, token):
         inicio = monotonic()
         manifiesto = None
@@ -2612,9 +2876,12 @@ class BotJudicialTransaccional(BotJudicial):
             secuencia_fin = self._secuencia_api
             paquetes = self._paquetes_ventana(secuencia_inicio, secuencia_fin, causa)
             contenido, frames = self._capturar_dom_frames()
+            adjuntos_perito = self._capturar_adjuntos_pago_perito(contenido)
             datos = self._ejecutar_extraccion_detalles(
                 causa, paquetes_api=paquetes,
                 carpeta=descriptor["clave_carpeta"], contenido_html=contenido,
+                demandados=descriptor.get("demandados"),
+                adjuntos_por_actuacion=adjuntos_perito,
             )
             metadatos = {
                 "CAUSA": causa,
@@ -2764,6 +3031,7 @@ class BotJudicialTransaccional(BotJudicial):
             "campo_habilitado": False,
             "movimientos_visibles": False,
             "actuaciones_visibles": False,
+            "carga_visible": False,
             "overlay_carga_visible": False,
             "listo": False,
         }
@@ -2800,6 +3068,7 @@ class BotJudicialTransaccional(BotJudicial):
             diagnostico["actuaciones_visibles"] = bool(
                 self._locators_visibles(actuaciones)
             )
+            diagnostico["carga_visible"] = self._hay_carga_visible()
             overlay = self.page.locator(
                 "div.loading-overlay[aria-busy='true'], "
                 "[role='status'][aria-busy='true'].loading-overlay"
@@ -2816,6 +3085,7 @@ class BotJudicialTransaccional(BotJudicial):
             and diagnostico["campo_habilitado"]
             and not diagnostico["movimientos_visibles"]
             and not diagnostico["actuaciones_visibles"]
+            and not diagnostico["carga_visible"]
             and not diagnostico["overlay_carga_visible"]
         )
         return diagnostico
@@ -3048,10 +3318,13 @@ class BotJudicialTransaccional(BotJudicial):
         advertencias = []
         vistos = set()
         fechas_inicio = []
+        demandados_satje = []
         for resultado in resultados:
             advertencias.extend(resultado.get("advertencias", []))
             datos_carpeta = resultado.get("datos") or {}
             descriptor = resultado.get("descriptor") or {}
+            if descriptor.get("demandados"):
+                demandados_satje.append(descriptor["demandados"])
             fecha_inicio = (
                 descriptor.get("fecha_ingreso")
                 or datos_carpeta.get("FECHA INICIO JUICIO")
@@ -3074,7 +3347,10 @@ class BotJudicialTransaccional(BotJudicial):
                     datos["HISTORIAL_ACTUACIONES"].append(dict(actuacion))
         if datos["HISTORIAL_ACTUACIONES"]:
             self._aplicar_inferencia_consolidada(
-                datos, causa=causa, alcance="causa"
+                datos,
+                causa=causa,
+                demandados=demandados_satje,
+                alcance="causa",
             )
         if fechas_inicio:
             datos["FECHA INICIO JUICIO"] = min(fechas_inicio).strftime("%d/%m/%Y")

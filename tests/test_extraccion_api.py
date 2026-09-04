@@ -27,7 +27,9 @@ class TestExtraccionAPI(unittest.TestCase):
 
         self.assertIsNotNone(datos)
         self.assertIsNotNone(datos.get("FASE_PROCESAL"))
-        self.assertIn("MANDAMIENTO", datos.get("FASE_PROCESAL").upper())
+        # FASE_PROCESAL es el destino operativo; el mandamiento permanece
+        # auditado en ULTIMA FASE y abre la fase de embargo.
+        self.assertIn("EMBARGO", datos.get("FASE_PROCESAL").upper())
         self.assertIsNotNone(datos.get("ETAPA_PROCESAL"))
         self.assertIn("LIQUIDACION", datos.get("ETAPA_PROCESAL").upper())
 

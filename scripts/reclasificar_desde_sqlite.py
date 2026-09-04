@@ -38,12 +38,36 @@ CAMPOS_FECHA = {
 }
 
 
+# Marcas creadas automaticamente por el sistema. Solo estas pueden borrarse
+# durante una reclasificacion; las notas humanas se conservan.
+COMENTARIOS_AUTOMATICOS_OBSOLETOS = {
+    'REVISION MANUAL',
+    'CASO SOLVENTADO POR REMATE',
+    'CASO SOLVENTADO POR CONGELAMIENTO',
+}
+
+
+def _es_comentario_automatico_obsoleto(valor):
+    """Distingue marcas del bot de observaciones redactadas por una persona."""
+    normalizado = str(valor or "").strip().upper()
+    return (
+        normalizado in COMENTARIOS_AUTOMATICOS_OBSOLETOS
+        or normalizado.startswith(
+            "REVISION DOCUMENTAL: ESCRITO POSTERIOR SIN TIPO CONFIRMADO"
+        )
+    )
+
 def _campos_desde_inferencia(inferencia):
     fecha = inferencia.get("FECHA_FIN_ULTIMA_FASE")
+    fecha_fase_actual = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
     return {
-        "ETAPA_PROCESAL": inferencia.get("ULTIMA_ETAPA"),
-        "FASE_PROCESAL": inferencia.get("ULTIMA_FASE"),
-        "FECHA INICIAL FASE ACTUAL": fecha,
+        "ETAPA_PROCESAL": (
+            inferencia.get("ETAPA_ACTUAL") or inferencia.get("ULTIMA_ETAPA")
+        ),
+        "FASE_PROCESAL": (
+            inferencia.get("FASE_ACTUAL") or inferencia.get("ULTIMA_FASE")
+        ),
+        "FECHA INICIAL FASE ACTUAL": fecha_fase_actual,
         "ULTIMA ETAPA": inferencia.get("ULTIMA_ETAPA"),
         "ULTIMA FASE": inferencia.get("ULTIMA_FASE"),
         "FECHA FIN ULTIMA FASE": fecha,
@@ -55,17 +79,17 @@ def _campos_desde_inferencia(inferencia):
             inferencia.get("FASE_ACTUAL")
             or inferencia.get("ULTIMA_FASE")
         ),
-        "FECHA INICIO FASE ACTUAL": fecha,
+        "FECHA INICIO FASE ACTUAL": fecha_fase_actual,
     }
 
 
-def _reclasificar_datos(datos, causa=None):
+def _reclasificar_datos(datos, causa=None, demandados=None):
     actuaciones = datos.get("HISTORIAL_ACTUACIONES") or []
     if not actuaciones:
         return None
 
     inferencia = MotorInferenciaProcesal.inferir_estado_procesal(
-        actuaciones, causa=causa
+        actuaciones, causa=causa, demandados=demandados
     )
     if not inferencia or not inferencia.get("ULTIMA_ETAPA"):
         return None
@@ -83,7 +107,7 @@ def _reclasificar_datos(datos, causa=None):
         # La misma señal debe llegar al CSV/Excel; de otro modo SQLite y el
         # reporte final quedan con comentarios distintos.
         nuevos["COMENTARIO_ULTIMO"] = mensaje
-    elif datos.get("COMENTARIO_ULTIMO") == "REVISION MANUAL":
+    elif _es_comentario_automatico_obsoleto(datos.get("COMENTARIO_ULTIMO")):
         # Solo se limpia una marca automática obsoleta; comentarios detallados
         # de error y observaciones humanas permanecen intactos.
         datos["COMENTARIO_ULTIMO"] = None
@@ -92,6 +116,21 @@ def _reclasificar_datos(datos, causa=None):
         nuevos["COMENTARIO_ULTIMO"] = ""
 
     return anteriores, nuevos
+
+
+def _demandados_desde_resultado(resultado):
+    """Recupera los demandados de los descriptores SATJE persistidos."""
+    demandados = []
+    for carpeta in (
+        resultado.get("resultados_carpetas")
+        or resultado.get("carpetas")
+        or []
+    ):
+        descriptor = carpeta.get("descriptor") or {}
+        valor = descriptor.get("demandados")
+        if valor:
+            demandados.append(valor)
+    return demandados
 
 
 def _aplicar_validacion_pertenencia(resultado, datos, causa, configuracion):
@@ -152,7 +191,9 @@ def _reporte_tiene_revision_manual_automatica(repo, causa):
     ]
     if coincidencias.empty:
         return False
-    return str(coincidencias.iloc[0]["COMENTARIO_ULTIMO"] or "").strip().upper() == "REVISION MANUAL"
+    return _es_comentario_automatico_obsoleto(
+        coincidencias.iloc[0]["COMENTARIO_ULTIMO"]
+    )
 
 
 def _ruta_configurada(config_path, valor):
@@ -200,7 +241,14 @@ def _causas_por_sucursal(repo, sucursal):
     return {_normalizar_causa(causa) for causa in repo.df.loc[mascara, "NUMERO_JUICIO"] if _normalizar_causa(causa)}
 
 
-def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
+def reclasificar(
+    ruta_config,
+    aplicar=False,
+    sucursal=None,
+    causas=None,
+    exportar_excel=True,
+    depurar_duplicados=True,
+):
     config_path = Path(ruta_config).resolve()
     repo = GestorCasos(str(config_path))
     causas_alcance = _causas_por_sucursal(repo, sucursal)
@@ -240,7 +288,10 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
 
         resultado = json.loads(datos_json)
         datos = resultado.get("datos") or {}
-        reclasificacion = _reclasificar_datos(datos, causa=causa)
+        demandados = _demandados_desde_resultado(resultado)
+        reclasificacion = _reclasificar_datos(
+            datos, causa=causa, demandados=demandados
+        )
         if reclasificacion is None:
             continue
 
@@ -282,7 +333,12 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
 
         for carpeta in resultado.get("resultados_carpetas") or []:
             datos_carpeta = carpeta.get("datos") or {}
-            _reclasificar_datos(datos_carpeta, causa=causa)
+            descriptor = carpeta.get("descriptor") or {}
+            _reclasificar_datos(
+                datos_carpeta,
+                causa=causa,
+                demandados=descriptor.get("demandados"),
+            )
 
         actualizaciones.append((
             json.dumps(resultado, ensure_ascii=False),
@@ -306,6 +362,7 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
         resumen["causas_solicitadas"] = sorted(causas_solicitadas)
 
     if not aplicar:
+        resumen["filas_duplicadas_exactas_eliminadas"] = 0
         conexion.close()
         return resumen
 
@@ -337,9 +394,17 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
             if not repo.actualizar_caso(causa, nuevos):
                 raise LookupError(f"CAUSA_NO_ENCONTRADA_EN_CSV:{causa}")
 
+        # No se elimina una causa repetida si representa otra cartera, usuario
+        # o crÃ©dito. La depuraciÃ³n solo toca copias idÃ©nticas en todas las
+        # columnas, despuÃ©s de actualizar su clasificaciÃ³n.
+        filas_duplicadas_eliminadas = (
+            repo.depurar_filas_duplicadas_exactas()
+            if depurar_duplicados else 0
+        )
         if not repo.guardar():
             raise RuntimeError("PERSISTENCIA_ERROR:CSV")
-        repo.exportar_excel()
+        if exportar_excel:
+            repo.exportar_excel()
         conexion.commit()
     except Exception:
         conexion.rollback()
@@ -348,7 +413,10 @@ def reclasificar(ruta_config, aplicar=False, sucursal=None, causas=None):
         conexion.close()
 
     resumen["aplicado"] = True
-    resumen["ruta_excel"] = str(Path(repo.ruta_final).resolve())
+    resumen["filas_duplicadas_exactas_eliminadas"] = filas_duplicadas_eliminadas
+    resumen["ruta_excel"] = (
+        str(Path(repo.ruta_final).resolve()) if exportar_excel else None
+    )
     resumen["directorio_backups"] = str(directorio_backup.resolve())
     return resumen
 
@@ -359,6 +427,8 @@ def main():
     parser.add_argument("--aplicar", action="store_true")
     parser.add_argument("--sucursal")
     parser.add_argument("--causa", action="append", dest="causas")
+    parser.add_argument("--sin-excel", action="store_true")
+    parser.add_argument("--sin-depurar", action="store_true")
     argumentos = parser.parse_args()
     print(json.dumps(
         reclasificar(
@@ -366,6 +436,8 @@ def main():
             aplicar=argumentos.aplicar,
             sucursal=argumentos.sucursal,
             causas=argumentos.causas,
+            exportar_excel=not argumentos.sin_excel,
+            depurar_duplicados=not argumentos.sin_depurar,
         ),
         ensure_ascii=False,
         indent=2,

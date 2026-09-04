@@ -1,168 +1,154 @@
 # Contexto de reanudación
 
-Última actualización: 9 de agosto de 2026, America/Guayaquil.
+Última actualización: 26 de agosto de 2026, America/Guayaquil.
 
-Leer este documento antes de modificar o reanudar el lote.
+## Estado vigente
 
-## 1. Estado general
+- Lote activo: **todas las sucursales activas**, mediante `config.json`.
+- Excel de origen: `data/REPORTE_JUICIOS_LISTO_PARA_REVISION.xlsx` (4.017 filas).
+- Se realizó un reinicio coordinado de la región; los artefactos anteriores se
+  preservaron en `backups/reinicio_el_oro_20260826_095002/`.
+- La cola actual `estado_casos.db` contiene los lotes visibles del 26 de agosto:
+  `PROCESADO=36` y `ERROR=1`. Incluye el lote de 20 y las cuatro causas puntuales
+  revisadas; no hay una instancia operativa de `main.py` en ejecución.
+- La causa `17230-2015-1663` (Quito, QUITO SUR) terminó en
+  `RESULTADOS_TIMEOUT`. El retorno al buscador fue confirmado; es un reintento
+  pendiente de navegación, no una falla de AutoCaptcha ni de clasificación.
+- El intento inicial ejecutado desde una sesión aislada se respaldó y se retiró
+  para no conservar errores de CAPTCHA no verificables.
 
-El parche transaccional de navegación, extracción y regreso al buscador está
-implementado. La suite completa quedó en **71 pruebas aprobadas**, `py_compile`
-correcto y `git diff --check` limpio.
+## Fase operativa y medidas ejecutadas
 
-No hay un proceso de `main.py`/Playwright activo ni una ventana de Excel activa al
-guardar este contexto.
+- `ULTIMA ETAPA` y `ULTIMA FASE` conservan el último hito probado y su fecha
+  para auditoría. En cambio, `ETAPA_PROCESAL` y `FASE_PROCESAL` envían la fase
+  actual calculada. Así una ejecutoria seguida por liquidación, o un embargo
+  seguido por remate, no se transmite como si siguiera en el hito previo.
+- Solo un embargo expreso, practicado, trabado o inscrito activa `6.3 EMBARGO`.
+  Un secuestro o una aprehensión de vehículo, incluso respaldados por acta,
+  son medidas preventivas: se conservan como antecedente y no adelantan la
+  fase. Solicitudes, órdenes, designaciones, medidas negadas e improcedentes
+  tampoco alteran la clasificación.
+- Las medidas de una carpeta `CARATULA SORTEO DE DEPRECATORIOS` no sustituyen
+  la fase del expediente principal; sus citaciones sí se conservan como
+  evidencia.
+- `scripts/reclasificar_desde_sqlite.py --aplicar` respalda SQLite, CSV y
+  Excel. Solo elimina filas idénticas en todas las columnas: coincidencias del
+  mismo juicio con distinta cartera, usuario o crédito se preservan.
 
-No se realizó commit. El worktree contiene cambios deliberados y datos del usuario;
-no usar `git reset`, `checkout` destructivo ni sobrescribir archivos sin inventario.
+## Lote fuente vigente
 
-## 2. Decisiones vigentes
+`config.json` quedó preparado para el reporte externo
+`C:\Users\pasante.callcenter\Downloads\Reporte_jucios SIS 3 27082026 12.40.xlsx`:
+hoja `Reporte`, 2.001 filas y filtro `ESTADO = ACTIVO`. Sus resultados se
+aislarán en `data/reporte_trabajo_20260827.csv`,
+`data/REPORTE_PROCESADO_FINAL_20260827.xlsx`,
+`data/estado_casos_20260827.db` y `data/casos_fallidos_20260827.txt`.
+El CSV inicial y la base SQLite vacía ya fueron creados; el lote anterior no
+fue alterado.
 
-1. No eliminar el freno `REGRESO_AL_BUSCADOR_NO_CONFIRMADO`. Es una barrera de
-   seguridad que impide iniciar otra causa desde una pantalla no confirmada.
-2. AutoCaptcha está **PAUSADO**. Existe el plan
-   [`PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md`](../03_PLANES/PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md), pero no hay solucionador implementado
-   ni llamadas externas activas.
-3. La reanudación masiva requiere una decisión explícita después de revisar el punto
-   de parada y reconciliar estados.
-4. Los manifiestos y respaldos existentes no deben borrarse.
+## AutoCaptcha
 
-## 3. Correcciones implementadas
+`config.json` usa `captcha.modo = "api_con_espera_humana_limitada"`. La API key
+se lee exclusivamente de `AUTOCAPTCHA_API_KEY`; en este equipo no está persistida
+ni se carga desde `.env`. Debe cargarse en la misma PowerShell antes de iniciar
+el bot.
 
-### 3.1. Varias carpetas internas
+No existe modo manual permanente. Si la API falla, `main.py` muestra una ventana
+de hasta 30 segundos para resolver el CAPTCHA; al agotarse, deja la causa en
+`REVISION MANUAL` y continúa con la siguiente. No ejecutar `src.orquestador`
+cuando se quiera aprovechar esa ventana, porque se ejecuta sin interfaz visible.
 
-- Se permite `MOVIMIENTOS_LISTOS -> ABRIENDO_INFORMACION_PROCESO`.
-- Los pilotos reales de 1, 2 y 3 carpetas terminaron completos.
-- Extracción y navegación tienen estados separados.
-- El retorno al buscador es acotado, auditable y confirmado por DOM visible.
+## Corrección de clasificación pendiente de vigilar
 
-### 3.2. Resultados múltiples después de BUSCAR
+Caso de referencia: `07333-2023-02297`.
 
-El portal puede mostrar varias filas para el mismo número base, por ejemplo:
+- Dos demandados fueron citados personalmente el `10/03/2026`.
+- Las devoluciones del deprecatorio de junio de 2026 confirman diligencias, no
+  un embargo practicado.
+- Resultado esperado: última fase `2.1 CITACION (PERSONA/BOLETA)`, fecha
+  `10/03/2026`, etapa/fase actual `CONTESTACION`.
 
-```text
-12331201700065G
-12331201700065
-```
+El parche en `src/agente_extractor.py` impide elevar a `6.3 EMBARGO` un
+despacho deprecatorio sin acta, traba, ejecución o inscripción explícita.
 
-La regla implementada es seleccionar solo la fila cuyo `.numero-proceso` sea
-numérico y coincida exactamente con la causa. Se excluyen sufijos o prefijos
-alfanuméricos, números más largos y coincidencias por subcadena.
+## Verificación técnica
 
-La estructura Angular real está cubierta:
+- La sangría de `tests/test_clasificacion_arbol.py` fue corregida.
+- Suite actual: `207` pruebas correctas; `3` omitidas por requerir PostgreSQL.
+- La prueba específica del deprecatorio frente a citación cumplida pasa.
 
-```text
-section.causas .cuerpo .causa-individual
-  -> .numero-proceso
-  -> enlace de movimientos dentro de la misma fila
-```
+## Consistencia de la clasificación y del reporte
 
-El flujo transaccional ya no busca iconos globales: abre exclusivamente el enlace
-de la fila seleccionada. Si dos filas contienen el mismo número exacto, se detiene
-como ambiguo en vez de escoger arbitrariamente.
+Caso de referencia: `07333-2025-00183`.
 
-### 3.3. Retorno desde `/causas`
+- La extracción DOM había identificado correctamente `1.3 CALIFICACION` del
+  `10/02/2025`, pero la consolidación API+DOM la reemplazaba por `2.2 CITACION
+  POR PRENSA` debido a menciones jurídicas del artículo 56, sin una diligencia
+  de prensa acreditada.
+- `src/agente_extractor.py` ahora exige una providencia, constancia de
+  publicación o evidencia documental concreta de la citación por prensa. Una
+  referencia normativa, una cita jurisprudencial o una etiqueta genérica de
+  "medios de comunicación" ya no basta.
+- `src/motor_busqueda_web.py` registra la salida operativa única como
+  `[DECISION_FASE_FINAL]`; la inferencia DOM aislada se conserva solo como
+  diagnóstico. Así el log no induce a confundir una decisión intermedia con la
+  que se persiste.
+- El 26/08/2026 se reclasificaron 43 resultados SQLite, con cinco correcciones
+  `2.2 CITACION POR PRENSA -> 1.3 CALIFICACION`: `07312-2025-00018`,
+  `07333-2021-02395`, `07333-2024-01512`, `07333-2025-00183` y
+  `07333-2025-03378`. Los respaldos previos quedaron en `data/backups/` con la
+  marca `20260826_130318`.
 
-`/causas` es un origen de recuperación válido. Desde allí se usa el control lateral
-directo `routerlink="/busqueda-filtros"`. El respaldo `go_back()` permanece limitado
-a `/movimientos`.
+## Evidencia de contestación
 
-## 4. Evidencia operativa más reciente
+- No basta que una providencia use la palabra "contestación", "excepciones" o
+  "allanamiento". La fase `3.1 CONTESTACION` requiere un escrito/acto de la
+  parte demandada: contestación presentada, excepciones opuestas, allanamiento
+  expreso o una providencia que lo incorpore o califique.
+- Los plazos para contestar, la contestación de un registro u otra entidad, las
+  menciones normativas y los listados de formas de conclusión no hacen avanzar
+  la causa. Las referencias posteriores al auto de calificación tampoco cambian
+  la fecha de esa fase.
+- Basta la contestación acreditada de **una** persona demandada o procesada;
+  no se exige que todas hayan contestado. La evidencia debe identificar la
+  contestación de la demanda o la providencia que incorpora el escrito.
+- Cuando la providencia incorpora de forma inmediata un `ESCRITO` y se refiere
+  al contenido de la contestación, la fecha de `3.1 CONTESTACION` es la del
+  escrito presentado, no la fecha de la providencia posterior ni la de una
+  razón con un año inconsistente. Esta regla se comprobó con
+  `07333-2023-00851`: escrito `07/09/2023`, auto de incorporación
+  `25/09/2023`.
+- El 27/08/2026 se auditó la base persistida con esta regla y se corrigieron
+  cuatro registros; `07331-2025-00234` quedó en `1.3 CALIFICACION`, fecha
+  `09/04/2025`, con siguiente fase `2.1 CITACION (PERSONA/BOLETA)`.
 
-La ejecución más reciente alcanzó la causa **51/355**:
+## Escrito posterior con adjunto: alerta conservadora
 
-```text
-23331-2023-00119
-```
+Caso de referencia: `07333-2022-01899`.
 
-A las 18:14:29 del 9 de agosto, la página/contexto del navegador fue cerrado durante
-la espera del CAPTCHA. Playwright produjo `TargetClosedError`; el retorno no podía
-confirmarse porque la página ya no existía, y el freno detuvo el lote. Esto no es el
-defecto anterior de selección de fila.
+- SATJE puede mostrar una actuación genérica `ESCRITO / FePresentacion` con un
+  adjunto cuyo contenido no se extrae aún. Ese rótulo no permite afirmar que
+  sea una contestación, pero tampoco permite presentar la calificación previa
+  como el estado material definitivo de la causa.
+- El extractor ahora conserva `TIENE_ADJUNTO` para actuaciones DOM que incluyen
+  el control `Ver archivos`. La consolidación API+DOM preserva ese metadato.
+- Si un `ESCRITO / FEPRESENTACION` con adjunto es posterior a una fase
+  confirmada de calificación o citación, la última fase confirmada se conserva,
+  pero `ETAPA ACTUAL` y `FASE ACTUAL` pasan a `REVISION MANUAL`. El reporte
+  deja el comentario automático `REVISION DOCUMENTAL: ESCRITO POSTERIOR SIN
+  TIPO CONFIRMADO (<fecha>)`.
+- La regla no asigna `3.1 CONTESTACION`, no se activa sin adjunto y no abre
+  revisión en una causa que ya tiene una fase confirmada de contestación o
+  posterior. Es una protección contra certeza falsa, no una lectura de PDFs.
+- Los historiales antiguos que no conservaron `TIENE_ADJUNTO` no pueden ser
+  marcados retroactivamente con seguridad; deben reprocesarse desde SATJE para
+  capturar ese metadato.
 
-Antes de ese cierre se registraron `CAPTCHA_TIMEOUT` en las causas
-`23331-2022-04257`, `23331-2022-04262` y `23331-2022-04264`. Los intervalos largos
-del log coinciden con una ejecución dejada en espera o un equipo suspendido; deben
-auditarse antes de considerarlos fallos permanentes.
+## Orden seguro para continuar
 
-El log terminó en:
-
-```text
-Exportando informe final reestructurado a: data/REPORTE_PROCESADO_FINAL.xlsx
-```
-
-No aparece una confirmación posterior de cierre de esa exportación. Verificar el
-archivo antes de asumir que la exportación final concluyó.
-
-## 5. Estado SQLite al guardar este contexto
-
-```text
-ERROR:      307
-PENDIENTE: 3406
-PROCESADO:   30
-```
-
-Estados relevantes:
-
-| Causa | SQLite |
-|---|---|
-| `12331-2017-00065` | `PROCESADO` |
-| `12331-2014-0845` | `ERROR` |
-| `12331-2016-1181` | `ERROR` |
-| `12203-2015-00393` | `ERROR` |
-| `12331-2017-00026` | `PROCESADO` |
-| `23331-2023-00119` | `ERROR` |
-
-Que `12331-2017-00065` esté `PROCESADO` confirma que la selección de la fila numérica
-funcionó en una ejecución real.
-
-## 6. Lista de fallidos actual
-
-`data/casos_fallidos.txt` contiene:
-
-```text
-12331-2017-00065
-12331-2014-0845
-12331-2016-1181
-12203-2015-00393
-12331-2017-00026
-```
-
-Existe una discrepancia: `12331-2017-00065` y `12331-2017-00026` están como
-`PROCESADO` en SQLite. No editar la lista a ciegas; reconciliarla contra SQLite y el
-resultado durable más reciente antes de reanudar.
-
-## 7. Respaldos y archivos que deben preservarse
-
-Respaldo verificado anterior a los pilotos:
-
-```text
-data/backups/recuperacion_20260807_120637/
-```
-
-El archivo rastreado
-`data/REPORTE JUICIOS PARA REVISIÓN JULIO_RESPALDO_EMERGENCIA.xlsx` aparece
-modificado. Tratarlo como cambio propio del usuario/ejecución y no revertirlo.
-
-Cambios de código/documentación pendientes sin commit:
-
-- `config.json`
-- `main.py`
-- `src/motor_busqueda_web.py`
-- `tests/test_navegacion_esatje.py`
-- `tests/test_regreso_buscador.py`
-- [`PLAN_SOLUCION_REGRESO_BUSCADOR_NO_CONFIRMADO.md`](../03_PLANES/PLAN_SOLUCION_REGRESO_BUSCADOR_NO_CONFIRMADO.md)
-- [`PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md`](../03_PLANES/PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md)
-- `data/backups/`
-
-## 8. Orden seguro para retomar
-
-1. Revisar este documento y `git status --short`.
-2. Crear un nuevo respaldo con timestamp del CSV, Excel final, SQLite y fallidos.
-3. Verificar si `REPORTE_PROCESADO_FINAL.xlsx` terminó de exportarse correctamente.
-4. Reconciliar `casos_fallidos.txt` con SQLite y resultados durables.
-5. Auditar las causas con `CAPTCHA_TIMEOUT` y `23331-2023-00119`.
-6. Ejecutar `python -m pytest -q`; el punto de referencia es `71 passed`.
-7. Usar `--solo <causa>` para cualquier recuperación o piloto.
-8. Autorizar por separado cualquier reanudación masiva.
-9. Mantener AutoCaptcha pausado hasta una decisión explícita.
+1. Abrir una sola PowerShell en la raíz del proyecto.
+2. Cargar `AUTOCAPTCHA_API_KEY` sin mostrarla.
+3. Ejecutar un piloto visible con `main.py --config config.json --lote 10`.
+   Tomará causas activas de cualquier sucursal según el orden del Excel.
+4. Verificar reporte, estados SQLite y CAPTCHA antes de ampliar el lote.
+5. Respaldar antes de cualquier nuevo reinicio o cambio de configuración.
