@@ -512,7 +512,9 @@ class RetornoBuscadorTests(unittest.TestCase):
                         "estado": "ERROR_NAVEGACION",
                         "datos": {},
                         "error": "RETORNO_BUSCADOR_ERROR",
-                        "regreso_confirmado": False,
+                        # Incluso con un DOM aparentemente listo, una causa
+                        # que falló al navegar exige una sesión nueva.
+                        "regreso_confirmado": True,
                     }
                 return {
                     "estado": "COMPLETADO",

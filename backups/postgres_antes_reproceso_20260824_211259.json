@@ -1,0 +1,38 @@
+{
+  "expedientes": [
+    {
+      "numero_causa": "07331-2018-00268",
+      "ciudad": "SANTO DOMINGO",
+      "estado": "ERROR",
+      "ultima_etapa": null,
+      "ultima_fase": null,
+      "fecha_fin_ultima_fase": null,
+      "etapa_actual": null,
+      "fase_actual": null,
+      "fecha_inicio_fase_actual": null,
+      "mensaje_especial": "INFORMACION_PROCESO_TIMEOUT",
+      "actor": null,
+      "demandado": null,
+      "tipo_accion": null,
+      "fecha_inicio_juicio": null,
+      "total_actuaciones": 0,
+      "origen": "COLA_INICIAL",
+      "ruta_html": null,
+      "reintentos": 1,
+      "datos_json": {},
+      "creado_en": "2026-08-19 08:39:33.220990-05:00",
+      "actualizado_en": "2026-08-24 10:02:33.807742-05:00"
+    }
+  ],
+  "actuaciones": [],
+  "eventos_auditoria": [
+    {
+      "id": 66,
+      "numero_causa": "07331-2018-00268",
+      "tipo_evento": "ERROR_EXTRACCION",
+      "origen": "ESATJE_TRANSACCIONAL",
+      "detalle": "INFORMACION_PROCESO_TIMEOUT",
+      "creado_en": "2026-08-24 10:02:33.807742-05:00"
+    }
+  ]
+}

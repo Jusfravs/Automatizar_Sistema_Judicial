@@ -12,11 +12,27 @@ from src.servicio_captcha import (
 
 
 class CampoFalso:
-    def __init__(self, valor):
+    def __init__(self, valor, ignorar_escritura_directa=False):
         self.valor = valor
+        self.ignorar_escritura_directa = ignorar_escritura_directa
+        self.llenados = []
+        self.escrituras_secuenciales = []
+        self.eventos = []
 
     def input_value(self):
         return self.valor
+
+    def fill(self, valor):
+        self.llenados.append(valor)
+        if not (valor and self.ignorar_escritura_directa):
+            self.valor = valor
+
+    def press_sequentially(self, valor, delay=0):
+        self.escrituras_secuenciales.append((valor, delay))
+        self.valor = valor
+
+    def dispatch_event(self, evento):
+        self.eventos.append(evento)
 
 
 class BotonFalso:
@@ -250,6 +266,30 @@ class NavegacionEsatjeTests(unittest.TestCase):
             "12331-2014-0845",
         )
 
+    def test_escribe_causa_directamente_sin_tecleo_lento(self):
+        bot = self.crear_bot()
+        campo = CampoFalso("")
+
+        estrategia = bot._escribir_causa_en_campo(campo, "23331-2022-02089")
+
+        self.assertEqual(estrategia, "fill")
+        self.assertEqual(campo.input_value(), "23331-2022-02089")
+        self.assertEqual(campo.escrituras_secuenciales, [])
+        self.assertEqual(campo.eventos, ["input", "change"])
+
+    def test_escritura_directa_recurre_a_respaldo_si_la_mascara_la_rechaza(self):
+        bot = self.crear_bot()
+        campo = CampoFalso("", ignorar_escritura_directa=True)
+
+        estrategia = bot._escribir_causa_en_campo(campo, "23331-2022-02089")
+
+        self.assertEqual(estrategia, "secuencial_respaldo")
+        self.assertEqual(campo.input_value(), "23331-2022-02089")
+        self.assertEqual(
+            campo.escrituras_secuenciales,
+            [("23331-2022-02089", 0)],
+        )
+
     def test_boton_con_disabled_html_no_se_considera_habilitado(self):
         self.assertFalse(BotJudicial._boton_habilitado(BotonFalso(disabled="true")))
         self.assertFalse(
@@ -305,6 +345,11 @@ class NavegacionEsatjeTests(unittest.TestCase):
         bot._esperar_despues_captcha("23331202202089")
 
         self.assertEqual(bot.page.esperas, [3000])
+
+    def test_espera_post_captcha_por_defecto_es_corta(self):
+        bot = self.crear_bot()
+
+        self.assertEqual(bot.captcha_config["espera_post_solucion_ms"], 500)
 
     def test_espera_post_api_acepta_widget_montado_si_buscar_sigue_habilitado(self):
         bot = self.crear_bot()
