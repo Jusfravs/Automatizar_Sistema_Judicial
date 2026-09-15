@@ -157,6 +157,13 @@ def main(argv=None):
     ruta_casos_fallidos = rutas_config.get(
         "archivo_casos_fallidos", RUTA_CASOS_FALLIDOS
     )
+
+    cola = GestorCola(ruta_db=ruta_db)
+    with cola.bloquear_ejecucion():
+        return _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos)
+
+
+def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
     modo_limitado = argumentos[:1] in (
         ["--solo"], ["--lote"], ["--pendientes"],
         ["--reprocesar-filtro"],
@@ -164,9 +171,6 @@ def main(argv=None):
     if modo_limitado:
         repo.filtros["inicio_desde_juicio"] = None
     casos = repo.obtener_casos_pendientes()
-
-    # --- Integración con SQLite (GestorCola) ---
-    cola = GestorCola(ruta_db=ruta_db)
 
     # --- Integración con PostgreSQL (si está configurado) ---
     gestor_pg = None
@@ -259,6 +263,7 @@ def main(argv=None):
     exitosos = 0
     casos_fallidos = []
     sesion_abierta = False
+    permitir_reproceso = argumentos[:1] == ["--solo"]
 
     try:
         for i, numero_juicio in enumerate(casos, 1):
@@ -267,6 +272,13 @@ def main(argv=None):
             fin_bloque = min(inicio_bloque + TAMANO_BLOQUE_NAVEGADOR, total)
             motivo_formato = motivo_revision_manual_por_formato(numero_juicio)
             logger.info("--- CAUSA %s/%s: %s ---", i, total, numero_juicio)
+
+            # La lista del CSV decide el orden; SQLite conserva la exclusividad
+            # y deja una marca recuperable si el proceso se interrumpe.
+            cola.reservar_causa(
+                numero_juicio,
+                permitir_reproceso=permitir_reproceso,
+            )
 
             try:
                 # Una falla al abrir el navegador se atribuye a esta causa y

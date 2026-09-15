@@ -19,6 +19,7 @@ temp_htmls/
 
 # Logs y temporales
 *.log
+*.rpa.lock
 logs/
 scratch/
 network_capture*.json
@@ -31,3 +32,11 @@ network_capture*.json
 # VS Code / IDE
 .vscode/
 .idea/
+
+# Graphify: versionar el grafo, no caches ni rutas propias del equipo
+graphify-out/cache/
+graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/.vocab.txt
+!graphify-out/graph.html

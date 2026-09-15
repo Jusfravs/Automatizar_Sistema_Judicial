@@ -4,6 +4,7 @@ import sys
 import json
 import shutil
 import errno
+import tempfile
 import time
 from datetime import datetime
 import pandas as pd
@@ -114,15 +115,26 @@ class GestorCasos:
 
     def _cargar_excel_robusto(self):
         """Carga el Excel usando una copia sombra para evitar bloqueos si está abierto en Excel, e infiere el header."""
-        import subprocess
         excel_path = os.path.abspath(self.ruta_excel)
-        temp_path = os.path.abspath(os.path.join(os.path.dirname(self.ruta_excel), "_temp_excel_shadow.xlsx"))
-        
-        # Copiar con PowerShell para evitar error de bloqueo de archivo exclusivo en Windows
-        cmd = f'powershell -Command "Copy-Item \'{excel_path}\' \'{temp_path}\' -Force"'
-        subprocess.run(cmd, shell=True, capture_output=True)
-
-        archivo_lectura = temp_path if os.path.exists(temp_path) else self.ruta_excel
+        temp_path = None
+        archivo_lectura = self.ruta_excel
+        try:
+            descriptor, temp_path = tempfile.mkstemp(
+                prefix="_excel_shadow_",
+                suffix=".xlsx",
+                dir=os.path.dirname(excel_path) or None,
+            )
+            os.close(descriptor)
+            shutil.copy2(excel_path, temp_path)
+            archivo_lectura = temp_path
+        except OSError as error:
+            logger.warning(
+                "No se pudo crear la copia sombra de Excel; se leerá el original: %s",
+                error,
+            )
+            if temp_path and os.path.exists(temp_path):
+                os.remove(temp_path)
+            temp_path = None
 
         try:
             for h in [0, 1]:
@@ -136,7 +148,7 @@ class GestorCasos:
                     continue
             raise ValueError("No se pudo detectar la cabecera correcta en el archivo Excel.")
         finally:
-            if os.path.exists(temp_path):
+            if temp_path and os.path.exists(temp_path):
                 try:
                     os.remove(temp_path)
                 except Exception:
@@ -305,16 +317,39 @@ class GestorCasos:
         return False
 
     def guardar(self):
-        """SAVE: Persiste los cambios en la base CSV de trabajo. Retorna True en éxito."""
+        """SAVE: Reemplaza atómicamente el CSV tras crear su respaldo."""
         if os.path.isfile(self.ruta_csv) and not self._crear_respaldo_csv():
             return False
 
+        ruta_temporal = None
         try:
-            self.df.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
+            ruta_absoluta = os.path.abspath(self.ruta_csv)
+            descriptor, ruta_temporal = tempfile.mkstemp(
+                prefix=".%s." % os.path.basename(ruta_absoluta),
+                suffix=".tmp",
+                dir=os.path.dirname(ruta_absoluta) or None,
+            )
+            os.close(descriptor)
+            self.df.to_csv(
+                ruta_temporal,
+                index=False,
+                encoding='utf-8-sig',
+            )
+            os.replace(ruta_temporal, ruta_absoluta)
+            ruta_temporal = None
             return True
         except Exception as e:
             logger.error("No se pudo guardar CSV: %s", e)
             return False
+        finally:
+            if ruta_temporal and os.path.exists(ruta_temporal):
+                try:
+                    os.remove(ruta_temporal)
+                except OSError:
+                    logger.warning(
+                        "No se pudo eliminar el CSV temporal: %s",
+                        ruta_temporal,
+                    )
 
     def exportar_excel(self):
         """EXPORT: Genera el Excel .xlsx consolidado final con reestructuración de columnas y formato en rojo."""

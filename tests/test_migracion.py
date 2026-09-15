@@ -5,6 +5,7 @@ import os
 import sqlite3
 import sys
 import unittest
+from unittest.mock import patch
 
 # Permitir ejecutar el test desde la raíz del proyecto
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -97,8 +98,9 @@ class TestPoblarCola(unittest.TestCase):
         self.cola = GestorCola(ruta_db=self.DB_TEST)
 
     def tearDown(self):
-        if os.path.exists(self.DB_TEST):
-            os.remove(self.DB_TEST)
+        for ruta in (self.DB_TEST, "%s.rpa.lock" % self.DB_TEST):
+            if os.path.exists(ruta):
+                os.remove(ruta)
 
     def test_poblar_con_lista(self):
         """Poblar con una lista de causas debe insertar registros correctamente."""
@@ -148,6 +150,81 @@ class TestPoblarCola(unittest.TestCase):
         stats = self.cola.obtener_estadisticas()
         self.assertEqual(stats.get("EN_PROCESO", 0), 1)
         self.assertEqual(stats.get("PENDIENTE", 0), 1)
+
+    def test_reservar_causa_concreta_respeta_el_orden_del_lote(self):
+        self.cola.poblar_cola(["CAUSA-001", "CAUSA-002"])
+
+        estado_anterior = self.cola.reservar_causa("CAUSA-002")
+
+        self.assertEqual(estado_anterior, "PENDIENTE")
+        conn = sqlite3.connect(self.DB_TEST)
+        try:
+            estados = dict(conn.execute(
+                "SELECT numero_causa, estado FROM juicios"
+            ).fetchall())
+        finally:
+            conn.close()
+        self.assertEqual(estados["CAUSA-001"], "PENDIENTE")
+        self.assertEqual(estados["CAUSA-002"], "EN_PROCESO")
+
+    def test_reserva_impide_tomar_una_causa_que_ya_esta_en_proceso(self):
+        self.cola.poblar_cola(["CAUSA-001"])
+        self.cola.reservar_causa("CAUSA-001")
+
+        with self.assertRaisesRegex(RuntimeError, "CAUSA_YA_EN_PROCESO"):
+            self.cola.reservar_causa("CAUSA-001", permitir_reproceso=True)
+
+    def test_reproceso_explicito_puede_reservar_un_error(self):
+        self.cola.poblar_cola(["CAUSA-001"])
+        self.cola.actualizar_estado("CAUSA-001", "ERROR")
+
+        with self.assertRaisesRegex(RuntimeError, "CAUSA_NO_PENDIENTE"):
+            self.cola.reservar_causa("CAUSA-001")
+
+        estado_anterior = self.cola.reservar_causa(
+            "CAUSA-001", permitir_reproceso=True
+        )
+        self.assertEqual(estado_anterior, "ERROR")
+        self.assertEqual(self.cola.obtener_estadisticas().get("EN_PROCESO"), 1)
+
+    def test_bloqueo_impide_dos_ejecuciones_sobre_la_misma_base(self):
+        segunda_cola = GestorCola(ruta_db=self.DB_TEST)
+
+        with self.cola.bloquear_ejecucion():
+            with self.assertRaisesRegex(RuntimeError, "OTRA_EJECUCION_ACTIVA"):
+                with segunda_cola.bloquear_ejecucion():
+                    self.fail("La segunda ejecución no debe adquirir el bloqueo")
+
+        with segunda_cola.bloquear_ejecucion():
+            pass
+
+    def test_fallo_de_begin_conserva_la_excepcion_original(self):
+        class ConexionBloqueada:
+            in_transaction = False
+
+            def __init__(self):
+                self.cerrada = False
+                self.rollback_invocado = False
+
+            def execute(self, sentencia):
+                if sentencia == "BEGIN IMMEDIATE":
+                    raise sqlite3.OperationalError("database is locked")
+                raise AssertionError("SQL inesperado: %s" % sentencia)
+
+            def rollback(self):
+                self.rollback_invocado = True
+
+            def close(self):
+                self.cerrada = True
+
+        conexion = ConexionBloqueada()
+        with patch("src.gestor_cola.sqlite3.connect", return_value=conexion):
+            with self.assertRaisesRegex(sqlite3.OperationalError, "database is locked"):
+                with self.cola._exclusive_transaction():
+                    pass
+
+        self.assertFalse(conexion.rollback_invocado)
+        self.assertTrue(conexion.cerrada)
 
 
 class TestRecuperarHuerfanos(unittest.TestCase):

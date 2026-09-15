@@ -1,0 +1,488 @@
+{
+  ".vscode/settings.json": {
+    "mtime": 1787587956.1104472,
+    "seen": 1789484428.1414294,
+    "ast_hash": "4aa85c6acde752675b31b354987521ce",
+    "semantic_hash": "4aa85c6acde752675b31b354987521ce"
+  },
+  "config.json": {
+    "mtime": 1788529611.6927464,
+    "seen": 1789484428.1414294,
+    "ast_hash": "287551e25b3f234033030b36db916aec",
+    "semantic_hash": "287551e25b3f234033030b36db916aec"
+  },
+  "config_quito.json": {
+    "mtime": 1787763400.1611075,
+    "seen": 1789484428.1414294,
+    "ast_hash": "ba7987e4c5aa86498c6a559e88071d73",
+    "semantic_hash": "ba7987e4c5aa86498c6a559e88071d73"
+  },
+  "config_santo_domingo.json": {
+    "mtime": 1788529634.9918258,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e608dc8e248216fbf03d3634981dbbef",
+    "semantic_hash": "e608dc8e248216fbf03d3634981dbbef"
+  },
+  "main.py": {
+    "mtime": 1789491851.299637,
+    "seen": 1789492198.8181236,
+    "ast_hash": "14b1af087e66d9490933923a9421cc7a",
+    "semantic_hash": ""
+  },
+  "migracion_db.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5f0bafde2ee93698fa81dc132384297b",
+    "semantic_hash": "5f0bafde2ee93698fa81dc132384297b"
+  },
+  "scripts/analyze_api.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "de92dabebcd043f5ab582dd2eed036ac",
+    "semantic_hash": "de92dabebcd043f5ab582dd2eed036ac"
+  },
+  "scripts/analyze_latest_html.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "bfdd43ba917c6ed3d80a6ff2f6d9f2d8",
+    "semantic_hash": "bfdd43ba917c6ed3d80a6ff2f6d9f2d8"
+  },
+  "scripts/diagnosticar_esatje.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "cdb4431059242c3c2681bc14f70f8a7e",
+    "semantic_hash": "cdb4431059242c3c2681bc14f70f8a7e"
+  },
+  "scripts/inicializar_postgres.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "8b0e249a140444e55258b209a4516d6b",
+    "semantic_hash": "8b0e249a140444e55258b209a4516d6b"
+  },
+  "scripts/migrar_sqlite_a_postgres.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "9dc6a25dfd7537ee453bd639772c6953",
+    "semantic_hash": "9dc6a25dfd7537ee453bd639772c6953"
+  },
+  "scripts/monitorear_esatje.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "3a7573a6f89146c1a40aba4d1af6ad63",
+    "semantic_hash": "3a7573a6f89146c1a40aba4d1af6ad63"
+  },
+  "scripts/persist_and_advance.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "cf64a5a90eba380a5a3ef6f09708db03",
+    "semantic_hash": "cf64a5a90eba380a5a3ef6f09708db03"
+  },
+  "scripts/preparar_quito.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "9ed2888269d57527de2c4aab86096ecb",
+    "semantic_hash": "9ed2888269d57527de2c4aab86096ecb"
+  },
+  "scripts/preparar_reproceso_causas.py": {
+    "mtime": 1788529652.9862854,
+    "seen": 1789484428.1414294,
+    "ast_hash": "81cfd3b78bd9a0781ff9933b89a0ed7f",
+    "semantic_hash": "81cfd3b78bd9a0781ff9933b89a0ed7f"
+  },
+  "scripts/reclasificar_desde_sqlite.py": {
+    "mtime": 1788370921.3411224,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5ea5a681d2307dfca86185ed139afd9a",
+    "semantic_hash": "5ea5a681d2307dfca86185ed139afd9a"
+  },
+  "scripts/reprocesar_y_exportar_quito.py": {
+    "mtime": 1787925884.8039277,
+    "seen": 1789484428.1414294,
+    "ast_hash": "b251c260360109ff9be2118c74d64d26",
+    "semantic_hash": "b251c260360109ff9be2118c74d64d26"
+  },
+  "scripts/reset_db.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "a9e3a6b7ea1293d584c57982ad6329e5",
+    "semantic_hash": "a9e3a6b7ea1293d584c57982ad6329e5"
+  },
+  "scripts/run_bot_api.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "628760dfa549a12bb2609192ff25f82c",
+    "semantic_hash": "628760dfa549a12bb2609192ff25f82c"
+  },
+  "src/__init__.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "bb87d38b85faafa59b584fb5a6319427",
+    "semantic_hash": "bb87d38b85faafa59b584fb5a6319427"
+  },
+  "src/agente_explorador.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "1338b6a5890df63e4f8eb58b4af435d3",
+    "semantic_hash": "1338b6a5890df63e4f8eb58b4af435d3"
+  },
+  "src/agente_extractor.py": {
+    "mtime": 1788529660.1435125,
+    "seen": 1789484428.1414294,
+    "ast_hash": "7ac53ffb8724c715a537b06f7743d1cd",
+    "semantic_hash": "7ac53ffb8724c715a537b06f7743d1cd"
+  },
+  "src/antigravity_adapter.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "fdf441be767be48b6f5c283fef3df3c1",
+    "semantic_hash": "fdf441be767be48b6f5c283fef3df3c1"
+  },
+  "src/auditor.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "0ffd95d8083cca87040cede878e612cc",
+    "semantic_hash": "0ffd95d8083cca87040cede878e612cc"
+  },
+  "src/db_postgres.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "b9bb67bb8ce41b0d2b73562b96f29fe2",
+    "semantic_hash": "b9bb67bb8ce41b0d2b73562b96f29fe2"
+  },
+  "src/gestor_casos.py": {
+    "mtime": 1789492019.6248298,
+    "seen": 1789492198.8181236,
+    "ast_hash": "85738e8df0094a0c2506d7241a465e22",
+    "semantic_hash": ""
+  },
+  "src/gestor_cola.py": {
+    "mtime": 1789491851.299637,
+    "seen": 1789492198.8181236,
+    "ast_hash": "1ffb22ba5a1b64acd3fd73ad1cc4d7c7",
+    "semantic_hash": ""
+  },
+  "src/gestor_estado.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e5a88ef69c2f7e09830105aed7400cbf",
+    "semantic_hash": "e5a88ef69c2f7e09830105aed7400cbf"
+  },
+  "src/limpieza.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5bec1d5d7d2af787407fdd0f7b2bb926",
+    "semantic_hash": "5bec1d5d7d2af787407fdd0f7b2bb926"
+  },
+  "src/logger_config.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "1fa98ddd2b31236b8ca6a5b7da09899d",
+    "semantic_hash": "1fa98ddd2b31236b8ca6a5b7da09899d"
+  },
+  "src/motor_busqueda_web.py": {
+    "mtime": 1788529726.8277857,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d9296c0ff8c2048a96688695ab4c303e",
+    "semantic_hash": "d9296c0ff8c2048a96688695ab4c303e"
+  },
+  "src/orquestador.py": {
+    "mtime": 1789491851.3153515,
+    "seen": 1789492198.8181236,
+    "ast_hash": "82a53dc4a263079ddb09fff9ba24cadc",
+    "semantic_hash": ""
+  },
+  "src/prompt_procesador.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "50703664ea22e0c47970d350848545cc",
+    "semantic_hash": "50703664ea22e0c47970d350848545cc"
+  },
+  "src/servicio_captcha.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e204792052071e903ddfccb8866ba2f0",
+    "semantic_hash": "e204792052071e903ddfccb8866ba2f0"
+  },
+  "src/validacion_pertenencia.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "756b24a4825079a3e9d732127b0c1ab8",
+    "semantic_hash": "756b24a4825079a3e9d732127b0c1ab8"
+  },
+  "test_inferencia_casos.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "56435866715a522d9bff5044c4ea499f",
+    "semantic_hash": "56435866715a522d9bff5044c4ea499f"
+  },
+  "tests/__init__.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "c120a49ae43060891120a585f23d5a0f",
+    "semantic_hash": "c120a49ae43060891120a585f23d5a0f"
+  },
+  "tests/test_clasificacion_arbol.py": {
+    "mtime": 1788454461.897428,
+    "seen": 1789484428.1414294,
+    "ast_hash": "0b1138f3877b4d2103fd7d013f6b87d0",
+    "semantic_hash": "0b1138f3877b4d2103fd7d013f6b87d0"
+  },
+  "tests/test_config_quito.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "ae501617257791b4aa337ad14a69d1c7",
+    "semantic_hash": "ae501617257791b4aa337ad14a69d1c7"
+  },
+  "tests/test_extraccion_api.py": {
+    "mtime": 1787850596.0640676,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d97f4873563d3a951f4fed90c8d1dd70",
+    "semantic_hash": "d97f4873563d3a951f4fed90c8d1dd70"
+  },
+  "tests/test_extraccion_integration.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "189bcec104805419c5b4abfb82a0566c",
+    "semantic_hash": "189bcec104805419c5b4abfb82a0566c"
+  },
+  "tests/test_freno_transaccional.py": {
+    "mtime": 1788529727.8841677,
+    "seen": 1789484428.1414294,
+    "ast_hash": "16d4e1d308c2483ba7aebf7316a9626f",
+    "semantic_hash": "16d4e1d308c2483ba7aebf7316a9626f"
+  },
+  "tests/test_migracion.py": {
+    "mtime": 1789491876.0736198,
+    "seen": 1789492198.8181236,
+    "ast_hash": "0b0bff237a884eb85df40cd754249891",
+    "semantic_hash": ""
+  },
+  "tests/test_navegacion_esatje.py": {
+    "mtime": 1788529791.830966,
+    "seen": 1789484428.1414294,
+    "ast_hash": "29132eeb28da69f4be4bc2c3762a192a",
+    "semantic_hash": "29132eeb28da69f4be4bc2c3762a192a"
+  },
+  "tests/test_postgres_integracion.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "7e9bcfb4c196534b2b3cdcb305d779dc",
+    "semantic_hash": "7e9bcfb4c196534b2b3cdcb305d779dc"
+  },
+  "tests/test_prompt_procesador.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "00286554ba9e0d6d917e5c27cc2d3ec0",
+    "semantic_hash": "00286554ba9e0d6d917e5c27cc2d3ec0"
+  },
+  "tests/test_reclasificar_sqlite.py": {
+    "mtime": 1787844300.3102608,
+    "seen": 1789484428.1414294,
+    "ast_hash": "90f2fb506e0dc03e086003c82e54eb2c",
+    "semantic_hash": "90f2fb506e0dc03e086003c82e54eb2c"
+  },
+  "tests/test_regresiones_quito_29.py": {
+    "mtime": 1788528231.8478298,
+    "seen": 1789484428.1414294,
+    "ast_hash": "cb914b93e26e421c1f615b65a6c27d97",
+    "semantic_hash": "cb914b93e26e421c1f615b65a6c27d97"
+  },
+  "tests/test_regreso_buscador.py": {
+    "mtime": 1789491851.3153515,
+    "seen": 1789492198.8181236,
+    "ast_hash": "987adaaf3de80acd7d8eddad219a2b35",
+    "semantic_hash": ""
+  },
+  "tests/test_respaldo_csv.py": {
+    "mtime": 1789492084.7457988,
+    "seen": 1789492198.8181236,
+    "ast_hash": "694ba957d8d12ea1b59018cfb4f72eb6",
+    "semantic_hash": ""
+  },
+  "tests/test_servicio_captcha.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d6255e7ad0dce01d4f100d8db83e1634",
+    "semantic_hash": "d6255e7ad0dce01d4f100d8db83e1634"
+  },
+  "tests/test_trazabilidad_decision_final.py": {
+    "mtime": 1788529279.3280725,
+    "seen": 1789484428.1414294,
+    "ast_hash": "12584b72069865ecb6be759b1e7c15af",
+    "semantic_hash": "12584b72069865ecb6be759b1e7c15af"
+  },
+  "tests/test_validacion_pertenencia.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "21e2f7c3ea30820d16d65402fe196e61",
+    "semantic_hash": "21e2f7c3ea30820d16d65402fe196e61"
+  },
+  "AGENTS.md": {
+    "mtime": 1789482306.734252,
+    "seen": 1789484428.1414294,
+    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "semantic_hash": "21ceb6533048be51308e69e7b74a35cf"
+  },
+  "CASOS_PENDIENTES_CORRECCION.md": {
+    "mtime": 1788459002.9803567,
+    "seen": 1789484428.1414294,
+    "ast_hash": "a90a2c2554f8e237bc7c33f5a23ad736",
+    "semantic_hash": "a90a2c2554f8e237bc7c33f5a23ad736"
+  },
+  "DOCUMENTACION/01_GENERAL/CONTEXTO_REANUDACION.md": {
+    "mtime": 1787935933.149953,
+    "seen": 1789484428.1414294,
+    "ast_hash": "9487ad007fb48033b78920d16b9d3a36",
+    "semantic_hash": "9487ad007fb48033b78920d16b9d3a36"
+  },
+  "DOCUMENTACION/01_GENERAL/MANUAL_DE_USO.md": {
+    "mtime": 1787853250.297598,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d481d43365cd2cbbac86075e75fcf6ed",
+    "semantic_hash": "d481d43365cd2cbbac86075e75fcf6ed"
+  },
+  "DOCUMENTACION/01_GENERAL/MANUAL_DE_USO_ANTERIOR_20260824.md": {
+    "mtime": 1787587956.114445,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5bc43f5fde9713892a4ebab5cb5450f5",
+    "semantic_hash": "5bc43f5fde9713892a4ebab5cb5450f5"
+  },
+  "DOCUMENTACION/01_GENERAL/README.md": {
+    "mtime": 1787853258.3230455,
+    "seen": 1789484428.1414294,
+    "ast_hash": "159b61b38b9db169d615786a3910e2e2",
+    "semantic_hash": "159b61b38b9db169d615786a3910e2e2"
+  },
+  "DOCUMENTACION/01_GENERAL/Vision_Proyecto.md": {
+    "mtime": 1787763218.8396177,
+    "seen": 1789484428.1414294,
+    "ast_hash": "afe39416c703f7ca66c1749465687cfe",
+    "semantic_hash": "afe39416c703f7ca66c1749465687cfe"
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/CONFIGURACION_AUTOCAPTCHA.md": {
+    "mtime": 1787763215.1111693,
+    "seen": 1789484428.1414294,
+    "ast_hash": "f6c73062d76b7c921680d57c65247350",
+    "semantic_hash": "f6c73062d76b7c921680d57c65247350"
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/MODULO_FILTRO_CASOS.md": {
+    "mtime": 1787587956.1164432,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d762600ddaba8b59a247635900d07795",
+    "semantic_hash": "d762600ddaba8b59a247635900d07795"
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/MOLDE_NUEVOS_CAMBIOS.md": {
+    "mtime": 1787587956.1164432,
+    "seen": 1789484428.1414294,
+    "ast_hash": "013aea9e22c85c6a436f94c32e4c7d19",
+    "semantic_hash": "013aea9e22c85c6a436f94c32e4c7d19"
+  },
+  "DOCUMENTACION/03_BASE_DE_DATOS/GUIA_PGADMIN_POSTGRES.md": {
+    "mtime": 1787587956.117444,
+    "seen": 1789484428.1414294,
+    "ast_hash": "68bf595d9e94d5f4e30d27d9d100ae91",
+    "semantic_hash": "68bf595d9e94d5f4e30d27d9d100ae91"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_AUTOMATIZACION_BOTONES_ESATJE.md": {
+    "mtime": 1787587956.118446,
+    "seen": 1789484428.1414294,
+    "ast_hash": "830f3b3fdcc445f8639346825aea99dc",
+    "semantic_hash": "830f3b3fdcc445f8639346825aea99dc"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_CORRECCION_FRENO_INFORMACION_PROCESO.md": {
+    "mtime": 1787587956.1194472,
+    "seen": 1789484428.1414294,
+    "ast_hash": "41fcc32ec588e9a1671cc43f8bcc0334",
+    "semantic_hash": "41fcc32ec588e9a1671cc43f8bcc0334"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md": {
+    "mtime": 1787756779.5068407,
+    "seen": 1789484428.1414294,
+    "ast_hash": "63aad462945b484a316724adeb6200aa",
+    "semantic_hash": "63aad462945b484a316724adeb6200aa"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_IMPLEMENTACION_LECTURA_SELECTIVA_ADJUNTOS_PDF.md": {
+    "mtime": 1787843793.777562,
+    "seen": 1789484428.1414294,
+    "ast_hash": "79deba9ea1c077bf82627968ffa5b67b",
+    "semantic_hash": "79deba9ea1c077bf82627968ffa5b67b"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_SOLUCION_REGRESO_BUSCADOR_NO_CONFIRMADO.md": {
+    "mtime": 1787587956.1204436,
+    "seen": 1789484428.1414294,
+    "ast_hash": "53138b8f562506ea0aa129d50fdd707c",
+    "semantic_hash": "53138b8f562506ea0aa129d50fdd707c"
+  },
+  "DOCUMENTACION/04_DIAGNOSTICOS_Y_CORRECCIONES/CORRECCION_FECHA_DERIVADA.md": {
+    "mtime": 1787587956.1214428,
+    "seen": 1789484428.1414294,
+    "ast_hash": "00ff3bda1f77df120b55e6518f7c482a",
+    "semantic_hash": "00ff3bda1f77df120b55e6518f7c482a"
+  },
+  "DOCUMENTACION/04_DIAGNOSTICOS_Y_CORRECCIONES/Diagn\u00f3stico y An\u00e1lisis de Logs RPA.md": {
+    "mtime": 1787587956.1214428,
+    "seen": 1789484428.1414294,
+    "ast_hash": "c4f5bd081c35ef0c109da7a4f0dc5c5e",
+    "semantic_hash": "c4f5bd081c35ef0c109da7a4f0dc5c5e"
+  },
+  "DOCUMENTACION/05_AVANCES/00_Estado_Inicial_y_Diagnostico.md": {
+    "mtime": 1787587956.122445,
+    "seen": 1789484428.1414294,
+    "ast_hash": "08d6c02320232073148f51f05eed96b3",
+    "semantic_hash": "08d6c02320232073148f51f05eed96b3"
+  },
+  "DOCUMENTACION/05_AVANCES/01_Estabilizacion_y_Bugs.md": {
+    "mtime": 1787587956.122445,
+    "seen": 1789484428.1414294,
+    "ast_hash": "8ab180cba22269dbab3d33add207b72f",
+    "semantic_hash": "8ab180cba22269dbab3d33add207b72f"
+  },
+  "DOCUMENTACION/05_AVANCES/02_Migracion_SQLite_y_Cola.md": {
+    "mtime": 1787587956.1234434,
+    "seen": 1789484428.1414294,
+    "ast_hash": "857634ba75f83f6696540cce4528e6e0",
+    "semantic_hash": "857634ba75f83f6696540cce4528e6e0"
+  },
+  "DOCUMENTACION/05_AVANCES/03_Inferencia_y_Excel_Base.md": {
+    "mtime": 1787587956.1244495,
+    "seen": 1789484428.1414294,
+    "ast_hash": "2b92ad2c0dec28ede39aeed371ad27f1",
+    "semantic_hash": "2b92ad2c0dec28ede39aeed371ad27f1"
+  },
+  "DOCUMENTACION/INDICE.md": {
+    "mtime": 1787843804.7031806,
+    "seen": 1789484428.1414294,
+    "ast_hash": "36f1e4864245ce553529d016611daecc",
+    "semantic_hash": "36f1e4864245ce553529d016611daecc"
+  },
+  "Prompt_correcion_Filtro.txt": {
+    "mtime": 1787587956.339185,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e2d0d529198c9068646d7d4781bb34bc",
+    "semantic_hash": "e2d0d529198c9068646d7d4781bb34bc"
+  },
+  "config/extraction_keywords.yml": {
+    "mtime": 1787587956.654107,
+    "seen": 1789484428.1414294,
+    "ast_hash": "8730502d9ab9f64bb13e8a55c9e44c8c",
+    "semantic_hash": "8730502d9ab9f64bb13e8a55c9e44c8c"
+  },
+  "requirements.txt": {
+    "mtime": 1787681109.403089,
+    "seen": 1789484428.1414294,
+    "ast_hash": "280fcd906babf7b5144c7756c816eac6",
+    "semantic_hash": "280fcd906babf7b5144c7756c816eac6"
+  },
+  "graphify-out/memory/query_20260915_152723_54f39a7c_estas_preguntas_sugeridas_son_errores_que_el_grafo.md": {
+    "mtime": 1789486043.9584267,
+    "seen": 1789488743.4649382,
+    "ast_hash": "6cb784fb91ee5f5630753f120c04ff8d",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260915_161340_05debc0c_revisar_la_logica_del_sistema_a_partir_de_las_preg.md": {
+    "mtime": 1789488820.601192,
+    "seen": 1789492198.8181236,
+    "ast_hash": "451215b4506add7eb7ab1240ac13a5ac",
+    "semantic_hash": ""
+  }
+}

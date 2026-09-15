@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-09-15T17:00:14.899229+00:00",
+  "nodes": {
+    "src_agente_extractor_motorinferenciaprocesal": {
+      "code_fingerprint": "c879aa7c60f29f7e45453cb97effe96b0dd14c3bd179822589c7549053d8dfc4",
+      "label": "MotorInferenciaProcesal",
+      "last": "2026-09-15T16:13:40.587016+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T16:13:40.587016+00:00",
+          "outcome": "useful",
+          "q": "Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
+        },
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 1.99776437,
+      "source_file": "src/agente_extractor.py",
+      "status": "preferred",
+      "uses": 2
+    },
+    "src_gestor_cola_gestorcola": {
+      "code_fingerprint": "6ecc0ee317c46ffbc3b835a1e8e6e0d5231846f219e749200e10b133698baaac",
+      "label": "GestorCola",
+      "last": "2026-09-15T16:13:40.587016+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T16:13:40.587016+00:00",
+          "outcome": "useful",
+          "q": "Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
+        },
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 1.99776437,
+      "source_file": "src/gestor_cola.py",
+      "status": "preferred",
+      "uses": 2
+    },
+    "src_gestor_cola_gestorcola_reservar_causa": {
+      "code_fingerprint": "6ecc0ee317c46ffbc3b835a1e8e6e0d5231846f219e749200e10b133698baaac",
+      "label": ".reservar_causa()",
+      "last": "2026-09-15T16:13:40.587016+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T16:13:40.587016+00:00",
+          "outcome": "useful",
+          "q": "Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
+        }
+      ],
+      "score": 0.99925303,
+      "source_file": "src/gestor_cola.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_motor_busqueda_web_botjudicial": {
+      "code_fingerprint": "333367a3f45b7300fdbb623c055316bdcd27e78c034619e61e5285e69ab618fd",
+      "label": "BotJudicial",
+      "last": "2026-09-15T15:27:23.958426+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 0.99851134,
+      "source_file": "src/motor_busqueda_web.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "tests_test_clasificacion_arbol_testclasificacionarbol": {
+      "code_fingerprint": "a0da3490d9a660468fe705c0e11bcc11f8935f8458c2a67a3a33b9444aff04a5",
+      "label": "TestClasificacionArbol",
+      "last": "2026-09-15T15:27:23.958426+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 0.99851134,
+      "source_file": "tests/test_clasificacion_arbol.py",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}
