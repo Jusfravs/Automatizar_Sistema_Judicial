@@ -10,6 +10,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_pla
 from src.agente_extractor import (
     AgenteExtractor, NavegadorArbolContenido, normalizar_texto,
 )
+from src.catalogo_procesal import enriquecer_datos_procesales
 from src.logger_config import obtener_logger
 from src.validacion_pertenencia import ESTADO_EXCLUIDO, validar_pertenencia_cartera
 from src.servicio_captcha import (
@@ -972,6 +973,7 @@ class BotJudicial:
         datos["ETAPA ACTUAL"] = etapa_operativa
         datos["FASE ACTUAL"] = fase_operativa
         datos["FECHA INICIO FASE ACTUAL"] = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
+        enriquecer_datos_procesales(datos)
         if inferencia.get("MENSAJE_ESPECIAL"):
             datos["COMENTARIO_ULTIMO"] = inferencia.get("MENSAJE_ESPECIAL")
         try:
@@ -1305,6 +1307,7 @@ class BotJudicial:
                             datos["ETAPA ACTUAL"] = etapa_operativa
                             datos["FASE ACTUAL"] = fase_operativa
                             datos["FECHA INICIO FASE ACTUAL"] = fecha_api
+                            enriquecer_datos_procesales(datos)
                             if res_api.get("MENSAJE_ESPECIAL"):
                                 datos["COMENTARIO_ULTIMO"] = res_api.get("MENSAJE_ESPECIAL")
 
@@ -3372,6 +3375,7 @@ class BotJudicialTransaccional(BotJudicial):
             datos["ETAPA ACTUAL"] = ESTADO_EXCLUIDO
             datos["FASE ACTUAL"] = ESTADO_EXCLUIDO
             datos["COMENTARIO_ULTIMO"] = pertenencia["motivo"]
+        enriquecer_datos_procesales(datos)
         errores = [
             resultado.get("error") for resultado in resultados if resultado.get("error")
         ]

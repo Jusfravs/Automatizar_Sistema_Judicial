@@ -345,6 +345,18 @@ def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
                             numero_juicio,
                         )
                 elif estado == "SIN_RESULTADOS":
+                    datos_sin_resultados = {
+                        "COMENTARIO_ULTIMO": (
+                            "REVISION MANUAL: Verificar manualmente "
+                            "(La consulta no devolvio resultados)"
+                        ),
+                    }
+                    resultado = {**resultado, "datos": datos_sin_resultados}
+                    if not repo.actualizar_caso(
+                        numero_juicio, datos_sin_resultados
+                    ):
+                        raise RuntimeError("PERSISTENCIA_CSV_RECHAZADA")
+                    guardar_csv_o_fallar(repo)
                     cola.registrar_resultado_transaccional(
                         numero_juicio,
                         resultado,

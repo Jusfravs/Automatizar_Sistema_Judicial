@@ -4,6 +4,7 @@ import os
 import sqlite3
 from contextlib import contextmanager
 import pandas as pd
+from src.catalogo_procesal import enriquecer_datos_procesales
 from src.logger_config import obtener_logger
 
 logger = obtener_logger("GestorCola")
@@ -289,6 +290,16 @@ class GestorCola:
         en una única transacción SQLite con BEGIN IMMEDIATE.
         """
         causa_str = str(numero_causa).strip()
+        if isinstance(resultado, dict):
+            resultado = dict(resultado)
+            if isinstance(resultado.get("datos"), dict):
+                datos = dict(resultado["datos"])
+                enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+                resultado["datos"] = datos
+            else:
+                enriquecer_datos_procesales(
+                    resultado, normalizar_etiquetas=True
+                )
         datos_json = json.dumps(resultado, ensure_ascii=False)
         estados_validos = {
             "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR",

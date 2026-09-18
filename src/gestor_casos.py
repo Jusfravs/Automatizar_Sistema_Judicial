@@ -9,6 +9,10 @@ import time
 from datetime import datetime
 import pandas as pd
 from pandas.errors import EmptyDataError
+from src.catalogo_procesal import (
+    CAMPOS_ID,
+    enriquecer_datos_procesales,
+)
 from src.logger_config import obtener_logger
 
 logger = obtener_logger("GestorCasos")
@@ -20,23 +24,20 @@ class GestorCasos:
     COLUMNAS_MOLDE_EXPORTACION = [
         'FECHA INICIO JUICIO',
         'FECHA FIN ULTIMA FASE',
+        'eta_id ULTIMA ETAPA',
         'ULTIMA ETAPA',
+        'fas_id ULTIMA FASE',
         'ULTIMA FASE',
         'FECHA INICIO FASE ACTUAL',
+        'eta_id ETAPA ACTUAL',
         'ETAPA ACTUAL',
+        'fas_id FASE ACTUAL',
         'FASE ACTUAL',
         'DIAS TRANSCURRIDOS',
     ]
     COLUMNAS_FECHA_PROCESAL = {
         'FECHA FIN ULTIMA FASE',
         'FECHA INICIO FASE ACTUAL',
-    }
-    COLUMNAS_FASE_EXPORTACION = ('ULTIMA FASE', 'FASE ACTUAL')
-    ETIQUETAS_FASE_EXCEL = {
-        '2.1 CITACION (PERSONA/BOLETA)': '2.1 CITACION',
-        '6.5 CONGELAMIENTO DE CUENTAS / CIERRE': (
-            '6.5 CONGELAMIENTO DE CUENTAS'
-        ),
     }
 
     @staticmethod
@@ -64,13 +65,6 @@ class GestorCasos:
     def _normalizar_fecha_reporte(cls, valor):
         fecha = cls._parsear_fecha_reporte(valor)
         return fecha.strftime("%d/%m/%Y") if fecha else valor
-
-    @classmethod
-    def _normalizar_fase_exportacion(cls, valor):
-        """Acorta etiquetas únicamente para la presentación del Excel."""
-        if valor is None or pd.isna(valor):
-            return valor
-        return cls.ETIQUETAS_FASE_EXCEL.get(str(valor).strip(), valor)
 
     def __init__(self, ruta_config="config.json"):
         with open(ruta_config, 'r', encoding='utf-8') as f:
@@ -237,6 +231,8 @@ class GestorCasos:
 
     def actualizar_caso(self, numero_juicio, datos):
         """UPDATE: Inyecta en la fila correspondiente los datos extraídos."""
+        datos = dict(datos)
+        enriquecer_datos_procesales(datos)
         numero_juicio_normalizado = str(numero_juicio).strip().upper()
         mask = (
             self.df['NUMERO_JUICIO'].astype(str).str.strip().str.upper()
@@ -351,157 +347,232 @@ class GestorCasos:
                         ruta_temporal,
                     )
 
-    def exportar_excel(self):
-        """EXPORT: Genera el Excel .xlsx consolidado final con reestructuración de columnas y formato en rojo."""
-        import openpyxl
-        from openpyxl.styles import PatternFill, Font
-
-        # 1. Calcular días transcurridos
-        self.calcular_dias_transcurridos()
-
-        # 2. Lista de las columnas obsoletas a eliminar del Excel final si existen
-        cols_a_eliminar = [
-            'ETAPA_PROCESAL (ACTUAL)',
-            'FASE_PROCESAL (ACTUAL)',
-            'ETAPA_PROCESAL (MIGRADO)',
-            'CODIGO_FASE',
-            'FASE_PROCESAL (MIGRADO)',
-            'FECHA INICIAL FASE ACTUAL',
-            'DIAS EN LA FASE ACTUAL',
-            'ETAPA_PROCESAL',
-            'FASE_PROCESAL'
-        ]
-
-        df_export = self.df.copy()
-
-        # Crear copia de FECHA INICIO JUICIO si no existe
-        if 'FECHA INICIO JUICIO' not in df_export.columns:
-            df_export['FECHA INICIO JUICIO'] = None
-
-        # Asegurar presencia de nuevas columnas MOLDE
-        nuevas_cols_molde = list(self.COLUMNAS_MOLDE_EXPORTACION)
-
-        for col in nuevas_cols_molde:
-            if col not in df_export.columns:
-                df_export[col] = None
-
-        # Presentar nombres breves sin modificar las etiquetas procesales internas.
-        for col_fase in self.COLUMNAS_FASE_EXPORTACION:
-            df_export[col_fase] = df_export[col_fase].map(
-                self._normalizar_fase_exportacion
+    @staticmethod
+    def _mascara_mal_ingresado(df):
+        comentarios = df.get(
+            'COMENTARIO_ULTIMO', pd.Series('', index=df.index)
+        ).fillna('').astype(str).str.upper()
+        mascara = (
+            comentarios.str.contains('FORMATO_CAUSA_INVALIDO', regex=False)
+            | (
+                comentarios.str.contains('NO DEVOLVI', regex=False)
+                & comentarios.str.contains('RESULTAD', regex=False)
             )
+        )
+        for campo_estado in ('ETAPA ACTUAL', 'FASE ACTUAL'):
+            if campo_estado in df.columns:
+                mascara |= (
+                    df[campo_estado].fillna('').astype(str).str.strip().str.upper()
+                    == 'EXCLUIDO_NO_CORRESPONDE'
+                )
+        for campo in (
+            'FECHA INICIO JUICIO', 'FECHA FIN ULTIMA FASE', 'ULTIMA ETAPA',
+            'ULTIMA FASE', 'FECHA INICIO FASE ACTUAL', 'ETAPA ACTUAL',
+            'FASE ACTUAL',
+        ):
+            if campo in df.columns:
+                mascara |= (
+                    df[campo].fillna('').astype(str).str.strip().str.upper()
+                    == 'MAL INGRESADO'
+                )
+        return mascara
 
-        # Normalizar timestamps ISO ya existentes sin volver a consultar el portal.
+    @staticmethod
+    def _agregar_motivo_id_no_catalogado(df, mascara_mal_ingresado):
+        pares = (
+            ('ULTIMA ETAPA', 'eta_id ULTIMA ETAPA'),
+            ('ULTIMA FASE', 'fas_id ULTIMA FASE'),
+            ('ETAPA ACTUAL', 'eta_id ETAPA ACTUAL'),
+            ('FASE ACTUAL', 'fas_id FASE ACTUAL'),
+        )
+        if 'COMENTARIO_ULTIMO' not in df.columns:
+            df['COMENTARIO_ULTIMO'] = None
+        for idx, fila in df.loc[~mascara_mal_ingresado].iterrows():
+            faltantes = []
+            for etiqueta, campo_id in pares:
+                valor = fila.get(etiqueta)
+                if valor is not None and not pd.isna(valor) and str(valor).strip():
+                    if fila.get(campo_id) is None or pd.isna(fila.get(campo_id)):
+                        faltantes.append(f"{etiqueta}='{valor}'")
+            if not faltantes:
+                continue
+            motivo = 'ID_NO_CATALOGADO: ' + ', '.join(faltantes)
+            comentario = fila.get('COMENTARIO_ULTIMO')
+            comentario = '' if comentario is None or pd.isna(comentario) else str(comentario).strip()
+            if motivo not in comentario:
+                df.at[idx, 'COMENTARIO_ULTIMO'] = (
+                    f"{comentario} | {motivo}" if comentario else motivo
+                )
+
+    def _preparar_exportacion(self, fecha_actual=None):
+        self.calcular_dias_transcurridos(fecha_actual)
+        df_export = self.df.copy()
+        nuevas_cols = list(self.COLUMNAS_MOLDE_EXPORTACION)
+        for columna in nuevas_cols:
+            if columna not in df_export.columns:
+                df_export[columna] = None
+        for columna in (
+            'COMENTARIO_ULTIMO', 'FECHA INICIO JUICIO',
+            'FECHA FIN ULTIMA FASE', 'ULTIMA ETAPA', 'ULTIMA FASE',
+            'FECHA INICIO FASE ACTUAL', 'ETAPA ACTUAL', 'FASE ACTUAL',
+        ):
+            if columna in df_export.columns and df_export[columna].dtype != object:
+                df_export[columna] = df_export[columna].astype(object)
+
+        for idx, fila in df_export.iterrows():
+            datos = fila.to_dict()
+            enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+            for campo in (
+                'ULTIMA ETAPA', 'ULTIMA FASE', 'ETAPA ACTUAL', 'FASE ACTUAL',
+                *CAMPOS_ID,
+            ):
+                df_export.at[idx, campo] = datos.get(campo)
+
         for col_fecha in self.COLUMNAS_FECHA_PROCESAL:
             df_export[col_fecha] = df_export[col_fecha].map(
                 self._normalizar_fecha_reporte
             )
+        mask_copia = (
+            df_export['FECHA INICIO FASE ACTUAL'].isna()
+            & df_export['FECHA FIN ULTIMA FASE'].notna()
+        )
+        df_export.loc[mask_copia, 'FECHA INICIO FASE ACTUAL'] = df_export.loc[
+            mask_copia, 'FECHA FIN ULTIMA FASE'
+        ]
 
-        # Copiar FECHA FIN ULTIMA FASE a FECHA INICIO FASE ACTUAL si está vacía
-        mask_copia = df_export['FECHA INICIO FASE ACTUAL'].isna() & df_export['FECHA FIN ULTIMA FASE'].notna()
-        df_export.loc[mask_copia, 'FECHA INICIO FASE ACTUAL'] = df_export.loc[mask_copia, 'FECHA FIN ULTIMA FASE']
+        columnas_obsoletas = [
+            'ETAPA_PROCESAL (ACTUAL)', 'FASE_PROCESAL (ACTUAL)',
+            'ETAPA_PROCESAL (MIGRADO)', 'CODIGO_FASE',
+            'FASE_PROCESAL (MIGRADO)', 'FECHA INICIAL FASE ACTUAL',
+            'DIAS EN LA FASE ACTUAL', 'ETAPA_PROCESAL', 'FASE_PROCESAL', ' ',
+        ]
+        df_export.drop(columns=columnas_obsoletas, inplace=True, errors='ignore')
 
-        # Eliminar columnas viejas de df_export
-        cols_existentes_eliminar = [c for c in cols_a_eliminar if c in df_export.columns]
-        df_export.drop(columns=cols_existentes_eliminar, inplace=True, errors='ignore')
-
-        # Reordenar columnas: poner las 8 nuevas después de COMENTARIO_ULTIMO con 1 columna vacía separadora
-        cols_base = [c for c in df_export.columns if c not in nuevas_cols_molde and c != ' ']
-
-        if 'COMENTARIO_ULTIMO' in cols_base:
-            idx_comentario = cols_base.index('COMENTARIO_ULTIMO')
-            cols_izq = cols_base[:idx_comentario + 1]
-            cols_der = cols_base[idx_comentario + 1:]
+        if 'CODIGO_JUICIO' in df_export.columns:
+            codigos = df_export['CODIGO_JUICIO']
+            if codigos.isna().any() or codigos.astype(str).str.strip().eq('').any():
+                raise ValueError('CODIGO_JUICIO_VACIO_EN_EXPORTACION')
+            if codigos.astype(str).str.strip().duplicated().any():
+                raise ValueError('CODIGO_JUICIO_DUPLICADO_EN_EXPORTACION')
         else:
-            cols_izq = cols_base
-            cols_der = []
+            logger.warning("El reporte no contiene CODIGO_JUICIO; no se pudo validar su identidad.")
 
-        df_export[' '] = ""  # Columna separadora vacía
-        cols_ordenadas = cols_izq + cols_der + [' '] + nuevas_cols_molde
-        
-        # Eliminar posibles duplicados manteniendo orden
-        cols_finales = []
-        vistos = set()
-        for c in cols_ordenadas:
-            if c in df_export.columns and c not in vistos:
-                cols_finales.append(c)
-                vistos.add(c)
+        mascara_mal = self._mascara_mal_ingresado(df_export)
+        campos_mal = [
+            'FECHA INICIO JUICIO', 'FECHA FIN ULTIMA FASE', 'ULTIMA ETAPA',
+            'ULTIMA FASE', 'FECHA INICIO FASE ACTUAL', 'ETAPA ACTUAL',
+            'FASE ACTUAL',
+        ]
+        df_export.loc[mascara_mal, campos_mal] = 'MAL INGRESADO'
+        df_export.loc[mascara_mal, [*CAMPOS_ID, 'DIAS TRANSCURRIDOS']] = None
+        self._agregar_motivo_id_no_catalogado(df_export, mascara_mal)
 
-        df_final = df_export[cols_finales]
+        cols_base = [c for c in df_export.columns if c not in nuevas_cols]
+        cols_finales = cols_base + nuevas_cols
+        reporte = df_export[cols_finales]
+        para_carga = reporte.loc[~mascara_mal].copy()
+        return reporte, para_carga
 
-        logger.info("Exportando informe final reestructurado a: %s", self.ruta_final)
-        try:
-            df_final.to_excel(self.ruta_final, index=False, sheet_name=self.hoja)
-        except PermissionError:
-            from datetime import datetime as _dt
-            base, ext = os.path.splitext(self.ruta_final)
-            ruta_alt = f"{base}_{_dt.now().strftime('%Y%m%d_%H%M%S')}{ext}"
-            logger.warning(
-                "Archivo Excel bloqueado (%s). Guardando copia en: %s",
-                self.ruta_final, ruta_alt,
-            )
-            df_final.to_excel(ruta_alt, index=False, sheet_name=self.hoja)
-            self.ruta_final = ruta_alt
+    @staticmethod
+    def _formatear_errores_excel(ruta):
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill
 
-        # 3. Aplicar formato condicional a filas con error en rojo usando openpyxl
-        try:
-            wb = openpyxl.load_workbook(self.ruta_final)
-            ws = wb[self.hoja] if self.hoja in wb.sheetnames else wb.active
-
-            fill_rojo = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
-            font_rojo = Font(color="9C0006", bold=True)
-
-            # Buscar índice de columna COMENTARIO_ULTIMO o cualquier celda con error
-            col_comentario_idx = None
-            for col_idx in range(1, ws.max_column + 1):
-                header_val = ws.cell(row=1, column=col_idx).value
-                if header_val and str(header_val).strip().upper() == 'COMENTARIO_ULTIMO':
-                    col_comentario_idx = col_idx
-                    break
-
+        wb = openpyxl.load_workbook(ruta)
+        fill_rojo = PatternFill(
+            start_color="FFCCCC", end_color="FFCCCC", fill_type="solid"
+        )
+        font_rojo = Font(color="9C0006", bold=True)
+        for ws in wb.worksheets:
+            encabezados = {
+                str(celda.value).strip().upper(): celda.column
+                for celda in ws[1] if celda.value
+            }
+            col_comentario = encabezados.get('COMENTARIO_ULTIMO')
+            if not col_comentario:
+                continue
             for row_idx in range(2, ws.max_row + 1):
-                es_error = False
-                if col_comentario_idx:
-                    val = ws.cell(row=row_idx, column=col_comentario_idx).value
-                    if val and ("ERROR:" in str(val).upper() or "NO DEVOLVIO RESULTADOS" in str(val).upper()):
-                        es_error = True
-
-                if es_error:
+                valor = str(ws.cell(row_idx, col_comentario).value or '').upper()
+                if any(marca in valor for marca in (
+                    'ERROR:', 'NO DEVOLVI', 'MAL INGRESADO',
+                    'EXCLUIDO_NO_CORRESPONDE',
+                )):
                     for col_idx in range(1, ws.max_column + 1):
-                        cell = ws.cell(row=row_idx, column=col_idx)
-                        cell.fill = fill_rojo
-                        cell.font = font_rojo
+                        ws.cell(row_idx, col_idx).fill = fill_rojo
+                        ws.cell(row_idx, col_idx).font = font_rojo
+        wb.save(ruta)
+        wb.close()
 
-            wb.save(self.ruta_final)
-            wb.close()
-            logger.info("Formato de resaltado rojo para errores aplicado correctamente.")
-        except Exception as e_xl:
-            logger.warning("No se pudo aplicar estilo openpyxl al Excel final: %s", e_xl)
-
-        logger.info("¡Archivo Excel final generado exitosamente!")
+    def exportar_excel(self, fecha_actual=None):
+        """Genera atómicamente las hojas ``Reporte`` y ``PARA CARGA``."""
+        reporte, para_carga = self._preparar_exportacion(fecha_actual)
+        ruta_objetivo = os.path.abspath(self.ruta_final)
+        directorio = os.path.dirname(ruta_objetivo) or os.getcwd()
+        os.makedirs(directorio, exist_ok=True)
+        descriptor, ruta_temporal = tempfile.mkstemp(
+            prefix=f".{os.path.basename(ruta_objetivo)}.",
+            suffix='.xlsx',
+            dir=directorio,
+        )
+        os.close(descriptor)
+        try:
+            with pd.ExcelWriter(ruta_temporal, engine='openpyxl') as writer:
+                reporte.to_excel(writer, index=False, sheet_name='Reporte')
+                para_carga.to_excel(writer, index=False, sheet_name='PARA CARGA')
+            self._formatear_errores_excel(ruta_temporal)
+            try:
+                os.replace(ruta_temporal, ruta_objetivo)
+            except PermissionError:
+                base, ext = os.path.splitext(ruta_objetivo)
+                ruta_objetivo = f"{base}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}"
+                logger.warning(
+                    "Archivo Excel bloqueado. Guardando copia en: %s", ruta_objetivo
+                )
+                os.replace(ruta_temporal, ruta_objetivo)
+            ruta_temporal = None
+            self.ruta_final = ruta_objetivo
+            logger.info(
+                "Excel generado: %s filas en Reporte y %s en PARA CARGA.",
+                len(reporte), len(para_carga),
+            )
+        finally:
+            if ruta_temporal and os.path.exists(ruta_temporal):
+                os.remove(ruta_temporal)
 
     def calcular_dias_transcurridos(self, fecha_actual=None):
         """
         Calcula la columna 'DIAS TRANSCURRIDOS' como la diferencia en días calendario
-        entre la fecha actual y 'FECHA FIN ULTIMA FASE' (o 'FECHA INICIAL FASE ACTUAL').
+        entre la fecha actual y 'FECHA INICIO FASE ACTUAL'. Usa la fecha de
+        fin de la última fase solo como respaldo.
         Soporta formatos dd/mm/yyyy y yyyy-mm-dd.
         """
-        col_fecha = 'FECHA FIN ULTIMA FASE' if 'FECHA FIN ULTIMA FASE' in self.df.columns else 'FECHA INICIAL FASE ACTUAL'
         col_dias = 'DIAS TRANSCURRIDOS'
-
-        if col_fecha not in self.df.columns:
-            logger.warning("Columna '%s' no encontrada. No se calculará '%s'.", col_fecha, col_dias)
+        columnas_fecha = [
+            col for col in (
+                'FECHA INICIO FASE ACTUAL', 'FECHA FIN ULTIMA FASE',
+                'FECHA INICIAL FASE ACTUAL',
+            ) if col in self.df.columns
+        ]
+        if not columnas_fecha:
+            logger.warning("No hay fecha procesal para calcular '%s'.", col_dias)
             return
 
         self.df[col_dias] = None
 
-        hoy = (fecha_actual or datetime.now()).date()
+        referencia = fecha_actual or datetime.now()
+        hoy = referencia.date() if isinstance(referencia, datetime) else referencia
         conteo = 0
 
-        for idx, valor in self.df[col_fecha].items():
-            if pd.isna(valor) or str(valor).strip() == "":
-                continue
-
+        for idx, fila in self.df.iterrows():
+            valor = next(
+                (
+                    fila.get(columna) for columna in columnas_fecha
+                    if fila.get(columna) is not None
+                    and not pd.isna(fila.get(columna))
+                    and str(fila.get(columna)).strip()
+                ),
+                None,
+            )
             fecha_parsed = self._parsear_fecha_reporte(valor)
 
             if fecha_parsed:

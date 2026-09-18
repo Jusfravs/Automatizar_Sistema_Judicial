@@ -58,10 +58,14 @@ def inicializar_esquema(config):
         numero_causa VARCHAR(60) PRIMARY KEY,
         ciudad VARCHAR(100) DEFAULT 'QUITO',
         estado VARCHAR(50) DEFAULT 'PENDIENTE',
+        eta_id_ultima_etapa INTEGER,
         ultima_etapa VARCHAR(150),
+        fas_id_ultima_fase INTEGER,
         ultima_fase VARCHAR(150),
         fecha_fin_ultima_fase VARCHAR(50),
+        eta_id_etapa_actual INTEGER,
         etapa_actual VARCHAR(150),
+        fas_id_fase_actual INTEGER,
         fase_actual VARCHAR(150),
         fecha_inicio_fase_actual VARCHAR(50),
         mensaje_especial VARCHAR(255),
@@ -77,6 +81,13 @@ def inicializar_esquema(config):
         creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
+    """)
+    cursor.execute("""
+    ALTER TABLE expedientes
+        ADD COLUMN IF NOT EXISTS eta_id_ultima_etapa INTEGER,
+        ADD COLUMN IF NOT EXISTS fas_id_ultima_fase INTEGER,
+        ADD COLUMN IF NOT EXISTS eta_id_etapa_actual INTEGER,
+        ADD COLUMN IF NOT EXISTS fas_id_fase_actual INTEGER;
     """)
 
     # 2. Tabla actuaciones individuales
@@ -109,6 +120,7 @@ def inicializar_esquema(config):
     cursor.execute("""
     CREATE INDEX IF NOT EXISTS idx_expedientes_estado ON expedientes(estado);
     CREATE INDEX IF NOT EXISTS idx_expedientes_ultima_fase ON expedientes(ultima_fase);
+    CREATE INDEX IF NOT EXISTS idx_expedientes_fas_id_ultima ON expedientes(fas_id_ultima_fase);
     CREATE INDEX IF NOT EXISTS idx_expedientes_ciudad ON expedientes(ciudad);
     CREATE INDEX IF NOT EXISTS idx_expedientes_datos_gin ON expedientes USING GIN (datos_json);
     CREATE INDEX IF NOT EXISTS idx_actuaciones_causa ON actuaciones(numero_causa);
@@ -168,7 +180,11 @@ def inicializar_esquema(config):
         mensaje_especial,
         total_actuaciones,
         estado,
-        actualizado_en
+        actualizado_en,
+        eta_id_ultima_etapa,
+        fas_id_ultima_fase,
+        eta_id_etapa_actual,
+        fas_id_fase_actual
     FROM expedientes
     ORDER BY numero_causa;
     """)

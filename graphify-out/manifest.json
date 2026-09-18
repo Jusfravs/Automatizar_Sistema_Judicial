@@ -24,9 +24,9 @@
     "semantic_hash": "e608dc8e248216fbf03d3634981dbbef"
   },
   "main.py": {
-    "mtime": 1789491851.299637,
-    "seen": 1789492198.8181236,
-    "ast_hash": "14b1af087e66d9490933923a9421cc7a",
+    "mtime": 1789746679.606459,
+    "seen": 1789747059.3585901,
+    "ast_hash": "c752366f6473dc1920cf002a58614c55",
     "semantic_hash": ""
   },
   "migracion_db.py": {
@@ -54,16 +54,16 @@
     "semantic_hash": "cdb4431059242c3c2681bc14f70f8a7e"
   },
   "scripts/inicializar_postgres.py": {
-    "mtime": 1787587985.9556954,
-    "seen": 1789484428.1414294,
-    "ast_hash": "8b0e249a140444e55258b209a4516d6b",
-    "semantic_hash": "8b0e249a140444e55258b209a4516d6b"
+    "mtime": 1789747116.6103144,
+    "seen": 1789747153.5941737,
+    "ast_hash": "e039d897f13fa6fbc5cf5b874e7f90da",
+    "semantic_hash": ""
   },
   "scripts/migrar_sqlite_a_postgres.py": {
-    "mtime": 1787587985.9556954,
-    "seen": 1789484428.1414294,
-    "ast_hash": "9dc6a25dfd7537ee453bd639772c6953",
-    "semantic_hash": "9dc6a25dfd7537ee453bd639772c6953"
+    "mtime": 1789746650.771392,
+    "seen": 1789747059.3585901,
+    "ast_hash": "c655bfe42436e5c13867d128467e71ca",
+    "semantic_hash": ""
   },
   "scripts/monitorear_esatje.py": {
     "mtime": 1787587985.9556954,
@@ -90,16 +90,16 @@
     "semantic_hash": "81cfd3b78bd9a0781ff9933b89a0ed7f"
   },
   "scripts/reclasificar_desde_sqlite.py": {
-    "mtime": 1788370921.3411224,
-    "seen": 1789484428.1414294,
-    "ast_hash": "5ea5a681d2307dfca86185ed139afd9a",
-    "semantic_hash": "5ea5a681d2307dfca86185ed139afd9a"
+    "mtime": 1789746694.2081509,
+    "seen": 1789747059.3585901,
+    "ast_hash": "7fce8df5569df7dcca2e19627bf2aa68",
+    "semantic_hash": ""
   },
   "scripts/reprocesar_y_exportar_quito.py": {
-    "mtime": 1787925884.8039277,
-    "seen": 1789484428.1414294,
-    "ast_hash": "b251c260360109ff9be2118c74d64d26",
-    "semantic_hash": "b251c260360109ff9be2118c74d64d26"
+    "mtime": 1789746694.2081509,
+    "seen": 1789747059.3585901,
+    "ast_hash": "af2b9cdd8a4e9d76ac5f79c4f80c1707",
+    "semantic_hash": ""
   },
   "scripts/reset_db.py": {
     "mtime": 1787587985.9714305,
@@ -126,10 +126,10 @@
     "semantic_hash": "1338b6a5890df63e4f8eb58b4af435d3"
   },
   "src/agente_extractor.py": {
-    "mtime": 1788529660.1435125,
-    "seen": 1789484428.1414294,
-    "ast_hash": "7ac53ffb8724c715a537b06f7743d1cd",
-    "semantic_hash": "7ac53ffb8724c715a537b06f7743d1cd"
+    "mtime": 1789747125.8426266,
+    "seen": 1789747153.5941737,
+    "ast_hash": "1355e0fb900174e1cd024d5dfaeae530",
+    "semantic_hash": ""
   },
   "src/antigravity_adapter.py": {
     "mtime": 1787587985.9714305,
@@ -144,21 +144,21 @@
     "semantic_hash": "0ffd95d8083cca87040cede878e612cc"
   },
   "src/db_postgres.py": {
-    "mtime": 1787587985.9714305,
-    "seen": 1789484428.1414294,
-    "ast_hash": "b9bb67bb8ce41b0d2b73562b96f29fe2",
-    "semantic_hash": "b9bb67bb8ce41b0d2b73562b96f29fe2"
+    "mtime": 1789746617.7746103,
+    "seen": 1789747059.3585901,
+    "ast_hash": "d3bcc208074a8e6fce58f67459ed401d",
+    "semantic_hash": ""
   },
   "src/gestor_casos.py": {
-    "mtime": 1789492019.6248298,
-    "seen": 1789492198.8181236,
-    "ast_hash": "85738e8df0094a0c2506d7241a465e22",
+    "mtime": 1789746990.3566241,
+    "seen": 1789747059.3585901,
+    "ast_hash": "b6533cb0005b2e1cb359c6ef7fe1b081",
     "semantic_hash": ""
   },
   "src/gestor_cola.py": {
-    "mtime": 1789491851.299637,
-    "seen": 1789492198.8181236,
-    "ast_hash": "1ffb22ba5a1b64acd3fd73ad1cc4d7c7",
+    "mtime": 1789746669.964721,
+    "seen": 1789747059.3585901,
+    "ast_hash": "0401ead94087ad247d574bdcab216b34",
     "semantic_hash": ""
   },
   "src/gestor_estado.py": {
@@ -180,10 +180,10 @@
     "semantic_hash": "1fa98ddd2b31236b8ca6a5b7da09899d"
   },
   "src/motor_busqueda_web.py": {
-    "mtime": 1788529726.8277857,
-    "seen": 1789484428.1414294,
-    "ast_hash": "d9296c0ff8c2048a96688695ab4c303e",
-    "semantic_hash": "d9296c0ff8c2048a96688695ab4c303e"
+    "mtime": 1789746459.832451,
+    "seen": 1789747059.3585901,
+    "ast_hash": "9f36c8fa5ab97eb77a464c3070ddfba3",
+    "semantic_hash": ""
   },
   "src/orquestador.py": {
     "mtime": 1789491851.3153515,
@@ -246,10 +246,10 @@
     "semantic_hash": "189bcec104805419c5b4abfb82a0566c"
   },
   "tests/test_freno_transaccional.py": {
-    "mtime": 1788529727.8841677,
-    "seen": 1789484428.1414294,
-    "ast_hash": "16d4e1d308c2483ba7aebf7316a9626f",
-    "semantic_hash": "16d4e1d308c2483ba7aebf7316a9626f"
+    "mtime": 1789746722.9028745,
+    "seen": 1789747059.3585901,
+    "ast_hash": "48a2f3da0071d9d0041ad0f7468d6e14",
+    "semantic_hash": ""
   },
   "tests/test_migracion.py": {
     "mtime": 1789491876.0736198,
@@ -483,6 +483,36 @@
     "mtime": 1789488820.601192,
     "seen": 1789492198.8181236,
     "ast_hash": "451215b4506add7eb7ab1240ac13a5ac",
+    "semantic_hash": ""
+  },
+  "src/catalogo_procesal.py": {
+    "mtime": 1789746425.4319873,
+    "seen": 1789747059.3585901,
+    "ast_hash": "c2193131abaeff69b299bd21ecb77a6a",
+    "semantic_hash": ""
+  },
+  "tests/test_catalogo_ids.py": {
+    "mtime": 1789746966.9412508,
+    "seen": 1789747059.3585901,
+    "ast_hash": "f24e274ca6e8f0ad346978767d6aa1c5",
+    "semantic_hash": ""
+  },
+  "tests/test_db_postgres_ids.py": {
+    "mtime": 1789746966.9412508,
+    "seen": 1789747059.3585901,
+    "ast_hash": "c922e550f3c409b9ee08f00690194fb6",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260915_171119_923bc0cb_continuar_revisando_la_logica_del_sistema_a_partir.md": {
+    "mtime": 1789492279.8616405,
+    "seen": 1789747059.3585901,
+    "ast_hash": "2fd654d4a16579df8759265f50b22c8f",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260918_155804_5031a049_perfecto_que_este_caso_vamos_a_agregar_a_al_proyec.md": {
+    "mtime": 1789747084.947556,
+    "seen": 1789747092.144031,
+    "ast_hash": "fd1dfcd87156842e3aa59cfecbd21e65",
     "semantic_hash": ""
   }
 }

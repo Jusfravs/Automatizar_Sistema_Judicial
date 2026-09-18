@@ -1,17 +1,17 @@
-# Graph Report - Automatizar_Sistema_Judicial  (2026-09-15)
+# Graph Report - Automatizar_Sistema_Judicial  (2026-09-18)
 
 ## Corpus Check
-- 78 files · ~81,724 words
+- 83 files · ~83,489 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 4 file(s) not represented in the graph (top: (none) 2, .example 1, .cmd 1)
 
 ## Summary
-- 1220 nodes · 2289 edges · 85 communities (58 shown, 24 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 134 edges (avg confidence: 0.88)
+- 1268 nodes · 2405 edges · 88 communities (56 shown, 29 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 141 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `63b1968a`
+- Built from commit: `9c7cb074`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,15 +19,15 @@
 - .inferir_estado_procesal
 - RetornoBuscadorTests
 - BotJudicial
-- BotJudicialTransaccional
+- ._volver_al_buscador
 - reclasificar_desde_sqlite.py
 - BotonFalso
 - Automation system overview
 - Dependencias del proyecto Automatizar_Sistema_Judicial
 - GestorCola
-- AgenteExtractor
+- NavegadorArbolContenido
 - AgenteExplorador
-- ._buscar_resultado_con_reintentos
+- RuntimeError
 - FrenoNavegacionTests
 - preparar_reproceso_causas.py
 - GestorCasos
@@ -37,19 +37,19 @@
 - NavegacionEsatjeTests
 - logger_config.py
 - MotorInferenciaProcesal
-- normalizar_texto
+- ._evidencia_pago_perito_posterior
 - GestorPostgres
 - test_navegacion_esatje.py
 - monitorear_esatje.py
-- gestor_cola.py
+- test_migracion.py
 - TestMigracionDB
 - .test_excepcion_no_controlada_marca_error_y_continua_con_siguiente_causa
-- ._clave_archivo
-- Path
-- RuntimeError
-- .calcular_dias_transcurridos
+- BotJudicialTransaccional
+- normalizar_texto
+- Q: Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave
+- enriquecer_datos_procesales
 - Orquestador
-- ._ejecutar_extraccion_detalles
+- ._procesar_flujo_autonomo
 - ._escrito_pendiente_de_revision_documental
 - FilaFalsa
 - TestPoblarCola
@@ -66,18 +66,18 @@
 - Q: estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?
 - .procesar_flujo_judicatura
 - inicializar_postgres.py
-- ._crear_respaldo_csv
-- motor_busqueda_web.py
+- RespaldoCsvTests
+- Path
 - TestConfiguracionQuito
 - test_regresiones_quito_29.py
 - ._segmentar_por_instancia
 - limpieza.py
-- migrar_base_sqlite
+- PaginaMensajeFalsa
 - ._seleccionar_rama_activa
-- test_extraccion_integration.py
+- motor_busqueda_web.py
 - ._causa_para_formulario
-- RespaldoCsvTests
 - ResultadoInferencia
+- ._crear_respaldo_csv
 - calcular_siguiente_fase
 - Graphify project policy
 - Durable queue recovery workflow
@@ -95,9 +95,12 @@
 - Historial cronológico de checkpoints
 - Planes técnicos
 - CaptchaSolucion
-- configurar_logging
+- Q: perfecto que este caso vamos a agregar a al proyecto este sistema DE IDs mas los defectos que encontraste
 - Q: Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal
 - .bloquear_ejecucion
+- ExportacionSistemasTests
+- migrar_sqlite_a_postgres.py
+- ._motivo_rechazo_formulario
 
 ## God Nodes (most connected - your core abstractions)
 1. `TestClasificacionArbol` - 128 edges
@@ -106,7 +109,7 @@
 4. `GestorCola` - 48 edges
 5. `MotorInferenciaProcesal` - 47 edges
 6. `NavegacionEsatjeTests` - 40 edges
-7. `GestorCasos` - 33 edges
+7. `GestorCasos` - 38 edges
 8. `normalizar_texto()` - 29 edges
 9. `RetornoBuscadorTests` - 29 edges
 10. `AgenteExtractor` - 24 edges
@@ -120,8 +123,8 @@
   scripts/reclasificar_desde_sqlite.py → src/agente_extractor.py
 - `actualizar_todo_quito()` --uses--> `MotorInferenciaProcesal`  [INFERRED]
   scripts/reprocesar_y_exportar_quito.py → src/agente_extractor.py
-- `main()` --calls--> `GestorCola`  [EXTRACTED]
-  scripts/reset_db.py → src/gestor_cola.py
+- `CatalogoProcesalTests` --uses--> `ResultadoInferencia`  [INFERRED]
+  tests/test_catalogo_ids.py → src/agente_extractor.py
 
 ## Import Cycles
 - None detected.
@@ -133,7 +136,7 @@
 - **Procedural classification from attributable evidence** — casos_pendientes_correccion_material_procedural_act_rule, documentacion_01_general_contexto_reanudacion_confirmed_evidence_classification, documentacion_01_general_vision_proyecto_regla_del_arbol, documentacion_04_diagnosticos_y_correcciones_correccion_fecha_derivada_atomic_classification_evidence [INFERRED 0.95]
 - **Safe and auditable e-SATJE navigation flow** — documentacion_03_planes_plan_automatizacion_botones_esatje_navigation_state_machine, documentacion_03_planes_plan_correccion_freno_informacion_proceso_no_navigation_invariant, documentacion_03_planes_plan_solucion_regreso_buscador_no_confirmado_observable_spa_return [INFERRED 0.95]
 
-## Communities (85 total, 24 thin omitted)
+## Communities (88 total, 29 thin omitted)
 
 ### Community 0 - ".inferir_estado_procesal"
 Cohesion: 0.03
@@ -144,12 +147,12 @@ Cohesion: 0.05
 Nodes (26): actualizar_casos_fallidos_piloto(), _causa_comparable(), dividir_en_bloques(), _ejecutar_lote(), extraer_ruta_config(), guardar_casos_fallidos(), guardar_csv_o_fallar(), main() (+18 more)
 
 ### Community 2 - "BotJudicial"
-Cohesion: 0.10
-Nodes (13): BotJudicial, Ruta Principal: Captura JSON puros de la API Angular de la Judicatura., Navegación jerárquica hacia arriba conservando sesión., Normaliza el numero de causa para comparar portal y archivo de origen., Busca una causa numérica completa sin aceptar sufijos alfanuméricos., Valida primero la columna de proceso y conserva cualquier sufijo., Motor RPA Asistido con Arquitectura de Ejecución Dual para e-SATJE: 1. Ruta…, Espera a que terminen de renderizar actuaciones y controles de archivos. (+5 more)
+Cohesion: 0.08
+Nodes (16): BotJudicial, Devuelve los datos procesados en la vista actual., Arquitectura Dual: - RUTA PRINCIPAL: Si la API interceptó JSON, procesar…, Ruta Principal: Captura JSON puros de la API Angular de la Judicatura., Navegación jerárquica hacia arriba conservando sesión., Normaliza el numero de causa para comparar portal y archivo de origen., Busca una causa numérica completa sin aceptar sufijos alfanuméricos., Valida primero la columna de proceso y conserva cualquier sufijo. (+8 more)
 
-### Community 3 - "BotJudicialTransaccional"
-Cohesion: 0.09
-Nodes (10): BotJudicialTransaccional, Flujo e-SATJE con navegación bloqueada durante cada extracción., Espera una capa de carga breve; falla de forma recuperable si persiste., Normaliza una fecha SATJE para asociar fila y actuación., Acepta factura o pago que identifique el servicio pericial., Lee los nombres visibles sin descargar documentos de SATJE., Obtiene evidencia de pago en actuaciones posteriores al perito. Solo abre el…, Propaga nombres de archivo a la actuación persistida equivalente. (+2 more)
+### Community 3 - "._volver_al_buscador"
+Cohesion: 0.14
+Nodes (3): Espera una capa de carga breve; falla de forma recuperable si persiste., Inspecciona el buscador sin provocar navegación ni modificar la página., Confirma por estado visible dos observaciones estables del buscador SPA.
 
 ### Community 4 - "reclasificar_desde_sqlite.py"
 Cohesion: 0.09
@@ -168,20 +171,20 @@ Cohesion: 0.06
 Nodes (31): Configuración de palabras clave de extracción, Palabras clave de mandamiento de ejecución, Política de fecha relevant, training_case, Checkpoint 03: Inferencia enriquecida y base de exportación Excel, Compatibilidad retroactiva, Exportación Excel, procesar_html_string() (+23 more)
 
 ### Community 8 - "GestorCola"
-Cohesion: 0.10
-Nodes (14): GestorCola, Crea las tablas de reserva, resultados y auditoría si no existen., Motor de Estado y Cola de Tareas en SQLite para desacoplar el flujo de…, Inserta masivamente registros en la tabla juicios con INSERT OR IGNORE para…, Conserva causas PENDIENTE o todavía ausentes de SQLite, respetando el orden., Devuelve una nueva conexión a SQLite con timeout de 30s., Gestiona una conexión SQLite con rollback automático ante excepciones., Actualiza el estado de una causa y opcionalmente su ruta_html. (+6 more)
+Cohesion: 0.09
+Nodes (16): main(), Script de reset y recreación limpia de la base de datos estado_casos.db. Crea…, GestorCola, Crea las tablas de reserva, resultados y auditoría si no existen., Motor de Estado y Cola de Tareas en SQLite para desacoplar el flujo de…, Inserta masivamente registros en la tabla juicios con INSERT OR IGNORE para…, Conserva causas PENDIENTE o todavía ausentes de SQLite, respetando el orden., Devuelve una nueva conexión a SQLite con timeout de 30s. (+8 more)
 
-### Community 9 - "AgenteExtractor"
-Cohesion: 0.15
-Nodes (8): AgenteExtractor, Agente Extractor Semántico y Autónomo (e-SATJE). Analiza el contenido completo…, Procesa el contenido HTML recibido como string, extrayendo las actuaciones, la…, Lee y procesa un archivo HTML desde disco delegando en procesar_html_string., Extrae filas de tabla y contenedores estructurados de actuaciones., Escaneo en profundidad de bloques de texto alternativo., Obtiene la fecha de inicio del expediente., Pruebas unitarias para validar las reglas de Inferencia Procesal Autónoma…
+### Community 9 - "NavegadorArbolContenido"
+Cohesion: 0.11
+Nodes (9): NavegadorArbolContenido, Procesa el contenido HTML recibido como string, extrayendo las actuaciones, la…, Lee y procesa un archivo HTML desde disco delegando en procesar_html_string., Extrae filas de tabla y contenedores estructurados de actuaciones., Escaneo en profundidad de bloques de texto alternativo., Obtiene la fecha de inicio del expediente., Navegador estructural del árbol procesal y de contenido. Implementa la regla de…, Move Up: Escalada por ausencia hacia un contexto más amplio. (+1 more)
 
 ### Community 10 - "AgenteExplorador"
 Cohesion: 0.09
 Nodes (14): AgenteExplorador, Convierte el payload nativo a DataFrame y normaliza sus cabeceras de inmediato., Agente Explorador con dos rutas de extracción: - Primaria: captura XHR/fetch…, Listener pasivo: captura sólo respuestas XHR/fetch válidas de la API judicial., Devuelve el DataFrame creado en el listener, sin reprocesar el JSON original., Retorna el payload JSON original, fuente de verdad de la ruta primaria., Expone el motivo de fallo de la captura para la auditoría transaccional., Regresa al buscador utilizando esperas explícitas condicionales. (+6 more)
 
-### Community 11 - "._buscar_resultado_con_reintentos"
+### Community 11 - "RuntimeError"
 Cohesion: 0.21
-Nodes (4): Espera la habilitación asíncrona del botón antes del clic inicial., Pulsa BUSCAR para que el portal monte/despliegue el CAPTCHA., Confirma que Angular ya mont? el control CAPTCHA en el formulario., Indica si el CAPTCHA visible a?n no tiene un token v?lido del operador.
+Nodes (7): RuntimeError, Espera la habilitación asíncrona del botón antes del clic inicial., Pulsa BUSCAR para que el portal monte/despliegue el CAPTCHA., Indica si el CAPTCHA visible a?n no tiene un token v?lido del operador., Escribe la causa de inmediato y conserva un respaldo para la máscara.…, Espera a que terminen de renderizar actuaciones y controles de archivos., Regresa al formulario y verifica que el ?nico campo de causa est? disponible.
 
 ### Community 12 - "FrenoNavegacionTests"
 Cohesion: 0.10
@@ -192,84 +195,76 @@ Cohesion: 0.13
 Nodes (23): _conectar_postgres(), _eliminar_evidencias(), limpiar(), limpiar_comentario_automatico(), _limpiar_lista_fallidos(), _limpiar_postgres(), main(), normalizar_causa() (+15 more)
 
 ### Community 14 - "GestorCasos"
-Cohesion: 0.14
-Nodes (9): actualizar_todo_quito(), GestorCasos, Carga el Excel usando una copia sombra para evitar bloqueos si está abierto en…, CREATE: Genera o combina el CSV de trabajo desde el Excel original., Repositorio CRUD de datos para la lectura, actualización y persistencia del…, READ: Obtiene la lista de números de juicio que cumplen con los filtros., Elimina solo registros iguales en todas sus columnas. Un mismo nÃºmero de…, Acorta etiquetas únicamente para la presentación del Excel. (+1 more)
+Cohesion: 0.11
+Nodes (11): GestorCasos, Carga el Excel usando una copia sombra para evitar bloqueos si está abierto en…, CREATE: Genera o combina el CSV de trabajo desde el Excel original., READ: Obtiene la lista de números de juicio que cumplen con los filtros., Repositorio CRUD de datos para la lectura, actualización y persistencia del…, UPDATE: Inyecta en la fila correspondiente los datos extraídos., Elimina solo registros iguales en todas sus columnas. Un mismo nÃºmero de…, Interpreta fechas del portal, incluidas marcas ISO con zona horaria. (+3 more)
 
 ### Community 15 - "EnlaceFalso"
 Cohesion: 0.20
 Nodes (3): EnlaceFalso, FilaCausaFalsa, PaginaAperturaCausaFalsa
 
 ### Community 16 - "Proveedor2Captcha"
-Cohesion: 0.08
-Nodes (19): CaptchaConfiguracionError, CaptchaCredencialError, CaptchaDesafio, CaptchaError, CaptchaProveedorError, CaptchaResolucionTimeout, CaptchaSaldoError, _clave_normalizada() (+11 more)
+Cohesion: 0.09
+Nodes (18): CaptchaCredencialError, CaptchaDesafio, CaptchaError, CaptchaProveedorError, CaptchaResolucionTimeout, CaptchaSaldoError, _clave_normalizada(), Proveedor2Captcha (+10 more)
 
 ### Community 17 - "prompt_procesador.py"
 Cohesion: 0.14
 Nodes (14): cargar_plantilla_prompt(), construir_prompt(), _generar_fallback(), limpiar_y_validar_json(), Carga la plantilla de prompt desde el sistema de archivos., Construye el prompt completo reemplazando los marcadores de posición dinámicos…, Limpia cualquier delimitador Markdown de la respuesta del LLM y la parsea como…, Genera un diccionario estructurado de respaldo para no interrumpir el flujo. (+6 more)
 
 ### Community 19 - "logger_config.py"
-Cohesion: 0.20
+Cohesion: 0.17
 Nodes (11): extraer_y_normalizar(), extraer_y_normalizar_dict(), _raise_import_error(), Extrae los datos de la causa desde E-SATJE usando el motor antigravity y…, Retorna el primer registro extraído como dict, o None si no hay datos. Registra…, auditar_csv(), cargar_total_esperado(), Load the expected record total from the project configuration. (+3 more)
 
 ### Community 20 - "MotorInferenciaProcesal"
-Cohesion: 0.16
-Nodes (8): MotorInferenciaProcesal, Motor de Inferencia Procesal Autónoma basado en MODULO_FILTRO_CASOS.md y…, Obtiene el identificador de la persona citada cuando estÃ¡ visible., Exige una coincidencia identificable del demandado en la diligencia., Confirma que cada demandado SATJE fue citado de forma acreditada., Crea una decisi??n at??mica y nunca reutiliza una fecha de otra fase., Extrae nÃºmeros de juicio con formato SATJE citados en un documento., Conserva el historial, pero excluye evidencia de otra causa al inferir.
+Cohesion: 0.12
+Nodes (10): MotorInferenciaProcesal, Motor de Inferencia Procesal Autónoma basado en MODULO_FILTRO_CASOS.md y…, Obtiene el identificador de la persona citada cuando estÃ¡ visible., Exige una coincidencia identificable del demandado en la diligencia., Confirma que cada demandado SATJE fue citado de forma acreditada., Crea una decisi??n at??mica y nunca reutiliza una fecha de otra fase., Evita que un cuaderno deprecatorio altere la fase del principal. API+DOM…, Extrae nÃºmeros de juicio con formato SATJE citados en un documento. (+2 more)
 
-### Community 21 - "normalizar_texto"
-Cohesion: 0.14
-Nodes (12): es_archivo_por_incumplimiento(), es_notificacion(), es_orden_explicita(), es_verificacion_secretarial(), normalizar_texto(), Prioriza la providencia que ordena completar sobre hitos posteriores., Devuelve los demandados de SATJE con roles procesales removidos., Normaliza nombres de archivos leídos del listado de SATJE. (+4 more)
+### Community 21 - "._evidencia_pago_perito_posterior"
+Cohesion: 0.33
+Nodes (3): Normaliza nombres de archivos leídos del listado de SATJE., Identifica una factura o comprobante ligado al servicio pericial., Encuentra evidencia de pago pericial posterior al nombramiento. El nombramiento…
 
 ### Community 22 - "GestorPostgres"
-Cohesion: 0.16
-Nodes (5): GestorPostgres, Gestor de persistencia relacional nativo en PostgreSQL para casos judiciales,…, Guarda o actualiza un expediente procesado y sus actuaciones individuales en…, skipUnless, TestPostgresIntegracion
+Cohesion: 0.10
+Nodes (9): GestorPostgres, Gestor de persistencia relacional nativo en PostgreSQL para casos judiciales,…, Guarda o actualiza un expediente procesado y sus actuaciones individuales en…, ConexionFalsa, CursorFalso, PersistenciaPostgresIdsTests, conexion(), skipUnless (+1 more)
 
 ### Community 23 - "test_navegacion_esatje.py"
 Cohesion: 0.11
-Nodes (5): ColeccionFalsa, PaginaCaptchaFalsa, PaginaCargaGlobalPendienteFalsa, PaginaMensajeFalsa, TextoFalso
+Nodes (7): ColeccionFalsa, PaginaCaptchaFalsa, PaginaCargaGlobalPendienteFalsa, PaginaFilasDivFalsa, PaginaFilasFalsa, Imita la lista Angular real, que no usa filas HTML ``tr``., TextoFalso
 
 ### Community 24 - "monitorear_esatje.py"
-Cohesion: 0.29
-Nodes (9): cargar_configuracion(), estado_visible(), extraer_eventos(), guardar_evidencia(), instalar_monitor(), instalar_monitor_red(), main(), Monitorea las interacciones manuales en e-SATJE sin automatizar los clics. (+1 more)
+Cohesion: 0.18
+Nodes (14): cargar_navegacion(), main(), Ejecuta una sola causa en e-SATJE para diagnosticar la navegaci?n visible., cargar_configuracion(), estado_visible(), extraer_eventos(), guardar_evidencia(), instalar_monitor() (+6 more)
 
-### Community 25 - "gestor_cola.py"
-Cohesion: 0.14
-Nodes (12): Checkpoint 02: Migración SQLite y Recuperación de Cola, Esquema SQLite, estado_casos.db, Migración SQLite, backup_db(), migrar(), Crea un respaldo de la base de datos antes de migrar., Script de migración y verificación para la base de datos SQLite… (+4 more)
+### Community 25 - "test_migracion.py"
+Cohesion: 0.18
+Nodes (10): Checkpoint 02: Migración SQLite y Recuperación de Cola, Esquema SQLite, estado_casos.db, Migración SQLite, backup_db(), migrar(), Crea un respaldo de la base de datos antes de migrar., Script de migración y verificación para la base de datos SQLite… (+2 more)
 
 ### Community 26 - "TestMigracionDB"
 Cohesion: 0.12
 Nodes (9): Verifica que el esquema de la base de datos es correcto después de la migración., Crea una instancia fresca de GestorCola con una DB temporal., Elimina la DB temporal., Las tres tablas requeridas deben existir tras la inicialización., El método verificar_esquema() debe retornar True con el esquema completo., La tabla juicios debe tener las columnas correctas., La tabla resultados_expediente debe tener las columnas correctas., La tabla eventos_extraccion debe tener las columnas correctas. (+1 more)
 
-### Community 29 - "._clave_archivo"
-Cohesion: 0.16
-Nodes (4): Arquitectura Dual: - RUTA PRINCIPAL: Si la API interceptó JSON, procesar…, Persiste el estado de cada rechazo/timeout sin alterar la navegación., Guarda evidencia best-effort sin intentar una nueva navegación., Reconoce rechazos explícitos de Angular después de pulsar BUSCAR.
+### Community 29 - "BotJudicialTransaccional"
+Cohesion: 0.11
+Nodes (8): BotJudicialTransaccional, recorrer(), Flujo e-SATJE con navegación bloqueada durante cada extracción., Persiste el estado de cada rechazo/timeout sin alterar la navegación., Devuelve una firma durable cuando la API ya entrego las actuaciones. La…, Transforma API/DOM sin hacer clic ni navegar., Guarda evidencia best-effort sin intentar una nueva navegación., CaptchaConfiguracionError
 
-### Community 30 - "Path"
-Cohesion: 0.31
-Nodes (11): DataFrame, Path, _cargar_json(), _construir_reporte_regional(), _crear_sqlite_vacio(), main(), _normalizar_columnas(), preparar() (+3 more)
+### Community 30 - "normalizar_texto"
+Cohesion: 0.11
+Nodes (13): es_archivo_por_incumplimiento(), es_notificacion(), es_orden_explicita(), es_verificacion_secretarial(), normalizar_texto(), Prioriza la providencia que ordena completar sobre hitos posteriores., Devuelve los demandados de SATJE con roles procesales removidos., Normaliza texto removiendo tildes, caracteres especiales y convirtiendo a… (+5 more)
 
-### Community 31 - "RuntimeError"
+### Community 31 - "Q: Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave"
+Cohesion: 0.40
+Nodes (4): Answer, Outcome, Q: Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave, Source Nodes
+
+### Community 32 - "enriquecer_datos_procesales"
 Cohesion: 0.22
-Nodes (3): RuntimeError, Escribe la causa de inmediato y conserva un respaldo para la máscara.…, Regresa al formulario y verifica que el ?nico campo de causa est? disponible.
-
-### Community 32 - ".calcular_dias_transcurridos"
-Cohesion: 0.17
-Nodes (5): UPDATE: Inyecta en la fila correspondiente los datos extraídos., EXPORT: Genera el Excel .xlsx consolidado final con reestructuración de…, Interpreta fechas del portal, incluidas marcas ISO con zona horaria., Calcula la columna 'DIAS TRANSCURRIDOS' como la diferencia en días calendario…, Método de retrocompatibilidad que delega en calcular_dias_transcurridos.
+Nodes (16): Any, actualizar_todo_quito(), canonicalizar_etapa(), canonicalizar_fase(), enriquecer_datos_procesales(), id_etapa(), id_fase(), ids_para_estado() (+8 more)
 
 ### Community 33 - "Orquestador"
 Cohesion: 0.14
 Nodes (10): calcular_dias_fase_actual_df(), GestorEstado, Calcula la columna DIAS EN LA FASE ACTUAL a partir de FECHA INICIAL FASE ACTUAL., Gestor de Estado (Pandas): Procesa y normaliza los resultados extraídos hacia…, Lee el archivo JSON con los datos extraídos por AgenteExtractor, aplana la…, Orquestador, Motor de ejecución central con procesamiento dual: - Intercepción API (Ruta…, Motor de Orquestación Principal Multi-Agente con Arquitectura de Ejecución… (+2 more)
 
-### Community 34 - "._ejecutar_extraccion_detalles"
-Cohesion: 0.15
-Nodes (6): recorrer(), Devuelve los datos procesados en la vista actual., Devuelve una firma durable cuando la API ya entrego las actuaciones. La…, Transforma API/DOM sin hacer clic ni navegar., A?sla paquetes posteriores al clic de carpeta y descarta respuestas no…, Aplica y deja trazada la inferencia definitiva del alcance indicado.
-
 ### Community 35 - "._escrito_pendiente_de_revision_documental"
 Cohesion: 0.22
 Nodes (5): Dada la fase actual encontrada, retorna la siguiente fase y etapa según…, Identifica un escrito cuyo contenido no es visible en SATJE. Un rótulo…, Devuelve el escrito genérico posterior que requiere revisión. La alerta se…, Devuelve el índice numérico de la fase para comparaciones de precedencia., probar_inferencias()
-
-### Community 36 - "FilaFalsa"
-Cohesion: 0.18
-Nodes (4): FilaFalsa, PaginaFilasDivFalsa, PaginaFilasFalsa, Imita la lista Angular real, que no usa filas HTML ``tr``.
 
 ### Community 37 - "TestPoblarCola"
 Cohesion: 0.10
@@ -284,8 +279,8 @@ Cohesion: 0.20
 Nodes (5): Verifica la recuperación de registros atrapados en EN_PROCESO., Los registros EN_PROCESO deben volver a PENDIENTE., Sin huérfanos, debe retornar 0., Debe registrar un evento en eventos_extraccion por cada huérfano., TestRecuperarHuerfanos
 
 ### Community 40 - "._termino_procesal_presente"
-Cohesion: 0.22
-Nodes (5): _decodificar_entidades_satje(), Convierte entidades no estandar de SATJE solo para reglas contextuales., Evalúa la similitud semántica del texto encontrado con la taxonomía judicial de…, Exige una orden o constancia procesal, no una cita normativa sobre prensa., Evita que conectores linguisticos activen fases procesales.
+Cohesion: 0.33
+Nodes (4): _decodificar_entidades_satje(), Convierte entidades no estandar de SATJE solo para reglas contextuales., Evalúa la similitud semántica del texto encontrado con la taxonomía judicial de…, Evita que conectores linguisticos activen fases procesales.
 
 ### Community 41 - "Deterministic navigation state machine"
 Cohesion: 0.25
@@ -323,13 +318,13 @@ Nodes (5): Modo Híbrido Asistido con Arquitectura de Ejecución Dual: 1. Prepar
 Cohesion: 0.33
 Nodes (4): crear_base_de_datos(), inicializar_esquema(), Crea la base de datos si no existe., Crea tablas, índices y vistas analíticas para pgAdmin.
 
-### Community 51 - "._crear_respaldo_csv"
-Cohesion: 0.33
-Nodes (3): Reconoce bloqueos habituales de Windows, OneDrive y antivirus., Crea el .bak y tolera bloqueos breves sin omitir la salvaguarda., SAVE: Reemplaza atómicamente el CSV tras crear su respaldo.
+### Community 51 - "RespaldoCsvTests"
+Cohesion: 0.19
+Nodes (5): _gestor_con_csv(), Pruebas de tolerancia a bloqueos temporales del CSV en Windows/OneDrive., RespaldoCsvTests, leer(), reemplazar()
 
-### Community 52 - "motor_busqueda_web.py"
-Cohesion: 0.15
-Nodes (7): Detección y combinación de múltiples folders, NavegadorArbolContenido, Navegador estructural del árbol procesal y de contenido. Implementa la regla de…, Move Up: Escalada por ausencia hacia un contexto más amplio., Move Down: Profundización por hallazgo hacia sub-fase específica., _load_extraction_keywords(), Carga una lista de keywords desde rutas conocidas o desde un archivo YAML/TSV…
+### Community 52 - "Path"
+Cohesion: 0.31
+Nodes (11): DataFrame, Path, _cargar_json(), _construir_reporte_regional(), _crear_sqlite_vacio(), main(), _normalizar_columnas(), preparar() (+3 more)
 
 ### Community 54 - "test_regresiones_quito_29.py"
 Cohesion: 0.47
@@ -339,54 +334,54 @@ Nodes (4): _fecha_iso(), _normalizar_causa(), skipUnless, TestRegresionesQuito29
 Cohesion: 0.50
 Nodes (4): ejecutar_limpieza(), Manejador para forzar eliminación de archivos con atributo de solo lectura en…, Elimina de forma recursiva y segura el directorio temp_htmls/ conservando…, _remove_readonly()
 
-### Community 57 - "migrar_base_sqlite"
-Cohesion: 0.83
-Nodes (3): migrar_base_sqlite(), migrar_todo(), obtener_conexion_postgres()
+### Community 59 - "motor_busqueda_web.py"
+Cohesion: 0.13
+Nodes (17): Detección y combinación de múltiples folders, AgenteExtractor, Agente Extractor Semántico y Autónomo (e-SATJE). Analiza el contenido completo…, _load_extraction_keywords(), Carga una lista de keywords desde rutas conocidas o desde un archivo YAML/TSV…, Pruebas unitarias para validar las reglas de Inferencia Procesal Autónoma…, load_html(), load_json() (+9 more)
 
-### Community 59 - "test_extraccion_integration.py"
-Cohesion: 0.24
-Nodes (11): load_html(), load_json(), La fecha de la fase debe provenir de su actuacion, no del inicio del juicio., Test caso variante 1: Mandamiento en tabla de actuaciones., Test caso variante 2: nombreTipoAccion='EJECUTIVO' con actuaciones de CITACION…, test_api_mandamiento_detection(), test_api_usa_fecha_de_la_actuacion_detectada(), test_caso_referencia_conserva_fecha_de_calificacion() (+3 more)
-
-### Community 61 - "RespaldoCsvTests"
-Cohesion: 0.21
-Nodes (4): _gestor_con_csv(), RespaldoCsvTests, leer(), reemplazar()
-
-### Community 62 - "ResultadoInferencia"
-Cohesion: 0.43
+### Community 61 - "ResultadoInferencia"
+Cohesion: 0.36
 Nodes (3): Resultado enriquecido de la inferencia procesal. Compatible con desempaquetado…, ResultadoInferencia, tuple
+
+### Community 62 - "._crear_respaldo_csv"
+Cohesion: 0.33
+Nodes (3): Reconoce bloqueos habituales de Windows, OneDrive y antivirus., Crea el .bak y tolera bloqueos breves sin omitir la salvaguarda., SAVE: Reemplaza atómicamente el CSV tras crear su respaldo.
 
 ### Community 63 - "calcular_siguiente_fase"
 Cohesion: 0.67
 Nodes (3): calcular_siguiente_fase(), REMATE y CONGELAMIENTO como estados finales, ORDEN_FASES
 
-### Community 82 - "configurar_logging"
-Cohesion: 0.47
-Nodes (5): cargar_navegacion(), main(), Ejecuta una sola causa en e-SATJE para diagnosticar la navegaci?n visible., configurar_logging(), Configura logging de proceso de forma explícita y sin efectos al importar.
+### Community 82 - "Q: perfecto que este caso vamos a agregar a al proyecto este sistema DE IDs mas los defectos que encontraste"
+Cohesion: 0.40
+Nodes (4): Answer, Outcome, Q: perfecto que este caso vamos a agregar a al proyecto este sistema DE IDs mas los defectos que encontraste, Source Nodes
 
 ### Community 83 - "Q: Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
 Cohesion: 0.40
 Nodes (4): Answer, Outcome, Q: Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal, Source Nodes
 
+### Community 86 - "migrar_sqlite_a_postgres.py"
+Cohesion: 0.83
+Nodes (3): migrar_base_sqlite(), migrar_todo(), obtener_conexion_postgres()
+
 ## Knowledge Gaps
-- **42 isolated node(s):** `Answer`, `Outcome`, `Source Nodes`, `Answer`, `Outcome` (+37 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 446 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **48 isolated node(s):** `Answer`, `Outcome`, `Source Nodes`, `Answer`, `Outcome` (+43 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 461 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **29 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Work-memory lessons
 
 **Preferred sources** — corroborated by past sessions; start here.
-- `MotorInferenciaProcesal` (2× useful, score=1.99776437)
+- `MotorInferenciaProcesal` (2× useful, score=1.99776437) _(code changed — re-verify)_
 - `GestorCola` (2× useful, score=1.99776437) _(code changed — re-verify)_
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BotJudicial` connect `BotJudicial` to `RetornoBuscadorTests`, `BotJudicialTransaccional`, `AgenteExtractor`, `._buscar_resultado_con_reintentos`, `FrenoNavegacionTests`, `GestorCasos`, `Proveedor2Captcha`, `NavegacionEsatjeTests`, `MotorInferenciaProcesal`, `test_navegacion_esatje.py`, `monitorear_esatje.py`, `._clave_archivo`, `RuntimeError`, `._ejecutar_extraccion_detalles`, `.procesar_flujo_judicatura`, `motor_busqueda_web.py`, `test_extraccion_integration.py`, `._causa_para_formulario`, `CaptchaSolucion`, `configurar_logging`?**
-  _High betweenness centrality (0.266) - this node is a cross-community bridge._
-- **Why does `GestorCola` connect `GestorCola` to `RetornoBuscadorTests`, `Orquestador`, `TestPoblarCola`, `TestRecuperarHuerfanos`, `._exclusive_transaction`, `GestorCasos`, `TestRegistrarResultado`, `TestReiniciarErrores`, `logger_config.py`, `.bloquear_ejecucion`, `gestor_cola.py`, `TestMigracionDB`, `Path`?**
-  _High betweenness centrality (0.160) - this node is a cross-community bridge._
-- **Why does `MotorInferenciaProcesal` connect `MotorInferenciaProcesal` to `.inferir_estado_procesal`, `BotJudicial`, `._escrito_pendiente_de_revision_documental`, `reclasificar_desde_sqlite.py`, `._termino_procesal_presente`, `AgenteExtractor`, `._fecha_ordenable`, `._hallazgo_mas_reciente`, `GestorCasos`, `motor_busqueda_web.py`, `normalizar_texto`, `test_regresiones_quito_29.py`, `._segmentar_por_instancia`, `._seleccionar_rama_activa`?**
-  _High betweenness centrality (0.123) - this node is a cross-community bridge._
+- **Why does `BotJudicial` connect `BotJudicial` to `RetornoBuscadorTests`, `._procesar_flujo_autonomo`, `._volver_al_buscador`, `NavegadorArbolContenido`, `RuntimeError`, `FrenoNavegacionTests`, `Proveedor2Captcha`, `.procesar_flujo_judicatura`, `NavegacionEsatjeTests`, `logger_config.py`, `MotorInferenciaProcesal`, `test_navegacion_esatje.py`, `CaptchaSolucion`, `._motivo_rechazo_formulario`, `monitorear_esatje.py`, `motor_busqueda_web.py`, `._causa_para_formulario`, `BotJudicialTransaccional`?**
+  _High betweenness centrality (0.232) - this node is a cross-community bridge._
+- **Why does `GestorCola` connect `GestorCola` to `RetornoBuscadorTests`, `Orquestador`, `TestPoblarCola`, `TestRecuperarHuerfanos`, `._exclusive_transaction`, `TestRegistrarResultado`, `TestReiniciarErrores`, `logger_config.py`, `Path`, `.bloquear_ejecucion`, `test_migracion.py`, `TestMigracionDB`?**
+  _High betweenness centrality (0.151) - this node is a cross-community bridge._
+- **Why does `MotorInferenciaProcesal` connect `MotorInferenciaProcesal` to `enriquecer_datos_procesales`, `.inferir_estado_procesal`, `BotJudicial`, `._escrito_pendiente_de_revision_documental`, `reclasificar_desde_sqlite.py`, `._termino_procesal_presente`, `._fecha_ordenable`, `._hallazgo_mas_reciente`, `._evidencia_pago_perito_posterior`, `test_regresiones_quito_29.py`, `._segmentar_por_instancia`, `._seleccionar_rama_activa`, `motor_busqueda_web.py`, `normalizar_texto`?**
+  _High betweenness centrality (0.112) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `TestClasificacionArbol` (e.g. with `AgenteExtractor` and `MotorInferenciaProcesal`) actually correct?**
   _`TestClasificacionArbol` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 7 inferred relationships involving `BotJudicial` (e.g. with `AgenteExtractor` and `MotorInferenciaProcesal`) actually correct?**

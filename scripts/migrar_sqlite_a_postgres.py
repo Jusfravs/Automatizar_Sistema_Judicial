@@ -7,6 +7,7 @@ import json
 import psycopg2
 from psycopg2.extras import execute_values, Json
 from pathlib import Path
+from src.catalogo_procesal import enriquecer_datos_procesales
 
 def obtener_conexion_postgres():
     return psycopg2.connect(
@@ -62,7 +63,10 @@ def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
         except Exception:
             data = {}
 
-        datos_extraidos = data.get("datos") or {}
+        datos_extraidos = dict(data.get("datos") or {})
+        enriquecer_datos_procesales(datos_extraidos, normalizar_etiquetas=True)
+        if datos_extraidos:
+            data["datos"] = datos_extraidos
         actuaciones = datos_extraidos.get("HISTORIAL_ACTUACIONES") or []
 
         # Extraer campos de primer nivel
@@ -91,10 +95,14 @@ def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
             causa,
             ciudad_default,
             estado_final,
+            datos_extraidos.get("eta_id ULTIMA ETAPA"),
             ultima_etapa,
+            datos_extraidos.get("fas_id ULTIMA FASE"),
             ultima_fase,
             str(fecha_fin) if fecha_fin else None,
+            datos_extraidos.get("eta_id ETAPA ACTUAL"),
             etapa_act,
+            datos_extraidos.get("fas_id FASE ACTUAL"),
             fase_act,
             str(fecha_inicio_act) if fecha_inicio_act else None,
             msg_esp,
@@ -127,8 +135,9 @@ def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
                 causa,
                 ciudad_default,
                 info_j["estado"],
+                None,
                 None, None, None, None, None, None, None,
-                None, None, None, None,
+                None, None, None, None, None, None, None,
                 0,
                 "COLA_INICIAL",
                 info_j.get("ruta_html"),
@@ -140,18 +149,25 @@ def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
     if expedientes_insert:
         upsert_query = """
         INSERT INTO expedientes (
-            numero_causa, ciudad, estado, ultima_etapa, ultima_fase,
-            fecha_fin_ultima_fase, etapa_actual, fase_actual, fecha_inicio_fase_actual,
+            numero_causa, ciudad, estado,
+            eta_id_ultima_etapa, ultima_etapa,
+            fas_id_ultima_fase, ultima_fase, fecha_fin_ultima_fase,
+            eta_id_etapa_actual, etapa_actual,
+            fas_id_fase_actual, fase_actual, fecha_inicio_fase_actual,
             mensaje_especial, actor, demandado, tipo_accion, fecha_inicio_juicio,
             total_actuaciones, origen, ruta_html, reintentos, datos_json
         ) VALUES %s
         ON CONFLICT (numero_causa) DO UPDATE SET
             ciudad = EXCLUDED.ciudad,
             estado = EXCLUDED.estado,
+            eta_id_ultima_etapa = EXCLUDED.eta_id_ultima_etapa,
             ultima_etapa = EXCLUDED.ultima_etapa,
+            fas_id_ultima_fase = EXCLUDED.fas_id_ultima_fase,
             ultima_fase = EXCLUDED.ultima_fase,
             fecha_fin_ultima_fase = EXCLUDED.fecha_fin_ultima_fase,
+            eta_id_etapa_actual = EXCLUDED.eta_id_etapa_actual,
             etapa_actual = EXCLUDED.etapa_actual,
+            fas_id_fase_actual = EXCLUDED.fas_id_fase_actual,
             fase_actual = EXCLUDED.fase_actual,
             fecha_inicio_fase_actual = EXCLUDED.fecha_inicio_fase_actual,
             mensaje_especial = EXCLUDED.mensaje_especial,

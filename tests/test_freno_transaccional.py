@@ -334,10 +334,20 @@ class FrenoNavegacionTests(unittest.TestCase):
             columnas.index("FECHA INICIO FASE ACTUAL"),
             columnas.index("ETAPA ACTUAL"),
         )
-        self.assertEqual(
-            columnas[-3:],
-            ["ETAPA ACTUAL", "FASE ACTUAL", "DIAS TRANSCURRIDOS"],
-        )
+        self.assertEqual(columnas, [
+            "FECHA INICIO JUICIO",
+            "FECHA FIN ULTIMA FASE",
+            "eta_id ULTIMA ETAPA",
+            "ULTIMA ETAPA",
+            "fas_id ULTIMA FASE",
+            "ULTIMA FASE",
+            "FECHA INICIO FASE ACTUAL",
+            "eta_id ETAPA ACTUAL",
+            "ETAPA ACTUAL",
+            "fas_id FASE ACTUAL",
+            "FASE ACTUAL",
+            "DIAS TRANSCURRIDOS",
+        ])
 
     def test_normaliza_timestamp_iso_a_fecha_del_reporte(self):
         self.assertEqual(
@@ -379,14 +389,11 @@ class FrenoNavegacionTests(unittest.TestCase):
             exportado = pd.read_excel(gestor.ruta_final, dtype=str)
 
         self.assertEqual(
-            exportado.columns[-4:].tolist(),
-            [
-                "FECHA INICIO FASE ACTUAL",
-                "ETAPA ACTUAL",
-                "FASE ACTUAL",
-                "DIAS TRANSCURRIDOS",
-            ],
+            exportado.columns[-12:].tolist(),
+            GestorCasos.COLUMNAS_MOLDE_EXPORTACION,
         )
+        self.assertEqual(exportado.loc[0, "eta_id ETAPA ACTUAL"], "15")
+        self.assertEqual(exportado.loc[0, "fas_id FASE ACTUAL"], "90")
         self.assertEqual(exportado.loc[0, "FECHA FIN ULTIMA FASE"], "05/07/2017")
 
         self.assertEqual(
@@ -493,7 +500,12 @@ class PersistenciaTransaccionalTests(unittest.TestCase):
                 conexion.close()
 
         self.assertEqual(estado, "ERROR")
-        self.assertEqual(json.loads(datos_json), resultado_completo)
+        guardado = json.loads(datos_json)
+        self.assertEqual(
+            guardado["datos"]["HISTORIAL_ACTUACIONES"],
+            resultado_completo["datos"]["HISTORIAL_ACTUACIONES"],
+        )
+        self.assertEqual(guardado["datos"]["fas_id ULTIMA FASE"], 79)
 
     def test_estado_final_parcial_se_confirma_en_misma_transaccion(self):
         with tempfile.TemporaryDirectory() as temporal:
