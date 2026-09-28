@@ -6,6 +6,7 @@ from src.logger_config import configurar_logging, obtener_logger
 
 from src.gestor_casos import GestorCasos
 from src.gestor_cola import GestorCola
+from src.ejecucion import ConfiguracionConcurrencia, extraer_trabajadores
 from src.motor_busqueda_web import BotJudicial
 
 
@@ -119,7 +120,7 @@ def seleccionar_casos(casos, argumentos):
                 resultado.append(causa)
         return resultado
     if argumentos[0] == "--lote":
-        if len(argumentos) != 2:
+        if len(argumentos) < 2:
             raise ValueError("USO_INVALIDO: --lote <cantidad 2..100>")
         try:
             cantidad = int(argumentos[1])
@@ -127,7 +128,29 @@ def seleccionar_casos(casos, argumentos):
             raise ValueError("USO_INVALIDO: --lote <cantidad 2..100>") from exc
         if cantidad < 2 or cantidad > MAXIMO_LOTE:
             raise ValueError("LOTE_FUERA_DE_RANGO:2..100")
-        return list(casos)[:cantidad]
+        if len(argumentos) == 2:
+            return list(casos)[:cantidad]
+        excluidas = set()
+        restantes = argumentos[2:]
+        while restantes:
+            if len(restantes) < 2 or restantes[0] != "--excluir":
+                raise ValueError("USO_INVALIDO: --lote <cantidad> [--excluir <causa> ...]")
+            causa = _causa_comparable(restantes[1])
+            if not causa:
+                raise ValueError("CAUSA_EXCLUIDA_INVALIDA")
+            excluidas.add(causa)
+            restantes = restantes[2:]
+        resultado = []
+        vistos = set()
+        for causa in casos:
+            comparable = _causa_comparable(causa)
+            if comparable and comparable not in vistos:
+                vistos.add(comparable)
+                if comparable not in excluidas:
+                    resultado.append(causa)
+        if not excluidas.issubset(vistos):
+            raise ValueError("CAUSA_EXCLUIDA_NO_ENCONTRADA")
+        return resultado[:cantidad]
     if argumentos[0].startswith("--") or len(argumentos) != 1:
         raise ValueError("ARGUMENTOS_INVALIDOS")
     objetivo = _causa_comparable(argumentos[0])
@@ -152,15 +175,115 @@ def main(argv=None):
     logger.info("=" * 60)
 
     repo = GestorCasos(ruta_config)
+    config_db = repo.config.get("base_de_datos") or {}
+    motor_db = str(config_db.get("motor", "sqlite")).lower()
+    config_concurrencia = ConfiguracionConcurrencia.desde_config(
+        repo.config.get("concurrencia")
+    )
+    trabajadores_default = (
+        config_concurrencia.trabajadores
+        if config_concurrencia.habilitada
+        else 1
+    )
+    trabajadores, argumentos = extraer_trabajadores(
+        argumentos,
+        predeterminado=trabajadores_default,
+    )
+    config_concurrencia.validar_motor(motor_db, trabajadores)
+    if argumentos[:1] == ["--solo"] and trabajadores != 1:
+        raise ValueError("MODO_SOLO_REQUIERE_UN_TRABAJADOR")
+
     rutas_config = repo.config.get("rutas", {})
     ruta_db = rutas_config.get("archivo_db", "estado_casos.db")
     ruta_casos_fallidos = rutas_config.get(
         "archivo_casos_fallidos", RUTA_CASOS_FALLIDOS
     )
 
+    if motor_db == "postgres":
+        return _ejecutar_lote_postgres(
+            repo,
+            argumentos,
+            ruta_config,
+            ruta_casos_fallidos,
+            trabajadores,
+        )
+
     cola = GestorCola(ruta_db=ruta_db)
     with cola.bloquear_ejecucion():
         return _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos)
+
+
+def _ejecutar_lote_postgres(
+    repo,
+    argumentos,
+    ruta_config,
+    ruta_casos_fallidos,
+    trabajadores,
+):
+    """Prepara un lote y delega la ejecucion a la cola PostgreSQL."""
+    modo_limitado = argumentos[:1] in (
+        ["--solo"],
+        ["--lote"],
+        ["--pendientes"],
+        ["--reprocesar-filtro"],
+    )
+    if modo_limitado:
+        repo.filtros["inicio_desde_juicio"] = None
+    candidatos = repo.obtener_casos_pendientes()
+    if argumentos[:1] in (["--lote"], ["--pendientes"]) and "--omitir-procesados" in argumentos:
+        if argumentos.count("--omitir-procesados") != 1:
+            raise ValueError("OPCION_OMITIR_PROCESADOS_DUPLICADA")
+        from src.repositorio_postgres import RepositorioColaPostgres
+
+        repositorio_pg = RepositorioColaPostgres.desde_config(
+            repo.config["base_de_datos"]
+        )
+        procesadas = {
+            _causa_comparable(causa)
+            for causa in repositorio_pg.listar_causas_procesadas()
+        }
+        pendientes = []
+        vistos = set(procesadas)
+        for causa in candidatos:
+            comparable = _causa_comparable(causa)
+            if comparable and comparable not in vistos:
+                vistos.add(comparable)
+                pendientes.append(causa)
+        candidatos = pendientes
+        logger.info(
+            "[POSTGRES] Continuacion: %s causas unicas disponibles tras omitir procesadas.",
+            len(candidatos),
+        )
+        argumentos = [
+            argumento for argumento in argumentos
+            if argumento != "--omitir-procesados"
+        ]
+    casos = seleccionar_casos(candidatos, argumentos)
+    if not casos:
+        logger.info("[-] No existen juicios pendientes para procesar.")
+        guardar_casos_fallidos([], ruta_casos_fallidos)
+        return None
+
+    from src.coordinador_concurrente import CoordinadorConcurrente
+
+    logger.info(
+        "[POSTGRES] Preparando %s causas con %s trabajador(es).",
+        len(casos),
+        trabajadores,
+    )
+    coordinador = CoordinadorConcurrente(
+        repo,
+        ruta_config,
+        trabajadores=trabajadores,
+    )
+    resultado = coordinador.ejecutar(casos, ruta_casos_fallidos)
+    logger.info(
+        "[POSTGRES] Ejecucion %s finalizada como %s: %s",
+        resultado["ejecucion_id"],
+        resultado["estado"],
+        resultado["estadisticas"],
+    )
+    return resultado
 
 
 def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
@@ -171,23 +294,6 @@ def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
     if modo_limitado:
         repo.filtros["inicio_desde_juicio"] = None
     casos = repo.obtener_casos_pendientes()
-
-    # --- Integración con PostgreSQL (si está configurado) ---
-    gestor_pg = None
-    config_db = repo.config.get("base_de_datos", {})
-    if config_db.get("motor") == "postgres":
-        try:
-            from src.db_postgres import GestorPostgres
-            gestor_pg = GestorPostgres(
-                host=config_db.get("host"),
-                port=config_db.get("puerto"),
-                user=config_db.get("usuario"),
-                password=os.getenv(config_db.get("password_env", "POSTGRES_PASSWORD"), ""),
-                dbname=config_db.get("nombre_db")
-            )
-            logger.info("[POSTGRES] Sincronización activa con base de datos '%s'.", config_db.get("nombre_db"))
-        except Exception as e:
-            logger.warning("[POSTGRES] No se pudo inicializar sincronización PostgreSQL: %s", e)
 
     # Verificar esquema de la base de datos
     if not cola.verificar_esquema():
@@ -328,12 +434,6 @@ def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
                         ruta_html=None,
                         estado_final=estado_sqlite,
                     )
-                    if gestor_pg:
-                        try:
-                            ciudad_pg = repo.filtros.get("sucursal") or "QUITO"
-                            gestor_pg.registrar_resultado(numero_juicio, resultado, ciudad=ciudad_pg)
-                        except Exception as e:
-                            logger.warning("[POSTGRES] Error al persistir expediente %s: %s", numero_juicio, e)
                     if estado == "COMPLETADO":
                         exitosos += 1
                         logger.info("[+] Juicio %s completado y persistido.", numero_juicio)
@@ -363,11 +463,6 @@ def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
                         origen="ESATJE_TRANSACCIONAL",
                         estado_final="SIN_RESULTADOS",
                     )
-                    if gestor_pg:
-                        try:
-                            gestor_pg.registrar_error(numero_juicio, origen="ESATJE_TRANSACCIONAL", error_detalle="SIN_RESULTADOS")
-                        except Exception as e:
-                            logger.warning("[POSTGRES] Error al registrar sin resultados de %s: %s", numero_juicio, e)
                     logger.info("[-] Juicio %s sin resultados, estado persistido.", numero_juicio)
                 elif estado in {
                     "EXTRACCION_ERROR",
@@ -398,11 +493,6 @@ def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
                         origen="ESATJE_TRANSACCIONAL",
                         estado_final="ERROR",
                     )
-                    if gestor_pg:
-                        try:
-                            gestor_pg.registrar_error(numero_juicio, origen="ESATJE_TRANSACCIONAL", error_detalle=detalle)
-                        except Exception as e:
-                            logger.warning("[POSTGRES] Error al registrar error de %s: %s", numero_juicio, e)
                     casos_fallidos.append(numero_juicio)
                     logger.error(
                         "[-] Juicio %s terminó como %s: %s", numero_juicio, estado, detalle
@@ -461,15 +551,6 @@ def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):
                         cola.actualizar_estado(numero_juicio, "ERROR")
                     except Exception:
                         logger.exception("No se pudo marcar la causa como ERROR en SQLite.")
-                if gestor_pg:
-                    try:
-                        gestor_pg.registrar_error(
-                            numero_juicio,
-                            origen="EXCEPCION_NO_CONTROLADA",
-                            error_detalle=detalle,
-                        )
-                    except Exception:
-                        logger.exception("[POSTGRES] No se pudo registrar el error de %s.", numero_juicio)
                 try:
                     bot.cerrar_navegador()
                 except Exception:
