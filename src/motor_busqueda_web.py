@@ -1,4 +1,5 @@
 # src/motor_busqueda_web.py
+import hashlib
 import os
 import re
 import json
@@ -10,6 +11,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_pla
 from src.agente_extractor import (
     AgenteExtractor, NavegadorArbolContenido, normalizar_texto,
 )
+from src.catalogo_procesal import enriquecer_datos_procesales
 from src.logger_config import obtener_logger
 from src.validacion_pertenencia import ESTADO_EXCLUIDO, validar_pertenencia_cartera
 from src.servicio_captcha import (
@@ -972,6 +974,7 @@ class BotJudicial:
         datos["ETAPA ACTUAL"] = etapa_operativa
         datos["FASE ACTUAL"] = fase_operativa
         datos["FECHA INICIO FASE ACTUAL"] = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
+        enriquecer_datos_procesales(datos)
         if inferencia.get("MENSAJE_ESPECIAL"):
             datos["COMENTARIO_ULTIMO"] = inferencia.get("MENSAJE_ESPECIAL")
         try:
@@ -1305,6 +1308,7 @@ class BotJudicial:
                             datos["ETAPA ACTUAL"] = etapa_operativa
                             datos["FASE ACTUAL"] = fase_operativa
                             datos["FECHA INICIO FASE ACTUAL"] = fecha_api
+                            enriquecer_datos_procesales(datos)
                             if res_api.get("MENSAJE_ESPECIAL"):
                                 datos["COMENTARIO_ULTIMO"] = res_api.get("MENSAJE_ESPECIAL")
 
@@ -2541,19 +2545,25 @@ class BotJudicialTransaccional(BotJudicial):
                 return
             if not isinstance(valor, dict):
                 return
-            detalle = (
-                valor.get("actuacion") or valor.get("detalle")
-                or valor.get("tipoActuacion") or valor.get("actividad")
-            )
+            campo_detalle = next((
+                campo for campo in (
+                    "actuacion", "detalle", "tipoActuacion", "actividad"
+                ) if valor.get(campo)
+            ), None)
+            detalle = valor.get(campo_detalle) if campo_detalle else None
             fecha = next((valor.get(campo) for campo in (
                 "fecha", "fechaActuacion", "fechaProvidencia", "fechaCrea",
                 "fechaCreacion", "fechaRegistro", "fechaIngreso"
             ) if valor.get(campo)), None)
             if detalle:
-                clave = (str(fecha) if fecha else None, str(detalle).strip().upper())
+                detalle_literal = str(detalle).strip()
+                clave = (str(fecha) if fecha else None, detalle_literal.upper())
                 if clave not in vistos:
                     vistos.add(clave)
-                    actuaciones.append({"fecha": clave[0], "detalle": clave[1]})
+                    actuacion = {"fecha": clave[0], "detalle": clave[1]}
+                    if campo_detalle in {"actuacion", "tipoActuacion", "actividad"}:
+                        actuacion["titulo"] = detalle_literal
+                    actuaciones.append(actuacion)
             for clave_hija, hijo in valor.items():
                 if clave_hija in {"actuaciones", "listaActuaciones"} or isinstance(hijo, (dict, list)):
                     recorrer(hijo)
@@ -2634,7 +2644,11 @@ class BotJudicialTransaccional(BotJudicial):
 
     def _guardar_artefactos_carpeta(self, causa, descriptor, paquetes, contenido, frames, resultado, diagnostico):
         intento = self._clave_archivo(self._intento_actual or "sin_intento")
-        clave = self._clave_archivo(descriptor["clave_carpeta"])
+        # El descriptor completo permanece en result.json; el nombre en disco debe
+        # ser corto para admitir rutas de ejecucion profundas en Windows.
+        clave = "c_" + hashlib.sha256(
+            str(descriptor["clave_carpeta"]).encode("utf-8")
+        ).hexdigest()[:16]
         directorio = os.path.join("data", "temp_htmls", causa, intento, clave)
         os.makedirs(directorio, exist_ok=True)
         rutas = {}
@@ -3372,6 +3386,7 @@ class BotJudicialTransaccional(BotJudicial):
             datos["ETAPA ACTUAL"] = ESTADO_EXCLUIDO
             datos["FASE ACTUAL"] = ESTADO_EXCLUIDO
             datos["COMENTARIO_ULTIMO"] = pertenencia["motivo"]
+        enriquecer_datos_procesales(datos)
         errores = [
             resultado.get("error") for resultado in resultados if resultado.get("error")
         ]

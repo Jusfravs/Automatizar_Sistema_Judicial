@@ -2,12 +2,16 @@ import os
 import unittest
 
 
-EJECUTAR_INTEGRACION_POSTGRES = os.getenv("RUN_POSTGRES_INTEGRATION") == "1"
+DB_INTEGRACION = os.getenv("POSTGRES_DB", "")
+EJECUTAR_INTEGRACION_POSTGRES = (
+    os.getenv("RUN_POSTGRES_INTEGRATION") == "1"
+    and DB_INTEGRACION == "casos_judiciales_test"
+)
 
 
 @unittest.skipUnless(
     EJECUTAR_INTEGRACION_POSTGRES,
-    "Defina RUN_POSTGRES_INTEGRATION=1 para ejecutar pruebas contra PostgreSQL.",
+    "Defina RUN_POSTGRES_INTEGRATION=1 y POSTGRES_DB=casos_judiciales_test.",
 )
 class TestPostgresIntegracion(unittest.TestCase):
     @classmethod
@@ -23,14 +27,20 @@ class TestPostgresIntegracion(unittest.TestCase):
                 res = cur.fetchone()
                 self.assertEqual(res[0], 1)
 
+    def test_esquema_completo_para_procesamiento(self):
+        from src.repositorio_postgres import RepositorioColaPostgres
+
+        repositorio = RepositorioColaPostgres.desde_config(
+            {"nombre_db": "casos_judiciales_test"}
+        )
+        self.assertTrue(repositorio.verificar_esquema())
+
     def test_consultar_vistas(self):
         fases = self.gestor.obtener_resumen_fases()
         self.assertIsInstance(fases, list)
         
         revision = self.gestor.obtener_casos_revision_manual()
         self.assertIsInstance(revision, list)
-        # We know there are 3 cases in Quito
-        self.assertGreaterEqual(len(revision), 3)
 
     def test_registro_y_recuperacion_expediente(self):
         causa_test = "99999-9999-99999"

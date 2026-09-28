@@ -4,6 +4,7 @@ import sqlite3
 import json
 from pathlib import Path
 from src.agente_extractor import MotorInferenciaProcesal
+from src.catalogo_procesal import enriquecer_datos_procesales
 from src.gestor_casos import GestorCasos
 
 def actualizar_todo_quito():
@@ -44,6 +45,9 @@ def actualizar_todo_quito():
         datos_extraidos["ETAPA ACTUAL"] = inf.etapa_actual
         datos_extraidos["FASE ACTUAL"] = inf.fase_actual
         datos_extraidos["FECHA INICIO FASE ACTUAL"] = inf.fecha_inicio_fase_actual
+        enriquecer_datos_procesales(
+            datos_extraidos, normalizar_etiquetas=True
+        )
         if inf.mensaje_especial:
             datos_extraidos["COMENTARIO_ULTIMO"] = inf.mensaje_especial
         datos_extraidos["ACTUACION_RESPALDO"] = inf.actuacion_respaldo

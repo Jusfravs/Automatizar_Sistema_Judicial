@@ -1,9 +1,13 @@
 # src/gestor_cola.py
 import json
+import os
 import sqlite3
 from contextlib import contextmanager
 import pandas as pd
+from src.catalogo_procesal import enriquecer_datos_procesales
 from src.logger_config import obtener_logger
+from src.ultima_gestion import enriquecer_ultima_gestion_judicial
+from src.historial_ia import inicializar_esquema, registrar_historial
 
 logger = obtener_logger("GestorCola")
 
@@ -45,10 +49,67 @@ class GestorCola:
             yield conn
             conn.execute("COMMIT")
         except Exception:
-            conn.execute("ROLLBACK")
+            # BEGIN IMMEDIATE también puede fallar (por ejemplo, si SQLite
+            # permanece bloqueado). No intente revertir una transacción que no
+            # llegó a existir porque ocultaría la excepción original.
+            if conn.in_transaction:
+                conn.rollback()
             raise
         finally:
             conn.close()
+
+    @contextmanager
+    def bloquear_ejecucion(self):
+        """Impide dos orquestadores simultáneos sobre la misma base SQLite."""
+        ruta_bloqueo = os.path.abspath("%s.rpa.lock" % self.ruta_db)
+        directorio = os.path.dirname(ruta_bloqueo)
+        if directorio:
+            os.makedirs(directorio, exist_ok=True)
+
+        archivo = open(ruta_bloqueo, "a+b")
+        adquirido = False
+        desbloquear = None
+        try:
+            archivo.seek(0, os.SEEK_END)
+            if archivo.tell() == 0:
+                archivo.write(b"\0")
+                archivo.flush()
+            archivo.seek(0)
+
+            try:
+                if os.name == "nt":
+                    import msvcrt
+
+                    msvcrt.locking(archivo.fileno(), msvcrt.LK_NBLCK, 1)
+
+                    def desbloquear():
+                        archivo.seek(0)
+                        msvcrt.locking(archivo.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+
+                    fcntl.flock(archivo.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+                    def desbloquear():
+                        fcntl.flock(archivo.fileno(), fcntl.LOCK_UN)
+            except OSError as exc:
+                raise RuntimeError(
+                    "OTRA_EJECUCION_ACTIVA:%s" % os.path.abspath(self.ruta_db)
+                ) from exc
+
+            adquirido = True
+            logger.info("Bloqueo exclusivo adquirido para %s.", self.ruta_db)
+            yield
+        finally:
+            if adquirido and desbloquear is not None:
+                try:
+                    desbloquear()
+                except OSError:
+                    logger.exception(
+                        "No se pudo liberar limpiamente el bloqueo de %s.",
+                        self.ruta_db,
+                    )
+            archivo.close()
 
     def _inicializar_tabla(self):
         """Crea las tablas de reserva, resultados y auditoría si no existen."""
@@ -86,6 +147,7 @@ class GestorCola:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_resultados_causa ON resultados_expediente(numero_causa)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_eventos_causa ON eventos_extraccion(numero_causa)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_eventos_creado ON eventos_extraccion(creado_en)")
+            inicializar_esquema(conn)
             conn.commit()
 
     def poblar_cola(self, df_o_lista):
@@ -159,6 +221,51 @@ class GestorCola:
 
             return numero_causa
 
+    def reservar_causa(self, numero_causa, permitir_reproceso=False):
+        """
+        Reserva atómicamente una causa concreta antes de procesarla.
+
+        El flujo normal solo puede reservar registros PENDIENTE. Los modos de
+        reproceso explícito pueden tomar un estado terminal, pero nunca una
+        causa que otra ejecución ya mantenga EN_PROCESO.
+        """
+        causa_str = str(numero_causa).strip()
+        if not causa_str:
+            raise ValueError("NUMERO_CAUSA_INVALIDO")
+
+        with self._exclusive_transaction() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT estado FROM juicios WHERE numero_causa = ?",
+                (causa_str,),
+            )
+            fila = cursor.fetchone()
+            if fila is None:
+                raise LookupError("No existe una reserva para la causa '%s'." % causa_str)
+
+            estado_anterior = fila[0]
+            if estado_anterior == "EN_PROCESO":
+                raise RuntimeError("CAUSA_YA_EN_PROCESO:%s" % causa_str)
+            if not permitir_reproceso and estado_anterior != "PENDIENTE":
+                raise RuntimeError(
+                    "CAUSA_NO_PENDIENTE:%s:%s" % (causa_str, estado_anterior)
+                )
+
+            cursor.execute(
+                "UPDATE juicios SET estado = 'EN_PROCESO' "
+                "WHERE numero_causa = ? AND estado = ?",
+                (causa_str, estado_anterior),
+            )
+            if cursor.rowcount != 1:
+                raise RuntimeError("RESERVA_ATOMICA_FALLIDA:%s" % causa_str)
+
+        logger.info(
+            "Causa '%s' reservada: %s -> EN_PROCESO.",
+            causa_str,
+            estado_anterior,
+        )
+        return estado_anterior
+
     def actualizar_estado(self, numero_causa, nuevo_estado, ruta_html=None):
         """
         Actualiza el estado de una causa y opcionalmente su ruta_html.
@@ -186,6 +293,18 @@ class GestorCola:
         en una única transacción SQLite con BEGIN IMMEDIATE.
         """
         causa_str = str(numero_causa).strip()
+        if isinstance(resultado, dict):
+            resultado = dict(resultado)
+            if isinstance(resultado.get("datos"), dict):
+                datos = dict(resultado["datos"])
+                enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+                enriquecer_ultima_gestion_judicial(datos)
+                resultado["datos"] = datos
+            else:
+                enriquecer_datos_procesales(
+                    resultado, normalizar_etiquetas=True
+                )
+                enriquecer_ultima_gestion_judicial(resultado)
         datos_json = json.dumps(resultado, ensure_ascii=False)
         estados_validos = {
             "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR",
@@ -240,6 +359,8 @@ class GestorCola:
             )
             if cursor.rowcount != 1:
                 raise LookupError("No existe una reserva para la causa '%s'." % causa_str)
+            if not conservar_evidencia_previa and isinstance(resultado, dict):
+                registrar_historial(conn, causa_str, resultado)
 
     @staticmethod
     def _resultado_tiene_evidencia(resultado):

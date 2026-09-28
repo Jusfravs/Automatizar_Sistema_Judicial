@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from contextlib import nullcontext
 from unittest.mock import patch
 
 import main as main_module
@@ -417,6 +418,15 @@ class RetornoBuscadorTests(unittest.TestCase):
         self.assertEqual(seleccionar_casos(casos, ["--lote", "3"]), casos[:3])
         self.assertEqual(seleccionar_casos(casos, ["--lote", "10"]), casos[:10])
         self.assertEqual(seleccionar_casos(casos, ["--lote", "50"]), casos)
+        self.assertEqual(
+            seleccionar_casos(
+                ["A", "B", "B", "C", "D"],
+                ["--lote", "2", "--excluir", "B"],
+            ),
+            ["A", "C"],
+        )
+        with self.assertRaisesRegex(ValueError, "CAUSA_EXCLUIDA_NO_ENCONTRADA"):
+            seleccionar_casos(["A", "B"], ["--lote", "2", "--excluir", "Z"])
         with self.assertRaisesRegex(ValueError, "LOTE_FUERA_DE_RANGO"):
             seleccionar_casos(casos, ["--lote", "1"])
         with self.assertRaisesRegex(ValueError, "LOTE_FUERA_DE_RANGO"):
@@ -469,6 +479,8 @@ class RetornoBuscadorTests(unittest.TestCase):
                 self.exportaciones += 1
 
         class ColaFalsa:
+            reservas = []
+
             def __init__(self, ruta_db):
                 pass
 
@@ -478,11 +490,17 @@ class RetornoBuscadorTests(unittest.TestCase):
             def recuperar_huerfanos(self):
                 return 0
 
+            def bloquear_ejecucion(self):
+                return nullcontext()
+
             def filtrar_causas_pendientes(self, candidatas):
                 return list(candidatas)
 
             def poblar_cola(self, _causas):
                 pass
+
+            def reservar_causa(self, causa, permitir_reproceso=False):
+                self.reservas.append((causa, permitir_reproceso))
 
             def registrar_resultado_transaccional(self, *_args, **_kwargs):
                 pass
@@ -536,6 +554,10 @@ class RetornoBuscadorTests(unittest.TestCase):
         bot = BotFalso.instancias[-1]
         repo = RepoFalso.instancias[-1]
         self.assertEqual(bot.causas, causas)
+        self.assertEqual(
+            ColaFalsa.reservas,
+            [(causa, False) for causa in causas],
+        )
         self.assertEqual(bot.inicios, 3)
         self.assertGreaterEqual(bot.cierres, 3)
         self.assertGreaterEqual(repo.exportaciones, 2)
@@ -578,6 +600,7 @@ class RetornoBuscadorTests(unittest.TestCase):
         class ColaFalsa:
             registros_error = []
             resultados = []
+            reservas = []
 
             def __init__(self, ruta_db):
                 pass
@@ -588,11 +611,17 @@ class RetornoBuscadorTests(unittest.TestCase):
             def recuperar_huerfanos(self):
                 return 0
 
+            def bloquear_ejecucion(self):
+                return nullcontext()
+
             def filtrar_causas_pendientes(self, candidatas):
                 return list(candidatas)
 
             def poblar_cola(self, _causas):
                 pass
+
+            def reservar_causa(self, causa, permitir_reproceso=False):
+                self.reservas.append((causa, permitir_reproceso))
 
             def registrar_error_extraccion(self, causa, origen, detalle):
                 self.registros_error.append((causa, origen, detalle))
@@ -636,6 +665,10 @@ class RetornoBuscadorTests(unittest.TestCase):
                 fallidos = [linea.strip() for linea in archivo if linea.strip()]
 
         self.assertEqual(BotFalso.causas_consultadas, causas)
+        self.assertEqual(
+            ColaFalsa.reservas,
+            [(causa, False) for causa in causas],
+        )
         self.assertEqual(fallidos, [causas[0]])
         self.assertEqual(ColaFalsa.registros_error[0][0], causas[0])
         self.assertEqual(ColaFalsa.registros_error[0][1], "EXCEPCION_NO_CONTROLADA")

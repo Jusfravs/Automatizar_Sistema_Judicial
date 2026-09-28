@@ -1,157 +1,167 @@
-# scripts/migrar_sqlite_a_postgres.py
-import sys
-sys.stdout.reconfigure(encoding='utf-8')
-import os
-import sqlite3
+"""Importacion idempotente y auditable de SQLite hacia PostgreSQL."""
+
+import argparse
+import hashlib
 import json
-import psycopg2
-from psycopg2.extras import execute_values, Json
+import sqlite3
+import sys
+from contextlib import closing
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
-def obtener_conexion_postgres():
-    return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", 5432)),
-        user=os.getenv("POSTGRES_USER", "postgres"),
-        password=os.getenv("POSTGRES_PASSWORD", ""),
-        dbname=os.getenv("POSTGRES_DB", "casos_judiciales"),
+from psycopg2.extras import Json
+
+
+sys.stdout.reconfigure(encoding="utf-8")
+RAIZ = Path(__file__).resolve().parents[1]
+if str(RAIZ) not in sys.path:
+    sys.path.insert(0, str(RAIZ))
+
+from src.catalogo_procesal import enriquecer_datos_procesales
+from src.repositorio_postgres import RepositorioColaPostgres
+from src.ultima_gestion import enriquecer_ultima_gestion_judicial
+
+
+@dataclass(frozen=True)
+class FuenteSQLite:
+    nombre: str
+    ruta: Path
+    ciudad: str
+    prioridad: int
+
+
+FUENTES_PREDETERMINADAS = (
+    FuenteSQLite("GENERAL", RAIZ / "data" / "estado_casos_20260827.db", "TODAS", 30),
+    FuenteSQLite("QUITO", RAIZ / "data" / "quito" / "estado_casos_quito.db", "QUITO", 20),
+    FuenteSQLite(
+        "SANTO_DOMINGO",
+        RAIZ / "data" / "santo_domingo" / "estado_casos_lstodomingo.db",
+        "SANTO DOMINGO",
+        10,
+    ),
+)
+
+
+def _conexion_lectura(ruta):
+    return sqlite3.connect("file:%s?mode=ro" % ruta.as_posix(), uri=True)
+
+
+def _parsear_fecha(valor):
+    if not valor:
+        return None
+    texto = str(valor).strip().replace("Z", "+00:00")
+    try:
+        fecha = datetime.fromisoformat(texto)
+    except ValueError:
+        return None
+    if fecha.tzinfo is None:
+        fecha = fecha.replace(tzinfo=timezone.utc)
+    return fecha
+
+
+def inspeccionar_fuentes(fuentes=FUENTES_PREDETERMINADAS):
+    resumen = {
+        "filas_cola": 0,
+        "resultados": 0,
+        "causas_unicas": 0,
+        "json_invalidos": 0,
+        "faltantes": [],
+        "por_fuente": {},
+        "solapamientos": {},
+    }
+    causas_por_fuente = {}
+    for fuente in fuentes:
+        if not fuente.ruta.exists():
+            resumen["faltantes"].append(str(fuente.ruta))
+            continue
+        with closing(_conexion_lectura(fuente.ruta)) as conn:
+            causas = {fila[0] for fila in conn.execute("SELECT numero_causa FROM juicios")}
+            resultados = conn.execute(
+                "SELECT datos_json FROM resultados_expediente"
+            ).fetchall()
+        invalidos = 0
+        for (contenido,) in resultados:
+            try:
+                json.loads(contenido)
+            except (TypeError, json.JSONDecodeError):
+                invalidos += 1
+        causas_por_fuente[fuente.nombre] = causas
+        resumen["por_fuente"][fuente.nombre] = {
+            "cola": len(causas),
+            "resultados": len(resultados),
+            "json_invalidos": invalidos,
+        }
+        resumen["filas_cola"] += len(causas)
+        resumen["resultados"] += len(resultados)
+        resumen["json_invalidos"] += invalidos
+
+    nombres = list(causas_por_fuente)
+    for indice, nombre_a in enumerate(nombres):
+        for nombre_b in nombres[indice + 1 :]:
+            clave = "%s__%s" % (nombre_a, nombre_b)
+            resumen["solapamientos"][clave] = len(
+                causas_por_fuente[nombre_a] & causas_por_fuente[nombre_b]
+            )
+    if causas_por_fuente:
+        resumen["causas_unicas"] = len(set().union(*causas_por_fuente.values()))
+    return resumen
+
+
+def _hash_version(fuente, causa, actualizado_en, contenido):
+    material = "\x1f".join(
+        (fuente.nombre, str(causa), str(actualizado_en or ""), str(contenido or ""))
     )
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()
 
-def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
-    if not Path(ruta_sqlite).exists():
-        print(f"[WARN] Archivo SQLite no encontrado: {ruta_sqlite}")
-        return 0
 
-    print(f"\n[INFO] Iniciando migración desde: {ruta_sqlite} (Ciudad: {ciudad_default})...")
-    conn_sq = sqlite3.connect(ruta_sqlite)
-    conn_pg = obtener_conexion_postgres()
-    conn_pg.autocommit = False
-    cur_pg = conn_pg.cursor()
+def _estado_resultado(payload, estado_cola, datos):
+    estado_payload = payload.get("estado")
+    if estado_payload == "EXCLUIDO_NO_CORRESPONDE":
+        return "EXCLUIDO_NO_CORRESPONDE"
+    if estado_payload == "PARCIAL":
+        return "PARCIAL"
+    if estado_payload == "SIN_RESULTADOS":
+        return "SIN_RESULTADOS"
+    if estado_payload == "COMPLETADO" or datos.get("ULTIMA FASE"):
+        return "PROCESADO"
+    return estado_cola or "PENDIENTE"
 
-    # 1. Leer tabla juicios
-    juicios_map = {}
-    try:
-        rows_juicios = conn_sq.execute("SELECT numero_causa, estado, ruta_html, reintentos FROM juicios").fetchall()
-        for causa, est, r_html, reint in rows_juicios:
-            juicios_map[causa] = {
-                "estado": est or "PENDIENTE",
-                "ruta_html": r_html,
-                "reintentos": reint or 0
-            }
-    except Exception as e:
-        print(f"[WARN] No se pudo leer tabla juicios de {ruta_sqlite}: {e}")
 
-    # 2. Leer resultados_expediente
-    rows_resultados = []
-    try:
-        rows_resultados = conn_sq.execute("SELECT numero_causa, origen, datos_json, ruta_html, actualizado_en FROM resultados_expediente").fetchall()
-    except Exception as e:
-        print(f"[WARN] No se pudo leer resultados_expediente de {ruta_sqlite}: {e}")
-
-    expedientes_insert = []
-    actuaciones_insert = []
-    causas_procesadas = set()
-
-    for causa, origen, datos_json_raw, r_html, act_en in rows_resultados:
-        causas_procesadas.add(causa)
-        info_juicio = juicios_map.get(causa, {"estado": "PROCESADO", "reintentos": 0, "ruta_html": r_html})
-        
-        data = {}
-        try:
-            data = json.loads(datos_json_raw)
-        except Exception:
-            data = {}
-
-        datos_extraidos = data.get("datos") or {}
-        actuaciones = datos_extraidos.get("HISTORIAL_ACTUACIONES") or []
-
-        # Extraer campos de primer nivel
-        ultima_etapa = datos_extraidos.get("ULTIMA ETAPA") or datos_extraidos.get("ETAPA_PROCESAL")
-        ultima_fase = datos_extraidos.get("ULTIMA FASE") or datos_extraidos.get("FASE_ACTUAL")
-        fecha_fin = datos_extraidos.get("FECHA FIN ULTIMA FASE") or datos_extraidos.get("FECHA_FIN_ETAPA") or datos_extraidos.get("FECHA INICIAL FASE ACTUAL")
-        etapa_act = datos_extraidos.get("ETAPA ACTUAL") or datos_extraidos.get("SIGUIENTE_ETAPA")
-        fase_act = datos_extraidos.get("FASE ACTUAL") or datos_extraidos.get("SIGUIENTE_FASE")
-        fecha_inicio_act = datos_extraidos.get("FECHA INICIO FASE ACTUAL") or fecha_fin
-        msg_esp = datos_extraidos.get("COMENTARIO_ULTIMO") or datos_extraidos.get("MENSAJE_ESPECIAL")
-        
-        actor = datos_extraidos.get("ACTOR") or datos_extraidos.get("DEMANDANTE")
-        demandado = datos_extraidos.get("DEMANDADO")
-        tipo_accion = datos_extraidos.get("ACCION/INFRACCION") or datos_extraidos.get("TIPO_ACCION")
-        fecha_inicio_j = datos_extraidos.get("FECHA INICIO JUICIO") or datos_extraidos.get("FECHA_INGRESO")
-        
-        estado_final = (
-            "EXCLUIDO_NO_CORRESPONDE"
-            if data.get("estado") == "EXCLUIDO_NO_CORRESPONDE"
-            else "PROCESADO"
-            if (data.get("estado") == "COMPLETADO" or ultima_fase)
-            else info_juicio["estado"]
-        )
-
-        expedientes_insert.append((
-            causa,
-            ciudad_default,
-            estado_final,
-            ultima_etapa,
-            ultima_fase,
-            str(fecha_fin) if fecha_fin else None,
-            etapa_act,
-            fase_act,
-            str(fecha_inicio_act) if fecha_inicio_act else None,
-            msg_esp,
-            actor,
-            demandado,
-            tipo_accion,
-            str(fecha_inicio_j) if fecha_inicio_j else None,
-            len(actuaciones),
-            origen or "ESATJE_TRANSACCIONAL",
-            r_html or info_juicio.get("ruta_html"),
-            info_juicio.get("reintentos", 0),
-            Json(data)
-        ))
-
-        # Actuaciones individuales
-        for idx, act in enumerate(actuaciones):
-            actuaciones_insert.append((
-                causa,
-                str(act.get("fecha") or ""),
-                act.get("actuacion") or act.get("tipo") or "",
-                act.get("detalle") or "",
-                act.get("instancia") or "PRIMERA INSTANCIA",
-                idx + 1
-            ))
-
-    # Añadir causas que estaban en cola juicios pero no en resultados (PENDIENTES)
-    for causa, info_j in juicios_map.items():
-        if causa not in causas_procesadas:
-            expedientes_insert.append((
-                causa,
-                ciudad_default,
-                info_j["estado"],
-                None, None, None, None, None, None, None,
-                None, None, None, None,
-                0,
-                "COLA_INICIAL",
-                info_j.get("ruta_html"),
-                info_j.get("reintentos", 0),
-                Json({})
-            ))
-
-    # Insertar expedientes con UPSERT en PostgreSQL
-    if expedientes_insert:
-        upsert_query = """
+def _insertar_fotografia_actual(cur, fuente, causa, estado, origen, payload, fecha_fuente):
+    datos = dict(payload.get("datos") or {})
+    enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+    enriquecer_ultima_gestion_judicial(datos)
+    payload = dict(payload)
+    payload["datos"] = datos
+    campos = RepositorioColaPostgres._campos_expediente(datos)
+    actuaciones = datos.get("HISTORIAL_ACTUACIONES") or []
+    cur.execute(
+        """
         INSERT INTO expedientes (
-            numero_causa, ciudad, estado, ultima_etapa, ultima_fase,
-            fecha_fin_ultima_fase, etapa_actual, fase_actual, fecha_inicio_fase_actual,
-            mensaje_especial, actor, demandado, tipo_accion, fecha_inicio_juicio,
-            total_actuaciones, origen, ruta_html, reintentos, datos_json
-        ) VALUES %s
+            numero_causa, ciudad, estado,
+            eta_id_ultima_etapa, ultima_etapa,
+            fas_id_ultima_fase, ultima_fase, fecha_fin_ultima_fase,
+            eta_id_etapa_actual, etapa_actual,
+            fas_id_fase_actual, fase_actual, fecha_inicio_fase_actual,
+            mensaje_especial, actor, demandado, tipo_accion,
+            fecha_inicio_juicio, total_actuaciones, origen, datos_json,
+            fuente_migracion, fuente_prioridad, version_fuente_en, actualizado_en
+        ) VALUES (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP
+        )
         ON CONFLICT (numero_causa) DO UPDATE SET
             ciudad = EXCLUDED.ciudad,
             estado = EXCLUDED.estado,
+            eta_id_ultima_etapa = EXCLUDED.eta_id_ultima_etapa,
             ultima_etapa = EXCLUDED.ultima_etapa,
+            fas_id_ultima_fase = EXCLUDED.fas_id_ultima_fase,
             ultima_fase = EXCLUDED.ultima_fase,
             fecha_fin_ultima_fase = EXCLUDED.fecha_fin_ultima_fase,
+            eta_id_etapa_actual = EXCLUDED.eta_id_etapa_actual,
             etapa_actual = EXCLUDED.etapa_actual,
+            fas_id_fase_actual = EXCLUDED.fas_id_fase_actual,
             fase_actual = EXCLUDED.fase_actual,
             fecha_inicio_fase_actual = EXCLUDED.fecha_inicio_fase_actual,
             mensaje_especial = EXCLUDED.mensaje_especial,
@@ -161,66 +171,228 @@ def migrar_base_sqlite(ruta_sqlite, ciudad_default="QUITO"):
             fecha_inicio_juicio = EXCLUDED.fecha_inicio_juicio,
             total_actuaciones = EXCLUDED.total_actuaciones,
             origen = EXCLUDED.origen,
-            ruta_html = EXCLUDED.ruta_html,
-            reintentos = EXCLUDED.reintentos,
             datos_json = EXCLUDED.datos_json,
-            actualizado_en = CURRENT_TIMESTAMP;
-        """
-        execute_values(cur_pg, upsert_query, expedientes_insert)
-        conn_pg.commit()
-        print(f"[OK] {len(expedientes_insert)} expedientes sincronizados y confirmados en PostgreSQL.")
+            fuente_migracion = EXCLUDED.fuente_migracion,
+            fuente_prioridad = EXCLUDED.fuente_prioridad,
+            version_fuente_en = EXCLUDED.version_fuente_en,
+            actualizado_en = CURRENT_TIMESTAMP
+        WHERE expedientes.version_fuente_en IS NULL
+           OR EXCLUDED.version_fuente_en > expedientes.version_fuente_en
+           OR (
+                EXCLUDED.version_fuente_en = expedientes.version_fuente_en
+                AND EXCLUDED.fuente_prioridad > expedientes.fuente_prioridad
+           )
+        RETURNING numero_causa
+        """,
+        (
+            causa,
+            fuente.ciudad,
+            estado,
+            campos["eta_id_ultima"],
+            campos["ultima_etapa"],
+            campos["fas_id_ultima"],
+            campos["ultima_fase"],
+            str(campos["fecha_fin"]) if campos["fecha_fin"] else None,
+            campos["eta_id_actual"],
+            campos["etapa_actual"],
+            campos["fas_id_actual"],
+            campos["fase_actual"],
+            str(campos["fecha_inicio_actual"]) if campos["fecha_inicio_actual"] else None,
+            campos["mensaje"],
+            campos["actor"],
+            campos["demandado"],
+            campos["tipo_accion"],
+            str(campos["fecha_inicio_juicio"]) if campos["fecha_inicio_juicio"] else None,
+            len(actuaciones),
+            origen,
+            Json(payload),
+            fuente.nombre,
+            fuente.prioridad,
+            fecha_fuente,
+        ),
+    )
+    vigente = cur.fetchone() is not None
+    if vigente:
+        cur.execute("DELETE FROM actuaciones WHERE numero_causa = %s", (causa,))
+        for indice, actuacion in enumerate(actuaciones, start=1):
+            cur.execute(
+                """
+                INSERT INTO actuaciones (
+                    numero_causa, fecha, tipo_actuacion, detalle, instancia, orden
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    causa,
+                    str(actuacion.get("fecha") or ""),
+                    actuacion.get("actuacion") or actuacion.get("tipo") or "",
+                    actuacion.get("detalle") or "",
+                    actuacion.get("instancia") or "PRIMERA INSTANCIA",
+                    indice,
+                ),
+            )
+    return vigente
 
-    # Insertar actuaciones individuales
-    if actuaciones_insert:
-        causas_list = list(causas_procesadas)
-        cur_pg.execute("DELETE FROM actuaciones WHERE numero_causa = ANY(%s)", (causas_list,))
-        
-        insert_act_query = """
-        INSERT INTO actuaciones (
-            numero_causa, fecha, tipo_actuacion, detalle, instancia, orden
-        ) VALUES %s
-        """
-        execute_values(cur_pg, insert_act_query, actuaciones_insert)
-        conn_pg.commit()
-        print(f"[OK] {len(actuaciones_insert)} actuaciones individuales indexadas y confirmadas en PostgreSQL.")
 
-    # 3. Migrar eventos de auditoría si existen
-    try:
-        rows_eventos = conn_sq.execute("SELECT numero_causa, origen, detalle, creado_en FROM eventos_extraccion").fetchall()
-        if rows_eventos:
-            insert_eventos_query = """
-            INSERT INTO eventos_auditoria (numero_causa, origen, detalle, creado_en)
-            VALUES %s
+def migrar_fuente(repo, fuente):
+    if not fuente.ruta.exists():
+        raise FileNotFoundError(fuente.ruta)
+    insertadas = 0
+    invalidas = 0
+    with closing(_conexion_lectura(fuente.ruta)) as sqlite_conn:
+        estados = {
+            fila[0]: {"estado": fila[1], "reintentos": fila[2] or 0}
+            for fila in sqlite_conn.execute(
+                "SELECT numero_causa, estado, reintentos FROM juicios"
+            )
+        }
+        resultados = sqlite_conn.execute(
             """
-            execute_values(cur_pg, insert_eventos_query, rows_eventos)
-            conn_pg.commit()
-            print(f"[OK] {len(rows_eventos)} eventos de auditoría migrados.")
-    except Exception as e:
-        conn_pg.rollback()
-        print(f"[INFO] No se migraron eventos de auditoría antiguos: {e}")
+            SELECT numero_causa, origen, datos_json, ruta_html, actualizado_en
+            FROM resultados_expediente
+            ORDER BY actualizado_en, numero_causa
+            """
+        ).fetchall()
+        try:
+            eventos = sqlite_conn.execute(
+                "SELECT id, numero_causa, origen, detalle, creado_en FROM eventos_extraccion"
+            ).fetchall()
+        except sqlite3.OperationalError:
+            eventos = []
 
-    cur_pg.close()
-    conn_pg.close()
-    conn_sq.close()
-    return len(expedientes_insert)
+    causas_con_resultado = set()
+    with repo._connection() as pg_conn:
+        with pg_conn.cursor() as cur:
+            for causa, origen, contenido, _ruta_html, actualizado_en in resultados:
+                causas_con_resultado.add(causa)
+                try:
+                    payload = json.loads(contenido)
+                except (TypeError, json.JSONDecodeError):
+                    invalidas += 1
+                    continue
+                datos = dict(payload.get("datos") or {})
+                enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+                enriquecer_ultima_gestion_judicial(datos)
+                payload["datos"] = datos
+                estado = _estado_resultado(
+                    payload,
+                    estados.get(causa, {}).get("estado"),
+                    datos,
+                )
+                fecha_fuente = _parsear_fecha(actualizado_en) or datetime.fromtimestamp(
+                    fuente.ruta.stat().st_mtime,
+                    tz=timezone.utc,
+                )
+                hash_fuente = _hash_version(
+                    fuente,
+                    causa,
+                    actualizado_en,
+                    contenido,
+                )
+                cur.execute(
+                    """
+                    INSERT INTO resultados_ejecucion (
+                        numero_causa, intento, estado, origen, ciudad, datos_json,
+                        fuente_migracion, fuente_actualizado_en, hash_fuente
+                    ) VALUES (%s, 1, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (hash_fuente) WHERE hash_fuente IS NOT NULL DO NOTHING
+                    RETURNING id
+                    """,
+                    (
+                        causa,
+                        estado,
+                        origen or "MIGRACION_SQLITE",
+                        fuente.ciudad,
+                        Json(payload),
+                        fuente.nombre,
+                        fecha_fuente,
+                        hash_fuente,
+                    ),
+                )
+                if cur.fetchone() is not None:
+                    insertadas += 1
+                _insertar_fotografia_actual(
+                    cur,
+                    fuente,
+                    causa,
+                    estado,
+                    origen or "MIGRACION_SQLITE",
+                    payload,
+                    fecha_fuente,
+                )
 
-def migrar_todo():
-    print("=" * 70)
-    print("MIGRACIÓN INTEGRAL DE SQLITE A POSTGRESQL (CASOS JUDICIALES)")
-    print("=" * 70)
+            for causa, info in estados.items():
+                if causa in causas_con_resultado:
+                    continue
+                cur.execute(
+                    """
+                    INSERT INTO expedientes (
+                        numero_causa, ciudad, estado, reintentos,
+                        origen, fuente_migracion, fuente_prioridad,
+                        version_fuente_en, actualizado_en
+                    ) VALUES (
+                        %s, %s, %s, %s, 'MIGRACION_SQLITE', %s, %s,
+                        to_timestamp(0), CURRENT_TIMESTAMP
+                    )
+                    ON CONFLICT (numero_causa) DO NOTHING
+                    """,
+                    (
+                        causa,
+                        fuente.ciudad,
+                        info["estado"] or "PENDIENTE",
+                        info["reintentos"],
+                        fuente.nombre,
+                        fuente.prioridad,
+                    ),
+                )
 
-    # 1. Migrar Quito (dataset principal corregido)
-    db_quito = "data/quito/estado_casos_quito.db"
-    migrar_base_sqlite(db_quito, ciudad_default="QUITO")
+            for evento_id, causa, origen, detalle, creado_en in eventos:
+                hash_evento = hashlib.sha256(
+                    ("%s\x1f%s\x1f%s" % (fuente.nombre, evento_id, causa)).encode("utf-8")
+                ).hexdigest()
+                cur.execute(
+                    """
+                    INSERT INTO eventos_auditoria (
+                        numero_causa, tipo_evento, origen, detalle,
+                        hash_fuente, creado_en
+                    ) VALUES (%s, 'MIGRACION_EVENTO', %s, %s, %s, %s)
+                    ON CONFLICT (hash_fuente) WHERE hash_fuente IS NOT NULL DO NOTHING
+                    """,
+                    (causa, origen, detalle, hash_evento, _parsear_fecha(creado_en)),
+                )
+    return {"insertadas": insertadas, "invalidas": invalidas}
 
-    # 2. Migrar General / Santo Domingo si existe
-    db_general = "estado_casos.db"
-    if Path(db_general).exists():
-        migrar_base_sqlite(db_general, ciudad_default="SANTO DOMINGO")
 
-    print("\n" + "=" * 70)
-    print("✅ MIGRACIÓN COMPLETADA EXITOSAMENTE EN POSTGRESQL.")
-    print("=" * 70)
+def migrar_todo(fuentes=FUENTES_PREDETERMINADAS):
+    repo = RepositorioColaPostgres.desde_config({})
+    if not repo.verificar_conexion() or not repo.verificar_esquema():
+        raise RuntimeError("POSTGRES_NO_INICIALIZADO")
+    resultados = {}
+    for fuente in fuentes:
+        resultados[fuente.nombre] = migrar_fuente(repo, fuente)
+        print("[OK] %s: %s" % (fuente.nombre, resultados[fuente.nombre]))
+    return resultados
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Escribe en PostgreSQL. Sin esta opcion solo inspecciona.",
+    )
+    args = parser.parse_args(argv)
+    resumen = inspeccionar_fuentes()
+    print(json.dumps(resumen, ensure_ascii=False, indent=2))
+    if resumen["faltantes"]:
+        raise SystemExit("FUENTES_SQLITE_FALTANTES")
+    if resumen["json_invalidos"]:
+        raise SystemExit("JSON_INVALIDOS_EN_MIGRACION")
+    if not args.apply:
+        print("[DRY-RUN] No se escribieron datos. Use --apply despues de revisar.")
+        return
+    migrar_todo()
+    print("[OK] Migracion idempotente finalizada.")
+
 
 if __name__ == "__main__":
-    migrar_todo()
+    main()

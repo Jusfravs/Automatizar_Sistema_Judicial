@@ -109,6 +109,13 @@ class Orquestador:
             raise
 
     def iniciar_procesamiento(self, limite_lote=None, max_reintentos=3):
+        with self.gestor_cola.bloquear_ejecucion():
+            return self._iniciar_procesamiento_bloqueado(
+                limite_lote=limite_lote,
+                max_reintentos=max_reintentos,
+            )
+
+    def _iniciar_procesamiento_bloqueado(self, limite_lote=None, max_reintentos=3):
         """
         Motor de ejecución central con procesamiento dual:
         - Intercepción API (Ruta Principal + Pandas)

@@ -1,0 +1,11 @@
+# El grafo representa el codigo operativo y su documentacion.
+# Datos judiciales, respaldos y salidas se excluyen para evitar duplicados y
+# mantener las actualizaciones incrementales dentro del alcance aprobado.
+data/
+backups/
+outputs/
+PRUEBA_100_ALEATORIOS_SANTO_DOMINGO/
+PRUEBA_PARCHE_SAN_DOM/
+.codex/
+skills/
+graphify-out/

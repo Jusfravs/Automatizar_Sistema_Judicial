@@ -1,0 +1,199 @@
+{
+  "node_count": 1185,
+  "unverified_node_count": 0,
+  "raw_edge_count": 2476,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 194,
+  "self_loop_edges": 5,
+  "valid_candidate_edges": 2282,
+  "exact_duplicate_edges": 0,
+  "directed_unique_endpoint_pairs": 2238,
+  "directed_same_endpoint_collapsed_edges": 44,
+  "undirected_unique_endpoint_pairs": 2238,
+  "undirected_same_endpoint_collapsed_edges": 44,
+  "same_endpoint_group_count": 42,
+  "relation_variant_groups": 37,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 2,
+  "context_variant_groups": 3,
+  "post_build_graph_type": "Graph",
+  "post_build_node_count": 1181,
+  "post_build_edge_count": 2238,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "C:\\Users\\pasante.callcenter\\AppData\\Roaming\\uv\\tools\\graphifyy\\Lib\\site-packages\\graphify\\extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1336,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1869,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1871,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 2241,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2388,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 3026,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 3195,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 4887,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 4995,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5074,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5589,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5590,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": ""
+  },
+  "examples": [
+    {
+      "source": "tests_test_regreso_buscador_retornobuscadortests_test_lote_largo_cierra_y_persiste_cada_bloque",
+      "target": "tests_test_regreso_buscador_retornobuscadortests_test_lote_largo_cierra_y_persiste_cada_bloque_init",
+      "edge_count": 3,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        "tests/test_regreso_buscador.py"
+      ],
+      "source_locations": [
+        "L447",
+        "L472",
+        "L499"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "tests_test_regreso_buscador_retornobuscadortests_test_excepcion_no_controlada_marca_error_y_continua_con_siguiente_causa",
+      "target": "tests_test_regreso_buscador_retornobuscadortests_test_excepcion_no_controlada_marca_error_y_continua_con_siguiente_causa_init",
+      "edge_count": 3,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        "tests/test_regreso_buscador.py"
+      ],
+      "source_locations": [
+        "L558",
+        "L582",
+        "L609"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "scripts_monitorear_esatje_instalar_monitor_red",
+      "target": "scripts_monitorear_esatje_instalar_monitor_red_registrar",
+      "edge_count": 2,
+      "relations": [
+        "contains",
+        "indirect_call"
+      ],
+      "source_files": [
+        "scripts/monitorear_esatje.py"
+      ],
+      "source_locations": [
+        "L73",
+        "L92"
+      ],
+      "contexts": [
+        "",
+        "argument"
+      ]
+    },
+    {
+      "source": "scripts_preparar_quito_ruta_segura",
+      "target": "path",
+      "edge_count": 2,
+      "relations": [
+        "references"
+      ],
+      "source_files": [
+        "scripts/preparar_quito.py"
+      ],
+      "source_locations": [
+        "L58"
+      ],
+      "contexts": [
+        "parameter_type",
+        "return_type"
+      ]
+    },
+    {
+      "source": "scripts_preparar_quito_normalizar_columnas",
+      "target": "dataframe",
+      "edge_count": 2,
+      "relations": [
+        "references"
+      ],
+      "source_files": [
+        "scripts/preparar_quito.py"
+      ],
+      "source_locations": [
+        "L72"
+      ],
+      "contexts": [
+        "parameter_type",
+        "return_type"
+      ]
+    }
+  ]
+}

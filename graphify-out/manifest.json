@@ -1,0 +1,674 @@
+{
+  ".vscode/settings.json": {
+    "mtime": 1787587956.1104472,
+    "seen": 1789484428.1414294,
+    "ast_hash": "4aa85c6acde752675b31b354987521ce",
+    "semantic_hash": "4aa85c6acde752675b31b354987521ce"
+  },
+  "config.json": {
+    "mtime": 1790191201.5388055,
+    "seen": 1790257788.3329997,
+    "ast_hash": "4badf1cf96c2357de04a15690caa6bca",
+    "semantic_hash": ""
+  },
+  "config_quito.json": {
+    "mtime": 1790191392.2464545,
+    "seen": 1790257788.3329997,
+    "ast_hash": "50be0400d86311aecdc286fe435b5398",
+    "semantic_hash": ""
+  },
+  "config_santo_domingo.json": {
+    "mtime": 1790191392.2464545,
+    "seen": 1790257788.3329997,
+    "ast_hash": "06de5f8c65adbd515dd074e83b20dd27",
+    "semantic_hash": ""
+  },
+  "main.py": {
+    "mtime": 1790372403.6207743,
+    "seen": 1790372738.3621418,
+    "ast_hash": "aa729f143f9cd9fc6c024e3efc4b6261",
+    "semantic_hash": ""
+  },
+  "migracion_db.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5f0bafde2ee93698fa81dc132384297b",
+    "semantic_hash": "5f0bafde2ee93698fa81dc132384297b"
+  },
+  "scripts/analyze_api.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "de92dabebcd043f5ab582dd2eed036ac",
+    "semantic_hash": "de92dabebcd043f5ab582dd2eed036ac"
+  },
+  "scripts/analyze_latest_html.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "bfdd43ba917c6ed3d80a6ff2f6d9f2d8",
+    "semantic_hash": "bfdd43ba917c6ed3d80a6ff2f6d9f2d8"
+  },
+  "scripts/diagnosticar_esatje.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "cdb4431059242c3c2681bc14f70f8a7e",
+    "semantic_hash": "cdb4431059242c3c2681bc14f70f8a7e"
+  },
+  "scripts/inicializar_postgres.py": {
+    "mtime": 1790100882.3257189,
+    "seen": 1790177081.2099147,
+    "ast_hash": "96d4decf86f779c74e5f56541658d96e",
+    "semantic_hash": ""
+  },
+  "scripts/migrar_sqlite_a_postgres.py": {
+    "mtime": 1790178784.2336786,
+    "seen": 1790179287.5808105,
+    "ast_hash": "d6961bf20429b36991285de611dbac0c",
+    "semantic_hash": ""
+  },
+  "scripts/monitorear_esatje.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "3a7573a6f89146c1a40aba4d1af6ad63",
+    "semantic_hash": "3a7573a6f89146c1a40aba4d1af6ad63"
+  },
+  "scripts/persist_and_advance.py": {
+    "mtime": 1787587985.9556954,
+    "seen": 1789484428.1414294,
+    "ast_hash": "cf64a5a90eba380a5a3ef6f09708db03",
+    "semantic_hash": "cf64a5a90eba380a5a3ef6f09708db03"
+  },
+  "scripts/preparar_quito.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "9ed2888269d57527de2c4aab86096ecb",
+    "semantic_hash": "9ed2888269d57527de2c4aab86096ecb"
+  },
+  "scripts/preparar_reproceso_causas.py": {
+    "mtime": 1788529652.9862854,
+    "seen": 1789484428.1414294,
+    "ast_hash": "81cfd3b78bd9a0781ff9933b89a0ed7f",
+    "semantic_hash": "81cfd3b78bd9a0781ff9933b89a0ed7f"
+  },
+  "scripts/reclasificar_desde_sqlite.py": {
+    "mtime": 1789746694.2081509,
+    "seen": 1789747059.3585901,
+    "ast_hash": "7fce8df5569df7dcca2e19627bf2aa68",
+    "semantic_hash": ""
+  },
+  "scripts/reprocesar_y_exportar_quito.py": {
+    "mtime": 1789746694.2081509,
+    "seen": 1789747059.3585901,
+    "ast_hash": "af2b9cdd8a4e9d76ac5f79c4f80c1707",
+    "semantic_hash": ""
+  },
+  "scripts/reset_db.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "a9e3a6b7ea1293d584c57982ad6329e5",
+    "semantic_hash": "a9e3a6b7ea1293d584c57982ad6329e5"
+  },
+  "scripts/run_bot_api.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "628760dfa549a12bb2609192ff25f82c",
+    "semantic_hash": "628760dfa549a12bb2609192ff25f82c"
+  },
+  "src/__init__.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "bb87d38b85faafa59b584fb5a6319427",
+    "semantic_hash": "bb87d38b85faafa59b584fb5a6319427"
+  },
+  "src/agente_explorador.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "1338b6a5890df63e4f8eb58b4af435d3",
+    "semantic_hash": "1338b6a5890df63e4f8eb58b4af435d3"
+  },
+  "src/agente_extractor.py": {
+    "mtime": 1790178813.4554112,
+    "seen": 1790179287.5837243,
+    "ast_hash": "1278cab25bdbe7fcecd9cf0cdb6158fb",
+    "semantic_hash": ""
+  },
+  "src/antigravity_adapter.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "fdf441be767be48b6f5c283fef3df3c1",
+    "semantic_hash": "fdf441be767be48b6f5c283fef3df3c1"
+  },
+  "src/auditor.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "0ffd95d8083cca87040cede878e612cc",
+    "semantic_hash": "0ffd95d8083cca87040cede878e612cc"
+  },
+  "src/db_postgres.py": {
+    "mtime": 1790101488.338633,
+    "seen": 1790177081.2099147,
+    "ast_hash": "35f03e2f66f23d9297c5817743484ddf",
+    "semantic_hash": ""
+  },
+  "src/gestor_casos.py": {
+    "mtime": 1790609260.0174787,
+    "seen": 1790609411.7389975,
+    "ast_hash": "1d0b5af1dad24345f794764dac54283f",
+    "semantic_hash": ""
+  },
+  "src/gestor_cola.py": {
+    "mtime": 1790190979.7146733,
+    "seen": 1790257788.3390584,
+    "ast_hash": "e6f9f1dd05704ced4260a5c396c8b220",
+    "semantic_hash": ""
+  },
+  "src/gestor_estado.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e5a88ef69c2f7e09830105aed7400cbf",
+    "semantic_hash": "e5a88ef69c2f7e09830105aed7400cbf"
+  },
+  "src/limpieza.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5bec1d5d7d2af787407fdd0f7b2bb926",
+    "semantic_hash": "5bec1d5d7d2af787407fdd0f7b2bb926"
+  },
+  "src/logger_config.py": {
+    "mtime": 1787587985.9714305,
+    "seen": 1789484428.1414294,
+    "ast_hash": "1fa98ddd2b31236b8ca6a5b7da09899d",
+    "semantic_hash": "1fa98ddd2b31236b8ca6a5b7da09899d"
+  },
+  "src/motor_busqueda_web.py": {
+    "mtime": 1790352855.1174705,
+    "seen": 1790353267.3168988,
+    "ast_hash": "512f950b73f7f92054d3732adae1ad4d",
+    "semantic_hash": ""
+  },
+  "src/orquestador.py": {
+    "mtime": 1789491851.3153515,
+    "seen": 1789492198.8181236,
+    "ast_hash": "82a53dc4a263079ddb09fff9ba24cadc",
+    "semantic_hash": ""
+  },
+  "src/prompt_procesador.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "50703664ea22e0c47970d350848545cc",
+    "semantic_hash": "50703664ea22e0c47970d350848545cc"
+  },
+  "src/servicio_captcha.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e204792052071e903ddfccb8866ba2f0",
+    "semantic_hash": "e204792052071e903ddfccb8866ba2f0"
+  },
+  "src/validacion_pertenencia.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "756b24a4825079a3e9d732127b0c1ab8",
+    "semantic_hash": "756b24a4825079a3e9d732127b0c1ab8"
+  },
+  "test_inferencia_casos.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "56435866715a522d9bff5044c4ea499f",
+    "semantic_hash": "56435866715a522d9bff5044c4ea499f"
+  },
+  "tests/__init__.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "c120a49ae43060891120a585f23d5a0f",
+    "semantic_hash": "c120a49ae43060891120a585f23d5a0f"
+  },
+  "tests/test_clasificacion_arbol.py": {
+    "mtime": 1788454461.897428,
+    "seen": 1789484428.1414294,
+    "ast_hash": "0b1138f3877b4d2103fd7d013f6b87d0",
+    "semantic_hash": "0b1138f3877b4d2103fd7d013f6b87d0"
+  },
+  "tests/test_config_quito.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "ae501617257791b4aa337ad14a69d1c7",
+    "semantic_hash": "ae501617257791b4aa337ad14a69d1c7"
+  },
+  "tests/test_extraccion_api.py": {
+    "mtime": 1787850596.0640676,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d97f4873563d3a951f4fed90c8d1dd70",
+    "semantic_hash": "d97f4873563d3a951f4fed90c8d1dd70"
+  },
+  "tests/test_extraccion_integration.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "189bcec104805419c5b4abfb82a0566c",
+    "semantic_hash": "189bcec104805419c5b4abfb82a0566c"
+  },
+  "tests/test_freno_transaccional.py": {
+    "mtime": 1790352349.303847,
+    "seen": 1790353267.3168988,
+    "ast_hash": "5a792ea779aff2cff436992abdca6b0a",
+    "semantic_hash": ""
+  },
+  "tests/test_migracion.py": {
+    "mtime": 1789491876.0736198,
+    "seen": 1789492198.8181236,
+    "ast_hash": "0b0bff237a884eb85df40cd754249891",
+    "semantic_hash": ""
+  },
+  "tests/test_navegacion_esatje.py": {
+    "mtime": 1788529791.830966,
+    "seen": 1789484428.1414294,
+    "ast_hash": "29132eeb28da69f4be4bc2c3762a192a",
+    "semantic_hash": "29132eeb28da69f4be4bc2c3762a192a"
+  },
+  "tests/test_postgres_integracion.py": {
+    "mtime": 1790277274.285578,
+    "seen": 1790277413.5661707,
+    "ast_hash": "2f009b44f68ff8d6a57ac1bb97414b49",
+    "semantic_hash": ""
+  },
+  "tests/test_prompt_procesador.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "00286554ba9e0d6d917e5c27cc2d3ec0",
+    "semantic_hash": "00286554ba9e0d6d917e5c27cc2d3ec0"
+  },
+  "tests/test_reclasificar_sqlite.py": {
+    "mtime": 1787844300.3102608,
+    "seen": 1789484428.1414294,
+    "ast_hash": "90f2fb506e0dc03e086003c82e54eb2c",
+    "semantic_hash": "90f2fb506e0dc03e086003c82e54eb2c"
+  },
+  "tests/test_regresiones_quito_29.py": {
+    "mtime": 1788528231.8478298,
+    "seen": 1789484428.1414294,
+    "ast_hash": "cb914b93e26e421c1f615b65a6c27d97",
+    "semantic_hash": "cb914b93e26e421c1f615b65a6c27d97"
+  },
+  "tests/test_regreso_buscador.py": {
+    "mtime": 1790369647.7048392,
+    "seen": 1790369800.2160544,
+    "ast_hash": "28d21ccbefaf9860787e71b87910c0db",
+    "semantic_hash": ""
+  },
+  "tests/test_respaldo_csv.py": {
+    "mtime": 1789492084.7457988,
+    "seen": 1789492198.8181236,
+    "ast_hash": "694ba957d8d12ea1b59018cfb4f72eb6",
+    "semantic_hash": ""
+  },
+  "tests/test_servicio_captcha.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d6255e7ad0dce01d4f100d8db83e1634",
+    "semantic_hash": "d6255e7ad0dce01d4f100d8db83e1634"
+  },
+  "tests/test_trazabilidad_decision_final.py": {
+    "mtime": 1788529279.3280725,
+    "seen": 1789484428.1414294,
+    "ast_hash": "12584b72069865ecb6be759b1e7c15af",
+    "semantic_hash": "12584b72069865ecb6be759b1e7c15af"
+  },
+  "tests/test_validacion_pertenencia.py": {
+    "mtime": 1787587985.9870977,
+    "seen": 1789484428.1414294,
+    "ast_hash": "21e2f7c3ea30820d16d65402fe196e61",
+    "semantic_hash": "21e2f7c3ea30820d16d65402fe196e61"
+  },
+  "AGENTS.md": {
+    "mtime": 1790273270.5149047,
+    "seen": 1790277413.5661707,
+    "ast_hash": "7b21522114ad092f1773251c423dc84c",
+    "semantic_hash": ""
+  },
+  "CASOS_PENDIENTES_CORRECCION.md": {
+    "mtime": 1788459002.9803567,
+    "seen": 1789484428.1414294,
+    "ast_hash": "a90a2c2554f8e237bc7c33f5a23ad736",
+    "semantic_hash": "a90a2c2554f8e237bc7c33f5a23ad736"
+  },
+  "DOCUMENTACION/01_GENERAL/CONTEXTO_REANUDACION.md": {
+    "mtime": 1790367106.6083913,
+    "seen": 1790367254.2151535,
+    "ast_hash": "58a09a366773b9c5f18825b0d52f14b7",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/01_GENERAL/MANUAL_DE_USO.md": {
+    "mtime": 1790372754.231008,
+    "seen": 1790372871.8712673,
+    "ast_hash": "e0a62420fbc60824b342bc0216691723",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/01_GENERAL/MANUAL_DE_USO_ANTERIOR_20260824.md": {
+    "mtime": 1787587956.114445,
+    "seen": 1789484428.1414294,
+    "ast_hash": "5bc43f5fde9713892a4ebab5cb5450f5",
+    "semantic_hash": "5bc43f5fde9713892a4ebab5cb5450f5"
+  },
+  "DOCUMENTACION/01_GENERAL/README.md": {
+    "mtime": 1790345424.3598866,
+    "seen": 1790353267.3168988,
+    "ast_hash": "035d8b0d8694c9ebf46b9b328c65d854",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/01_GENERAL/Vision_Proyecto.md": {
+    "mtime": 1787763218.8396177,
+    "seen": 1789484428.1414294,
+    "ast_hash": "afe39416c703f7ca66c1749465687cfe",
+    "semantic_hash": "afe39416c703f7ca66c1749465687cfe"
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/CONFIGURACION_AUTOCAPTCHA.md": {
+    "mtime": 1790346203.0327258,
+    "seen": 1790353267.3168988,
+    "ast_hash": "957780dcd589e7df69c46c540a072d2e",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/MODULO_FILTRO_CASOS.md": {
+    "mtime": 1787587956.1164432,
+    "seen": 1789484428.1414294,
+    "ast_hash": "d762600ddaba8b59a247635900d07795",
+    "semantic_hash": "d762600ddaba8b59a247635900d07795"
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/MOLDE_NUEVOS_CAMBIOS.md": {
+    "mtime": 1790179021.0209374,
+    "seen": 1790179287.600288,
+    "ast_hash": "90b26d1ceb77b2c37ad753f017eef221",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/03_BASE_DE_DATOS/GUIA_PGADMIN_POSTGRES.md": {
+    "mtime": 1790345240.9003525,
+    "seen": 1790353267.3168988,
+    "ast_hash": "6190f0ba41ed29501c05bc8b5c57d849",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_AUTOMATIZACION_BOTONES_ESATJE.md": {
+    "mtime": 1787587956.118446,
+    "seen": 1789484428.1414294,
+    "ast_hash": "830f3b3fdcc445f8639346825aea99dc",
+    "semantic_hash": "830f3b3fdcc445f8639346825aea99dc"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_CORRECCION_FRENO_INFORMACION_PROCESO.md": {
+    "mtime": 1787587956.1194472,
+    "seen": 1789484428.1414294,
+    "ast_hash": "41fcc32ec588e9a1671cc43f8bcc0334",
+    "semantic_hash": "41fcc32ec588e9a1671cc43f8bcc0334"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_IMPLEMENTACION_API_AUTOCAPTCHA.md": {
+    "mtime": 1787756779.5068407,
+    "seen": 1789484428.1414294,
+    "ast_hash": "63aad462945b484a316724adeb6200aa",
+    "semantic_hash": "63aad462945b484a316724adeb6200aa"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_IMPLEMENTACION_LECTURA_SELECTIVA_ADJUNTOS_PDF.md": {
+    "mtime": 1787843793.777562,
+    "seen": 1789484428.1414294,
+    "ast_hash": "79deba9ea1c077bf82627968ffa5b67b",
+    "semantic_hash": "79deba9ea1c077bf82627968ffa5b67b"
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_SOLUCION_REGRESO_BUSCADOR_NO_CONFIRMADO.md": {
+    "mtime": 1787587956.1204436,
+    "seen": 1789484428.1414294,
+    "ast_hash": "53138b8f562506ea0aa129d50fdd707c",
+    "semantic_hash": "53138b8f562506ea0aa129d50fdd707c"
+  },
+  "DOCUMENTACION/04_DIAGNOSTICOS_Y_CORRECCIONES/CORRECCION_FECHA_DERIVADA.md": {
+    "mtime": 1787587956.1214428,
+    "seen": 1789484428.1414294,
+    "ast_hash": "00ff3bda1f77df120b55e6518f7c482a",
+    "semantic_hash": "00ff3bda1f77df120b55e6518f7c482a"
+  },
+  "DOCUMENTACION/04_DIAGNOSTICOS_Y_CORRECCIONES/Diagn\u00f3stico y An\u00e1lisis de Logs RPA.md": {
+    "mtime": 1787587956.1214428,
+    "seen": 1789484428.1414294,
+    "ast_hash": "c4f5bd081c35ef0c109da7a4f0dc5c5e",
+    "semantic_hash": "c4f5bd081c35ef0c109da7a4f0dc5c5e"
+  },
+  "DOCUMENTACION/05_AVANCES/00_Estado_Inicial_y_Diagnostico.md": {
+    "mtime": 1787587956.122445,
+    "seen": 1789484428.1414294,
+    "ast_hash": "08d6c02320232073148f51f05eed96b3",
+    "semantic_hash": "08d6c02320232073148f51f05eed96b3"
+  },
+  "DOCUMENTACION/05_AVANCES/01_Estabilizacion_y_Bugs.md": {
+    "mtime": 1787587956.122445,
+    "seen": 1789484428.1414294,
+    "ast_hash": "8ab180cba22269dbab3d33add207b72f",
+    "semantic_hash": "8ab180cba22269dbab3d33add207b72f"
+  },
+  "DOCUMENTACION/05_AVANCES/02_Migracion_SQLite_y_Cola.md": {
+    "mtime": 1787587956.1234434,
+    "seen": 1789484428.1414294,
+    "ast_hash": "857634ba75f83f6696540cce4528e6e0",
+    "semantic_hash": "857634ba75f83f6696540cce4528e6e0"
+  },
+  "DOCUMENTACION/05_AVANCES/03_Inferencia_y_Excel_Base.md": {
+    "mtime": 1787587956.1244495,
+    "seen": 1789484428.1414294,
+    "ast_hash": "2b92ad2c0dec28ede39aeed371ad27f1",
+    "semantic_hash": "2b92ad2c0dec28ede39aeed371ad27f1"
+  },
+  "DOCUMENTACION/INDICE.md": {
+    "mtime": 1790346203.0327258,
+    "seen": 1790353267.3168988,
+    "ast_hash": "6a2cb35bc501a6dfe11aa8d71ed754da",
+    "semantic_hash": ""
+  },
+  "Prompt_correcion_Filtro.txt": {
+    "mtime": 1787587956.339185,
+    "seen": 1789484428.1414294,
+    "ast_hash": "e2d0d529198c9068646d7d4781bb34bc",
+    "semantic_hash": "e2d0d529198c9068646d7d4781bb34bc"
+  },
+  "config/extraction_keywords.yml": {
+    "mtime": 1787587956.654107,
+    "seen": 1789484428.1414294,
+    "ast_hash": "8730502d9ab9f64bb13e8a55c9e44c8c",
+    "semantic_hash": "8730502d9ab9f64bb13e8a55c9e44c8c"
+  },
+  "requirements.txt": {
+    "mtime": 1787681109.403089,
+    "seen": 1789484428.1414294,
+    "ast_hash": "280fcd906babf7b5144c7756c816eac6",
+    "semantic_hash": "280fcd906babf7b5144c7756c816eac6"
+  },
+  "graphify-out/memory/query_20260915_152723_54f39a7c_estas_preguntas_sugeridas_son_errores_que_el_grafo.md": {
+    "mtime": 1789486043.9584267,
+    "seen": 1789488743.4649382,
+    "ast_hash": "6cb784fb91ee5f5630753f120c04ff8d",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260915_161340_05debc0c_revisar_la_logica_del_sistema_a_partir_de_las_preg.md": {
+    "mtime": 1789488820.601192,
+    "seen": 1789492198.8181236,
+    "ast_hash": "451215b4506add7eb7ab1240ac13a5ac",
+    "semantic_hash": ""
+  },
+  "src/catalogo_procesal.py": {
+    "mtime": 1789746425.4319873,
+    "seen": 1789747059.3585901,
+    "ast_hash": "c2193131abaeff69b299bd21ecb77a6a",
+    "semantic_hash": ""
+  },
+  "tests/test_catalogo_ids.py": {
+    "mtime": 1790608399.1225293,
+    "seen": 1790609411.7496572,
+    "ast_hash": "d21e5d305b24fba36139d2862a6f4af6",
+    "semantic_hash": ""
+  },
+  "tests/test_db_postgres_ids.py": {
+    "mtime": 1789746966.9412508,
+    "seen": 1789747059.3585901,
+    "ast_hash": "c922e550f3c409b9ee08f00690194fb6",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260915_171119_923bc0cb_continuar_revisando_la_logica_del_sistema_a_partir.md": {
+    "mtime": 1789492279.8616405,
+    "seen": 1789747059.3585901,
+    "ast_hash": "2fd654d4a16579df8759265f50b22c8f",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260918_155804_5031a049_perfecto_que_este_caso_vamos_a_agregar_a_al_proyec.md": {
+    "mtime": 1789747084.947556,
+    "seen": 1789747092.144031,
+    "ast_hash": "fd1dfcd87156842e3aa59cfecbd21e65",
+    "semantic_hash": ""
+  },
+  "src/coordinador_concurrente.py": {
+    "mtime": 1790372403.6367376,
+    "seen": 1790372738.3672693,
+    "ast_hash": "c123bf6e1021d8ddf050cea92b9cab71",
+    "semantic_hash": ""
+  },
+  "src/ejecucion.py": {
+    "mtime": 1790100027.398635,
+    "seen": 1790177081.2099147,
+    "ast_hash": "f039c3096007fb64a1610d51a423b379",
+    "semantic_hash": ""
+  },
+  "src/procesador_caso.py": {
+    "mtime": 1790352349.2880752,
+    "seen": 1790353267.3168988,
+    "ast_hash": "7969f7f26b462c09389d497ccb44bb69",
+    "semantic_hash": ""
+  },
+  "src/repositorio_cola.py": {
+    "mtime": 1790101340.7110574,
+    "seen": 1790177081.2099147,
+    "ast_hash": "87295f859103530b591a5ab2b0c43de1",
+    "semantic_hash": ""
+  },
+  "src/repositorio_postgres.py": {
+    "mtime": 1790372838.816536,
+    "seen": 1790372871.8647432,
+    "ast_hash": "3c0bdbe82384e93175c952b3a6bd1ec4",
+    "semantic_hash": ""
+  },
+  "src/repositorio_sqlite.py": {
+    "mtime": 1790101340.7110574,
+    "seen": 1790177081.2099147,
+    "ast_hash": "909c17e13163cd32166218619a8d132e",
+    "semantic_hash": ""
+  },
+  "tests/test_concurrencia_postgres.py": {
+    "mtime": 1790352855.1174705,
+    "seen": 1790353267.3168988,
+    "ast_hash": "b60c1c6976d6b6853f19d6e6f4a68330",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_MAESTRO_HISTORIAL_E_INFERENCIA_IA.md": {
+    "mtime": 1790260370.8993976,
+    "seen": 1790260407.2794144,
+    "ast_hash": "fa4ec50fb29c75cdfb33e73862edc48d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/03_PLANES/PLAN_POSTGRES_CONCURRENCIA.md": {
+    "mtime": 1790367106.6104045,
+    "seen": 1790367254.2151535,
+    "ast_hash": "5e0c14026a16b29063fff241fb043b1d",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260918_190209_c59fdc6b_implementar_un_excel_final_profesional_sin_alterar.md": {
+    "mtime": 1789758129.8161275,
+    "seen": 1790177081.2099147,
+    "ast_hash": "508782268dad31dc4f3844b289dc8d10",
+    "semantic_hash": ""
+  },
+  "src/ultima_gestion.py": {
+    "mtime": 1790609547.962675,
+    "seen": 1790609694.5402288,
+    "ast_hash": "80881b43bfca6f5977c0acf3116fa9c2",
+    "semantic_hash": ""
+  },
+  "tests/test_ultima_gestion.py": {
+    "mtime": 1790609547.962675,
+    "seen": 1790609694.5450675,
+    "ast_hash": "8ebb7fbac2a204ad6913dc316c511c26",
+    "semantic_hash": ""
+  },
+  "scripts/auditar_inferencia_nvidia.py": {
+    "mtime": 1790260153.3005931,
+    "seen": 1790260289.309702,
+    "ast_hash": "36714d9e0adadbdf57c983c4e360e2aa",
+    "semantic_hash": ""
+  },
+  "src/historial_ia.py": {
+    "mtime": 1790258504.590824,
+    "seen": 1790260289.309702,
+    "ast_hash": "236aa3933dc49d16a0f5aea30e324aa9",
+    "semantic_hash": ""
+  },
+  "src/proveedor_nvidia.py": {
+    "mtime": 1790266215.325013,
+    "seen": 1790266289.5970118,
+    "ast_hash": "41e1ecb70546b66107365a61306bf82f",
+    "semantic_hash": ""
+  },
+  "src/reporte_ia.py": {
+    "mtime": 1790263342.3168418,
+    "seen": 1790263766.3518653,
+    "ast_hash": "b6d292c1c4306c98517760db08767f59",
+    "semantic_hash": ""
+  },
+  "tests/test_inferencia_nvidia.py": {
+    "mtime": 1790265987.213123,
+    "seen": 1790266053.2781174,
+    "ast_hash": "7cec41fe9542c78fec566b68a9e22a83",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/02_MODULOS_Y_CONFIGURACION/CONTRATO_INFERENCIA_HIBRIDA_IA.md": {
+    "mtime": 1790266007.7327964,
+    "seen": 1790266053.296496,
+    "ast_hash": "7944672d956342f2ef393ba78c1805d5",
+    "semantic_hash": ""
+  },
+  "scripts/aplicar_historial_ia_postgres.py": {
+    "mtime": 1790259038.4580824,
+    "seen": 1790260289.309702,
+    "ast_hash": "565349c5f7d1c96707b454d46f866632",
+    "semantic_hash": ""
+  },
+  "scripts/backfill_historial_ia_postgres.py": {
+    "mtime": 1790259297.4945693,
+    "seen": 1790260289.309702,
+    "ast_hash": "9139e8cd6b95f8716ef81afe6c2148d3",
+    "semantic_hash": ""
+  },
+  "scripts/importar_revision_ia.py": {
+    "mtime": 1790263397.0017457,
+    "seen": 1790263766.3457227,
+    "ast_hash": "2ef0822b1d4867aeafaa1757476f47ad",
+    "semantic_hash": ""
+  },
+  "src/auditoria_postgres.py": {
+    "mtime": 1790260153.3114772,
+    "seen": 1790260289.309702,
+    "ast_hash": "1d8798c3b7f8740bd4829b517249ec51",
+    "semantic_hash": ""
+  },
+  "src/motor_temporal.py": {
+    "mtime": 1790258087.6899986,
+    "seen": 1790260289.309702,
+    "ast_hash": "cc72c4910627f6f0f41c9fe20d9ded96",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/05_AVANCES/CONTEXTO_REANUDACION_ANTERIOR_20260924.md": {
+    "mtime": 1790260357.484084,
+    "seen": 1790353267.3168988,
+    "ast_hash": "53e3ce23e7cd7f4d5e42e1b0c155a114",
+    "semantic_hash": ""
+  },
+  "tests/test_seleccion_lotes_postgres.py": {
+    "mtime": 1790372403.6367376,
+    "seen": 1790372738.3758178,
+    "ast_hash": "512e3d42758a63bf32ba8a80a039d4fc",
+    "semantic_hash": ""
+  },
+  "tests/test_poblacion_cola_postgres.py": {
+    "mtime": 1790372838.8175452,
+    "seen": 1790372871.8712673,
+    "ast_hash": "8d330be5ad15e924a9d364fd87c8a32b",
+    "semantic_hash": ""
+  }
+}

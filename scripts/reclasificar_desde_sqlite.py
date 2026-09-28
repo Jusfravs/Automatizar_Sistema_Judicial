@@ -15,6 +15,7 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from src.agente_extractor import MotorInferenciaProcesal
+from src.catalogo_procesal import CAMPOS_ID, enriquecer_datos_procesales
 from src.gestor_casos import GestorCasos
 from src.validacion_pertenencia import ESTADO_EXCLUIDO, validar_pertenencia_cartera
 
@@ -29,6 +30,7 @@ CAMPOS_CLASIFICACION = (
     "ETAPA ACTUAL",
     "FASE ACTUAL",
     "FECHA INICIO FASE ACTUAL",
+    *CAMPOS_ID,
 )
 
 CAMPOS_FECHA = {
@@ -60,7 +62,7 @@ def _es_comentario_automatico_obsoleto(valor):
 def _campos_desde_inferencia(inferencia):
     fecha = inferencia.get("FECHA_FIN_ULTIMA_FASE")
     fecha_fase_actual = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
-    return {
+    campos = {
         "ETAPA_PROCESAL": (
             inferencia.get("ETAPA_ACTUAL") or inferencia.get("ULTIMA_ETAPA")
         ),
@@ -81,6 +83,8 @@ def _campos_desde_inferencia(inferencia):
         ),
         "FECHA INICIO FASE ACTUAL": fecha_fase_actual,
     }
+    enriquecer_datos_procesales(campos)
+    return campos
 
 
 def _reclasificar_datos(datos, causa=None, demandados=None):

@@ -6,6 +6,7 @@ import json
 import unicodedata
 from datetime import datetime
 from bs4 import BeautifulSoup
+from src.catalogo_procesal import ids_para_estado
 from src.logger_config import obtener_logger
 
 logger = obtener_logger("AgenteExtractor")
@@ -77,6 +78,16 @@ class ResultadoInferencia(tuple):
         self.fecha_fin_ultima_fase = fecha_fin
         self.etapa_actual = etapa_actual or ultima_etapa
         self.fase_actual = fase_actual or ultima_fase
+        ids = ids_para_estado(
+            self.ultima_etapa,
+            self.ultima_fase,
+            self.etapa_actual,
+            self.fase_actual,
+        )
+        self.eta_id_ultima_etapa = ids["eta_id ULTIMA ETAPA"]
+        self.fas_id_ultima_fase = ids["fas_id ULTIMA FASE"]
+        self.eta_id_etapa_actual = ids["eta_id ETAPA ACTUAL"]
+        self.fas_id_fase_actual = ids["fas_id FASE ACTUAL"]
         # La fase operativa puede empezar con una actuaci\u00f3n posterior al
         # hito hist\u00f3rico que la habilit\u00f3 (p. ej., embargo -> remate). No
         # reutilizar siempre la fecha de ULTIMA_FASE evita publicar una fecha
@@ -96,6 +107,14 @@ class ResultadoInferencia(tuple):
             "FECHA_FIN_ULTIMA_FASE": self.fecha_fin_ultima_fase,
             "ETAPA_ACTUAL": self.etapa_actual,
             "FASE_ACTUAL": self.fase_actual,
+            "ETA_ID_ULTIMA_ETAPA": self.eta_id_ultima_etapa,
+            "FAS_ID_ULTIMA_FASE": self.fas_id_ultima_fase,
+            "ETA_ID_ETAPA_ACTUAL": self.eta_id_etapa_actual,
+            "FAS_ID_FASE_ACTUAL": self.fas_id_fase_actual,
+            "eta_id ULTIMA ETAPA": self.eta_id_ultima_etapa,
+            "fas_id ULTIMA FASE": self.fas_id_ultima_fase,
+            "eta_id ETAPA ACTUAL": self.eta_id_etapa_actual,
+            "fas_id FASE ACTUAL": self.fas_id_fase_actual,
             "FECHA_INICIO_FASE_ACTUAL": self.fecha_inicio_fase_actual,
             "MENSAJE_ESPECIAL": self.mensaje_especial,
             "ACTUACION_RESPALDO": self.actuacion_respaldo,
@@ -2568,10 +2587,14 @@ class AgenteExtractor:
 
                 # Campos enriquecidos para nuevas columnas MOLDE
                 resultado["ULTIMA ETAPA"] = etapa_inferida
+                resultado["eta_id ULTIMA ETAPA"] = res_inf.get("ETA_ID_ULTIMA_ETAPA")
                 resultado["ULTIMA FASE"] = fase_inferida
+                resultado["fas_id ULTIMA FASE"] = res_inf.get("FAS_ID_ULTIMA_FASE")
                 resultado["FECHA FIN ULTIMA FASE"] = fecha_inferida
                 resultado["ETAPA ACTUAL"] = etapa_operativa
+                resultado["eta_id ETAPA ACTUAL"] = res_inf.get("ETA_ID_ETAPA_ACTUAL")
                 resultado["FASE ACTUAL"] = fase_operativa
+                resultado["fas_id FASE ACTUAL"] = res_inf.get("FAS_ID_FASE_ACTUAL")
                 resultado["FECHA INICIO FASE ACTUAL"] = fecha_fase_actual
                 if res_inf.get("MENSAJE_ESPECIAL"):
                     resultado["COMENTARIO_ULTIMO"] = res_inf.get("MENSAJE_ESPECIAL")
@@ -2677,6 +2700,7 @@ class AgenteExtractor:
                     actuaciones.append({
                         "fecha": fecha_act,
                         "detalle": detalle_act.upper(),
+                        "titulo": detalle_act,
                         "TIENE_ADJUNTO": tiene_adjunto,
                     })
 
@@ -2711,14 +2735,19 @@ class AgenteExtractor:
                 fecha_act = m_f.group(1)
                 linea_limpia = re.sub(r'\d{2}/\d{2}/\d{4}(\s+\d{2}:\d{2})?', '', line).strip()
                 if len(linea_limpia) > 3:
-                    detalle_act = linea_limpia.upper()
+                    titulo_act = linea_limpia
                 elif (idx + 1) < len(lineas):
-                    detalle_act = lineas[idx + 1].upper()
+                    titulo_act = lineas[idx + 1]
                 else:
-                    detalle_act = ""
+                    titulo_act = ""
+                detalle_act = titulo_act.upper()
 
                 if not any(ign in detalle_act for ign in ["FECHA DE INGRESO", "BUSQUEDA", "CONSULTA"]):
-                    actuaciones.append({"fecha": fecha_act, "detalle": detalle_act})
+                    actuaciones.append({
+                        "fecha": fecha_act,
+                        "detalle": detalle_act,
+                        "titulo": titulo_act,
+                    })
 
         return actuaciones
 

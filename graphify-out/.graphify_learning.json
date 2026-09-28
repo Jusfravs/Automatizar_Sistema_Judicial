@@ -1,0 +1,175 @@
+{
+  "generated_at": "2026-09-18T17:11:07.506175+00:00",
+  "nodes": {
+    "src_agente_extractor_motorinferenciaprocesal": {
+      "code_fingerprint": "aefa721385978f82bcbb2b931e0871e6b93194a4b522573db61821bb5fc63050",
+      "label": "MotorInferenciaProcesal",
+      "last": "2026-09-18T15:58:04.947556+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-18T15:58:04.947556+00:00",
+          "outcome": "useful",
+          "q": "perfecto que este caso vamos a agregar a al proyecto este sistema DE IDs mas los defectos que encontraste"
+        },
+        {
+          "date": "2026-09-15T16:13:40.587016+00:00",
+          "outcome": "useful",
+          "q": "Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
+        },
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 2.862483507,
+      "source_file": "src/agente_extractor.py",
+      "status": "preferred",
+      "uses": 3
+    },
+    "src_gestor_casos_gestorcasos": {
+      "code_fingerprint": "3195c086cf5a11cb7e88499d71483752cf9e0f50fa55c3059b49690b1bd60a3c",
+      "label": "GestorCasos",
+      "last": "2026-09-18T15:58:04.947556+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-18T15:58:04.947556+00:00",
+          "outcome": "useful",
+          "q": "perfecto que este caso vamos a agregar a al proyecto este sistema DE IDs mas los defectos que encontraste"
+        },
+        {
+          "date": "2026-09-15T17:11:19.861640+00:00",
+          "outcome": "useful",
+          "q": "Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave"
+        }
+      ],
+      "score": 1.931864786,
+      "source_file": "src/gestor_casos.py",
+      "status": "preferred",
+      "uses": 2
+    },
+    "src_gestor_casos_gestorcasos_guardar": {
+      "code_fingerprint": "3195c086cf5a11cb7e88499d71483752cf9e0f50fa55c3059b49690b1bd60a3c",
+      "label": ".guardar()",
+      "last": "2026-09-15T17:11:19.861640+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T17:11:19.861640+00:00",
+          "outcome": "useful",
+          "q": "Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave"
+        }
+      ],
+      "score": 0.933036074,
+      "source_file": "src/gestor_casos.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_gestor_cola_gestorcola": {
+      "code_fingerprint": "2d3ea363472388cbd27839e58f6227d0672ea2814222931a22627c1f206eeb7f",
+      "label": "GestorCola",
+      "last": "2026-09-15T17:11:19.861640+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T17:11:19.861640+00:00",
+          "outcome": "useful",
+          "q": "Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave"
+        },
+        {
+          "date": "2026-09-15T16:13:40.587016+00:00",
+          "outcome": "useful",
+          "q": "Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
+        },
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 2.79669087,
+      "source_file": "src/gestor_cola.py",
+      "status": "preferred",
+      "uses": 3
+    },
+    "src_gestor_cola_gestorcola_bloquear_ejecucion": {
+      "code_fingerprint": "2d3ea363472388cbd27839e58f6227d0672ea2814222931a22627c1f206eeb7f",
+      "label": ".bloquear_ejecucion()",
+      "last": "2026-09-15T17:11:19.861640+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T17:11:19.861640+00:00",
+          "outcome": "useful",
+          "q": "Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave"
+        }
+      ],
+      "score": 0.933036074,
+      "source_file": "src/gestor_cola.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_gestor_cola_gestorcola_reservar_causa": {
+      "code_fingerprint": "2d3ea363472388cbd27839e58f6227d0672ea2814222931a22627c1f206eeb7f",
+      "label": ".reservar_causa()",
+      "last": "2026-09-15T16:13:40.587016+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T16:13:40.587016+00:00",
+          "outcome": "useful",
+          "q": "Revisar la logica del sistema a partir de las preguntas sugeridas sin modificar la inferencia procesal"
+        }
+      ],
+      "score": 0.932173348,
+      "source_file": "src/gestor_cola.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_motor_busqueda_web_botjudicial": {
+      "code_fingerprint": "09650e1811cf01a9ef4e1e20f8a00a62c7f04ae18de2e2ed17b5afe35f788f5c",
+      "label": "BotJudicial",
+      "last": "2026-09-15T15:27:23.958426+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 0.931481447,
+      "source_file": "src/motor_busqueda_web.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_motor_busqueda_web_botjudicialtransaccional": {
+      "code_fingerprint": "09650e1811cf01a9ef4e1e20f8a00a62c7f04ae18de2e2ed17b5afe35f788f5c",
+      "label": "BotJudicialTransaccional",
+      "last": "2026-09-15T17:11:19.861640+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T17:11:19.861640+00:00",
+          "outcome": "useful",
+          "q": "Continuar revisando la logica del sistema a partir de las preguntas del grafo, conectando o corrigiendo funciones cuando sea necesario sin tocar la inferencia ni la ubicacion por palabras clave"
+        }
+      ],
+      "score": 0.933036074,
+      "source_file": "src/motor_busqueda_web.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "tests_test_clasificacion_arbol_testclasificacionarbol": {
+      "code_fingerprint": "a0da3490d9a660468fe705c0e11bcc11f8935f8458c2a67a3a33b9444aff04a5",
+      "label": "TestClasificacionArbol",
+      "last": "2026-09-15T15:27:23.958426+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-15T15:27:23.958426+00:00",
+          "outcome": "useful",
+          "q": "estas Preguntas sugeridas son errores que el grafo localizo o conoxiones sin logica se ven como posibles errores?"
+        }
+      ],
+      "score": 0.931481447,
+      "source_file": "tests/test_clasificacion_arbol.py",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}
