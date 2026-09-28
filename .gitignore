@@ -8,6 +8,7 @@ __pycache__/
 /outputs/
 /backups/
 /data/backups/
+data/*.db
 data/*.csv
 data/*.xlsx
 data/*.tmp
