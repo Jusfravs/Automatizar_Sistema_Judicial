@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 
 # Archivos de datos y reportes generados
+/outputs/
+/backups/
+/data/backups/
 data/*.csv
 data/*.xlsx
 data/*.tmp
@@ -39,4 +42,5 @@ graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 graphify-out/.graphify_python
 graphify-out/.graphify_root
 graphify-out/.vocab.txt
+graphify-out/memory/
 !graphify-out/graph.html
