@@ -1,154 +1,94 @@
-# Contexto de reanudación
+﻿# Contexto de reanudación
 
-Última actualización: 26 de agosto de 2026, America/Guayaquil.
+Última actualización: 25 de septiembre de 2026, America/Guayaquil.
 
-## Estado vigente
+## Estado comprobado
 
-- Lote activo: **todas las sucursales activas**, mediante `config.json`.
-- Excel de origen: `data/REPORTE_JUICIOS_LISTO_PARA_REVISION.xlsx` (4.017 filas).
-- Se realizó un reinicio coordinado de la región; los artefactos anteriores se
-  preservaron en `backups/reinicio_el_oro_20260826_095002/`.
-- La cola actual `estado_casos.db` contiene los lotes visibles del 26 de agosto:
-  `PROCESADO=36` y `ERROR=1`. Incluye el lote de 20 y las cuatro causas puntuales
-  revisadas; no hay una instancia operativa de `main.py` en ejecución.
-- La causa `17230-2015-1663` (Quito, QUITO SUR) terminó en
-  `RESULTADOS_TIMEOUT`. El retorno al buscador fue confirmado; es un reintento
-  pendiente de navegación, no una falla de AutoCaptcha ni de clasificación.
-- El intento inicial ejecutado desde una sesión aislada se respaldó y se retiró
-  para no conservar errores de CAPTCHA no verificables.
+- config.json, config_quito.json y config_santo_domingo.json permanecen en
+  SQLite. La configuración general filtra ESTADO = ACTIVO en todas las
+  sucursales y usa data/estado_casos_20260827.db.
+- PostgreSQL 18.6 responde en localhost:5432. La base casos_judiciales
+  conservó 1.954 expedientes, 2.301 versiones, 172.625 actuaciones y
+  418 eventos de auditoría al 24 de septiembre. No se detectaron causas
+  ni hashes duplicados.
+- casos_judiciales y casos_judiciales_test tienen aplicadas las migraciones
+  001 y 002 y pasan la verificación de conexión y esquema.
+- La inspección SQLite sin escritura obtuvo 2.339 filas de cola,
+  2.301 resultados, 1.954 causas únicas y 0 JSON inválidos.
+- El 25 de septiembre la suite general terminó con 291 pruebas y
+  4 omitidas; las 4 pruebas de integración PostgreSQL pasaron por
+  separado contra casos_judiciales_test.
 
-## Fase operativa y medidas ejecutadas
+## Pilotos y criterio de rendimiento
 
-- `ULTIMA ETAPA` y `ULTIMA FASE` conservan el último hito probado y su fecha
-  para auditoría. En cambio, `ETAPA_PROCESAL` y `FASE_PROCESAL` envían la fase
-  actual calculada. Así una ejecutoria seguida por liquidación, o un embargo
-  seguido por remate, no se transmite como si siguiera en el hito previo.
-- Solo un embargo expreso, practicado, trabado o inscrito activa `6.3 EMBARGO`.
-  Un secuestro o una aprehensión de vehículo, incluso respaldados por acta,
-  son medidas preventivas: se conservan como antecedente y no adelantan la
-  fase. Solicitudes, órdenes, designaciones, medidas negadas e improcedentes
-  tampoco alteran la clasificación.
-- Las medidas de una carpeta `CARATULA SORTEO DE DEPRECATORIOS` no sustituyen
-  la fase del expediente principal; sus citaciones sí se conservan como
-  evidencia.
-- `scripts/reclasificar_desde_sqlite.py --aplicar` respalda SQLite, CSV y
-  Excel. Solo elimina filas idénticas en todas las columnas: coincidencias del
-  mismo juicio con distinta cartera, usuario o crédito se preservan.
+Los grupos distintos de 1, 10 y 50 causas en
+outputs/postgres_pilotos_20260925/ terminaron con 1/1, 10/10 y 50/50
+PROCESADO, sin errores, en 42, 209 y 644 segundos. Cada etapa generó CSV y
+Excel en su carpeta y usó casos_judiciales_test sin auditoría de IA. La
+comparación histórica de inferencia dio 57 coincidencias y 4 diferencias
+pendientes de revisión de evidencia.
 
-## Lote fuente vigente
+La primera ejecución del benchmark de las mismas diez causas con un trabajador
+se canceló por `ARTEFACTOS_ERROR:[WinError 206]` al guardar evidencia bajo una
+ruta larga. Se acortó el nombre de carpeta en disco y se añadió una prueba de
+ruta profunda. La repetición terminó con 10/10 PROCESADO al primer intento en
+269 segundos, CSV de 10 filas, Excel y cero fallidos. Los 13 campos de fase,
+etapa y fechas coincidieron con el lote de dos trabajadores, que tardó 209
+segundos. La mejora de rendimiento fue 28,7 %, por debajo del objetivo de 50 %.
+No reutilice la ejecución cancelada para medir rendimiento.
 
-`config.json` quedó preparado para el reporte externo
-`C:\Users\pasante.callcenter\Downloads\Reporte_jucios SIS 3 27082026 12.40.xlsx`:
-hoja `Reporte`, 2.001 filas y filtro `ESTADO = ACTIVO`. Sus resultados se
-aislarán en `data/reporte_trabajo_20260827.csv`,
-`data/REPORTE_PROCESADO_FINAL_20260827.xlsx`,
-`data/estado_casos_20260827.db` y `data/casos_fallidos_20260827.txt`.
-El CSV inicial y la base SQLite vacía ya fueron creados; el lote anterior no
-fue alterado.
+Diagnóstico posterior, sin nuevas consultas al portal: las diez soluciones de
+2Captcha sumaron 118,9 s con un trabajador y 245,3 s con dos; las corridas
+fueron en horarios distintos y no permiten atribuir esa diferencia a la
+concurrencia. De las cuatro diferencias históricas, una causa no tenía
+actuaciones antiguas, dos incorporaron nuevas actuaciones y la cuarta ya
+produce la nueva fase al recalcular sus actuaciones antiguas con el motor
+actual. La revisión jurídica de esta última sigue pendiente.
 
-## AutoCaptcha
+La medición emparejada se completó después: las mismas diez causas terminaron
+10/10 al primer intento en 291 s con un trabajador y 177 s con dos, sin
+errores ni diferencias en 13 campos procesales. La mejora de rendimiento fue
+64,4 %, superior al objetivo de 50 % en esa muestra. Los CSV tienen diez
+filas, los Excel ambas hojas y no hay fallidos. Los perfiles normales
+continúan en SQLite hasta decidir su activación.
 
-`config.json` usa `captcha.modo = "api_con_espera_humana_limitada"`. La API key
-se lee exclusivamente de `AUTOCAPTCHA_API_KEY`; en este equipo no está persistida
-ni se carga desde `.env`. Debe cargarse en la misma PowerShell antes de iniciar
-el bot.
+POSTGRES_PASSWORD y AUTOCAPTCHA_API_KEY están en la PowerShell del operador,
+no en archivos del repositorio. El lanzador .cmd debe invocarse desde esa
+misma consola para heredar ambas variables. La sesión de Codex no hereda las
+variables cargadas en otra ventana.
 
-No existe modo manual permanente. Si la API falla, `main.py` muestra una ventana
-de hasta 30 segundos para resolver el CAPTCHA; al agotarse, deja la causa en
-`REVISION MANUAL` y continúa con la siguiente. No ejecutar `src.orquestador`
-cuando se quiera aprovechar esa ventana, porque se ejecuta sin interfaz visible.
+La siguiente muestra de NVIDIA NIM y su validación jurídica siguen
+separadas de estos pilotos. El auditor de IA no debe intervenir en la
+medición de PostgreSQL y Playwright.
 
-## Corrección de clasificación pendiente de vigilar
+## Lote real de 50 para el Excel final nuevo
 
-Caso de referencia: `07333-2023-02297`.
+El Excel fuente de `Downloads` se importó a un CSV nuevo de 2001 filas en
+`outputs/excel_final_20260925/`. Las primeras 50 causas únicas se procesaron
+en PostgreSQL `casos_judiciales` con dos trabajadores: ejecución
+`1d359713-8da2-4597-a1f9-2a7b54ffba5c`, `COMPLETADA`, 50/50 `PROCESADO`,
+un intento por causa, 25 por trabajador, 766 s y cero fallidos. El Excel nuevo
+`REPORTE_PROCESADO_FINAL_20260925.xlsx` conserva las 2001 filas de `Reporte`
+y la hoja `PARA CARGA`. Tres campos procesales de las 50 causas coinciden en
+PostgreSQL, CSV y Excel. El archivo fuente no cambió según su SHA-256. El
+perfil general `config.json` continúa en SQLite; este lote usó un perfil
+PostgreSQL aislado. El lanzador se bloquea si se intenta repetir el mismo lote.
 
-- Dos demandados fueron citados personalmente el `10/03/2026`.
-- Las devoluciones del deprecatorio de junio de 2026 confirman diligencias, no
-  un embargo practicado.
-- Resultado esperado: última fase `2.1 CITACION (PERSONA/BOLETA)`, fecha
-  `10/03/2026`, etapa/fase actual `CONTESTACION`.
+## Estado al 28 de septiembre de 2026
 
-El parche en `src/agente_extractor.py` impide elevar a `6.3 EMBARGO` un
-despacho deprecatorio sin acta, traba, ejecución o inscripción explícita.
+La corrida general terminó y el Excel vigente es
+`outputs/excel_final_20260925/REPORTE_PROCESADO_FINAL_20260925_CORREGIDO.xlsx`.
+Contiene 2001 filas en `Reporte` y 1951 en `PARA CARGA`. La corrección de fecha
+local y título dejó 34 causas para revisión manual; 33 se retiraron de la hoja
+de carga. El CSV conserva el historial completo y el Excel anterior tiene
+respaldo en la misma carpeta de salida. Microsoft Excel abrió el libro
+corregido con las dos tablas intactas. La [Guía PostgreSQL](../03_BASE_DE_DATOS/GUIA_PGADMIN_POSTGRES.md)
+contiene las consultas de supervisión y el [Manual de uso](MANUAL_DE_USO.md)
+indica el perfil y la ruta actuales.
 
-## Verificación técnica
+Las cuatro diferencias de clasificación frente a la fotografía histórica
+siguen pendientes de revisión jurídica con sus actuaciones de respaldo.
 
-- La sangría de `tests/test_clasificacion_arbol.py` fue corregida.
-- Suite actual: `207` pruebas correctas; `3` omitidas por requerir PostgreSQL.
-- La prueba específica del deprecatorio frente a citación cumplida pasa.
-
-## Consistencia de la clasificación y del reporte
-
-Caso de referencia: `07333-2025-00183`.
-
-- La extracción DOM había identificado correctamente `1.3 CALIFICACION` del
-  `10/02/2025`, pero la consolidación API+DOM la reemplazaba por `2.2 CITACION
-  POR PRENSA` debido a menciones jurídicas del artículo 56, sin una diligencia
-  de prensa acreditada.
-- `src/agente_extractor.py` ahora exige una providencia, constancia de
-  publicación o evidencia documental concreta de la citación por prensa. Una
-  referencia normativa, una cita jurisprudencial o una etiqueta genérica de
-  "medios de comunicación" ya no basta.
-- `src/motor_busqueda_web.py` registra la salida operativa única como
-  `[DECISION_FASE_FINAL]`; la inferencia DOM aislada se conserva solo como
-  diagnóstico. Así el log no induce a confundir una decisión intermedia con la
-  que se persiste.
-- El 26/08/2026 se reclasificaron 43 resultados SQLite, con cinco correcciones
-  `2.2 CITACION POR PRENSA -> 1.3 CALIFICACION`: `07312-2025-00018`,
-  `07333-2021-02395`, `07333-2024-01512`, `07333-2025-00183` y
-  `07333-2025-03378`. Los respaldos previos quedaron en `data/backups/` con la
-  marca `20260826_130318`.
-
-## Evidencia de contestación
-
-- No basta que una providencia use la palabra "contestación", "excepciones" o
-  "allanamiento". La fase `3.1 CONTESTACION` requiere un escrito/acto de la
-  parte demandada: contestación presentada, excepciones opuestas, allanamiento
-  expreso o una providencia que lo incorpore o califique.
-- Los plazos para contestar, la contestación de un registro u otra entidad, las
-  menciones normativas y los listados de formas de conclusión no hacen avanzar
-  la causa. Las referencias posteriores al auto de calificación tampoco cambian
-  la fecha de esa fase.
-- Basta la contestación acreditada de **una** persona demandada o procesada;
-  no se exige que todas hayan contestado. La evidencia debe identificar la
-  contestación de la demanda o la providencia que incorpora el escrito.
-- Cuando la providencia incorpora de forma inmediata un `ESCRITO` y se refiere
-  al contenido de la contestación, la fecha de `3.1 CONTESTACION` es la del
-  escrito presentado, no la fecha de la providencia posterior ni la de una
-  razón con un año inconsistente. Esta regla se comprobó con
-  `07333-2023-00851`: escrito `07/09/2023`, auto de incorporación
-  `25/09/2023`.
-- El 27/08/2026 se auditó la base persistida con esta regla y se corrigieron
-  cuatro registros; `07331-2025-00234` quedó en `1.3 CALIFICACION`, fecha
-  `09/04/2025`, con siguiente fase `2.1 CITACION (PERSONA/BOLETA)`.
-
-## Escrito posterior con adjunto: alerta conservadora
-
-Caso de referencia: `07333-2022-01899`.
-
-- SATJE puede mostrar una actuación genérica `ESCRITO / FePresentacion` con un
-  adjunto cuyo contenido no se extrae aún. Ese rótulo no permite afirmar que
-  sea una contestación, pero tampoco permite presentar la calificación previa
-  como el estado material definitivo de la causa.
-- El extractor ahora conserva `TIENE_ADJUNTO` para actuaciones DOM que incluyen
-  el control `Ver archivos`. La consolidación API+DOM preserva ese metadato.
-- Si un `ESCRITO / FEPRESENTACION` con adjunto es posterior a una fase
-  confirmada de calificación o citación, la última fase confirmada se conserva,
-  pero `ETAPA ACTUAL` y `FASE ACTUAL` pasan a `REVISION MANUAL`. El reporte
-  deja el comentario automático `REVISION DOCUMENTAL: ESCRITO POSTERIOR SIN
-  TIPO CONFIRMADO (<fecha>)`.
-- La regla no asigna `3.1 CONTESTACION`, no se activa sin adjunto y no abre
-  revisión en una causa que ya tiene una fase confirmada de contestación o
-  posterior. Es una protección contra certeza falsa, no una lectura de PDFs.
-- Los historiales antiguos que no conservaron `TIENE_ADJUNTO` no pueden ser
-  marcados retroactivamente con seguridad; deben reprocesarse desde SATJE para
-  capturar ese metadato.
-
-## Orden seguro para continuar
-
-1. Abrir una sola PowerShell en la raíz del proyecto.
-2. Cargar `AUTOCAPTCHA_API_KEY` sin mostrarla.
-3. Ejecutar un piloto visible con `main.py --config config.json --lote 10`.
-   Tomará causas activas de cualquier sucursal según el orden del Excel.
-4. Verificar reporte, estados SQLite y CAPTCHA antes de ampliar el lote.
-5. Respaldar antes de cualquier nuevo reinicio o cambio de configuración.
+Las notas anteriores de clasificación y los estados de agosto se conservan
+en [el contexto archivado](../05_AVANCES/CONTEXTO_REANUDACION_ANTERIOR_20260924.md).
+Son antecedentes y no instrucciones operativas vigentes.

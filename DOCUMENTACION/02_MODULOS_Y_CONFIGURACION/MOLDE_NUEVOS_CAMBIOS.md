@@ -23,6 +23,14 @@
 
 (Días transcurridos desde la fecha\_elegida que da el sistema hasta la fecha actual mía, debe mostrar la fecha actual cuando el sistema estuvo operativo fecha\_actual )
 
+**FECHA ULTIMA GESTION JUDICIAL**
+
+(Fecha de la gestión cronológicamente más reciente encontrada en el expediente.)
+
+**ESTADO ULTIMA GESTION JUDICIAL**
+
+(Título literal de esa gestión tal como aparece en el listado de la Función Judicial. Estas dos columnas se ubican inmediatamente después de `DIAS TRANSCURRIDOS` y no alteran la inferencia procesal.)
+
 
 
 **FASE DE ETAPA ACTUAL**

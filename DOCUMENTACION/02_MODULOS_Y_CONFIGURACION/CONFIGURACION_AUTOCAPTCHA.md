@@ -1,30 +1,23 @@
-# Configuración de AutoCaptcha (2Captcha)
+﻿# Configuración de AutoCaptcha (2Captcha)
 
-El proyecto usa la API JSON v2 de 2Captcha para resolver reCAPTCHA v2 del
-portal e-SATJE. La credencial se obtiene solo desde la variable de entorno
-`AUTOCAPTCHA_API_KEY`; no se carga automáticamente desde `.env` y nunca debe
-guardarse en `config.json`, SQLite, reportes, logs o control de versiones.
+Actualizado: 25 de septiembre de 2026.
+
+El bot usa la API JSON v2 de 2Captcha para reCAPTCHA v2 del portal e-SATJE.
+La clave se lee de AUTOCAPTCHA_API_KEY en el proceso que inicia el bot. No se
+carga desde .env ni se guarda en config.json, SQLite, reportes o logs.
 
 ## Modo vigente
 
-La configuración principal (`config.json`) usa:
+config.json usa api_con_espera_humana_limitada. El bot comprueba saldo, crea
+una tarea proxyless, sondea el resultado e inyecta el token. Si la API falla,
+Chromium visible concede hasta 30 segundos para completar el reto. Después
+la causa pasa a revisión manual. No hay modo manual permanente.
 
-```json
-"modo": "api_con_espera_humana_limitada"
-```
+## Cargar la clave
 
-El sistema comprueba saldo, crea una tarea proxyless, sondea su estado e inyecta
-el token en el callback de Angular. No existe un modo de operación manual. Si
-la API no puede resolver el reto, el navegador visible da como máximo 30
-segundos para que una persona lo complete. Si no queda habilitado `BUSCAR`, la
-causa se marca `REVISION MANUAL` y el lote continúa con la siguiente. Errores
-de clave, saldo insuficiente o circuito abierto no consumen más tareas.
+Use la misma PowerShell que ejecutará main.py o el lanzador .cmd:
 
-## Cargar la clave de forma segura
-
-En la misma PowerShell de ejecución:
-
-```powershell
+~~~powershell
 $secureKey = Read-Host 'API key de 2Captcha' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
 try {
@@ -34,23 +27,21 @@ finally {
     [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
 }
 Remove-Variable secureKey, ptr -ErrorAction SilentlyContinue
-```
-
-Para comprobar que está disponible sin revelar su contenido:
-
-```powershell
 [bool]$env:AUTOCAPTCHA_API_KEY
-```
+~~~
 
-## Límites de seguridad
+La comprobación debe devolver True. Si empezó en CMD, escriba
+powershell -NoExit, cargue la clave allí y permanezca en esa PowerShell.
+Un .cmd llamado desde ella hereda la variable; una consola nueva o un
+doble clic no la heredarán. No pegue la clave en chats ni comandos visibles.
+
+## Límites
 
 - Máximo dos tareas pagadas por causa.
 - Máximo tres fallos consecutivos antes de abrir el circuito.
-- Saldo mínimo configurable: USD 0,01.
-- La política vigente es API primero; no cambie `captcha.modo` a `manual`, pues
-  ese valor está bloqueado deliberadamente.
-- `captcha.espera_humana_maxima_ms` queda fijado en `30000`; el programa no
-  permite ampliarlo por encima de 30 segundos.
+- Saldo mínimo configurable de USD 0,01.
+- El valor de espera_humana_maxima_ms es 30000; no se permite ampliarlo.
+- No cambie captcha.modo a manual: ese modo está bloqueado.
 
-Ejecute `main.py` en modo visible: solo así alguien puede aprovechar esa breve
-ventana de contingencia. El orquestador *headless* no es adecuado para ello.
+Para los comandos actuales de SQLite y PostgreSQL consulte el
+[Manual de uso](../01_GENERAL/MANUAL_DE_USO.md).
