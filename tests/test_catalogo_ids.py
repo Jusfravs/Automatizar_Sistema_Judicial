@@ -4,6 +4,7 @@ import unittest
 from datetime import datetime
 
 import pandas as pd
+import openpyxl
 
 from src.agente_extractor import ResultadoInferencia
 from src.catalogo_procesal import (
@@ -90,7 +91,41 @@ class ExportacionSistemasTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporal:
             gestor.ruta_final = os.path.join(temporal, "reporte.xlsx")
             gestor.exportar_excel(datetime(2026, 9, 18))
-            hojas = pd.read_excel(gestor.ruta_final, sheet_name=None)
+            hojas = {
+                "Reporte": pd.read_excel(
+                    gestor.ruta_final,
+                    sheet_name="Reporte",
+                    header=GestorCasos.FILA_ENCABEZADO_REPORTE - 1,
+                ),
+                "PARA CARGA": pd.read_excel(
+                    gestor.ruta_final, sheet_name="PARA CARGA"
+                ),
+            }
+            wb = openpyxl.load_workbook(gestor.ruta_final)
+            ws_reporte = wb["Reporte"]
+            ws_carga = wb["PARA CARGA"]
+            self.assertEqual(ws_reporte["A1"].value, "REPORTE FINAL DE GESTIÓN JUDICIAL")
+            self.assertEqual(ws_reporte["A3"].value, "Total de registros")
+            self.assertEqual(ws_reporte["A4"].value, 4)
+            indicadores = {
+                celda.value: ws_reporte.cell(4, celda.column).value
+                for celda in ws_reporte[3] if celda.value
+            }
+            self.assertEqual(indicadores["Listos para carga"], 3)
+            self.assertEqual(indicadores["Observados / no cargables"], 1)
+            self.assertEqual(indicadores["Revisión manual / ID pendiente"], 1)
+            self.assertEqual(ws_reporte.freeze_panes, "A7")
+            self.assertEqual(ws_carga.freeze_panes, "A2")
+            self.assertFalse(ws_reporte.sheet_view.showGridLines)
+            self.assertFalse(ws_carga.sheet_view.showGridLines)
+            self.assertIn("TablaReporteJudicial", ws_reporte.tables)
+            self.assertIn("TablaParaCarga", ws_carga.tables)
+            self.assertIsNone(ws_reporte.auto_filter.ref)
+            self.assertIsNone(ws_carga.auto_filter.ref)
+            self.assertEqual(ws_reporte["A6"].value, "CODIGO_JUICIO")
+            self.assertEqual(ws_carga["A1"].value, "CODIGO_JUICIO")
+            self.assertEqual(ws_reporte["A9"].fill.fgColor.rgb, "FFFCE8E6")
+            wb.close()
 
         self.assertEqual(list(hojas), ["Reporte", "PARA CARGA"])
         self.assertEqual(len(hojas["Reporte"]), 4)

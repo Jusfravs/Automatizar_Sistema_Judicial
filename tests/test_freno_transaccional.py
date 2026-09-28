@@ -97,6 +97,32 @@ class FrenoNavegacionTests(unittest.TestCase):
 
         self.assertIsNone(bot._bloqueo_navegacion)
 
+    def test_artefactos_carpeta_persisten_desde_ruta_profunda(self):
+        bot = self.crear_bot()
+        bot.page = PaginaFalsa()
+        bot._intento_actual = "07331202500747-26870a67b248"
+        causa = "07331202500747"
+        descriptor = {"clave_carpeta": causa + "_1_10_12_2025_13_24_" + "x" * 60}
+        resultado = {"advertencias": [], "clave_carpeta": descriptor["clave_carpeta"]}
+        anterior = os.getcwd()
+        with tempfile.TemporaryDirectory() as temporal:
+            profundidad = max(0, 155 - len(temporal))
+            directorio = os.path.join(temporal, "x" * profundidad)
+            os.makedirs(directorio, exist_ok=True)
+            try:
+                os.chdir(directorio)
+                manifiesto = bot._guardar_artefactos_carpeta(
+                    causa, descriptor, [], "<html></html>", [], resultado, {}
+                )
+                with open(manifiesto, encoding="utf-8") as archivo:
+                    guardado = json.load(archivo)
+                self.assertEqual(guardado["clave_carpeta"], descriptor["clave_carpeta"])
+                self.assertEqual(len(os.path.basename(os.path.dirname(manifiesto))), 18)
+                if os.name == "nt":
+                    self.assertLess(len(os.path.abspath(manifiesto)), 260)
+            finally:
+                os.chdir(anterior)
+
     def test_flujo_envia_busqueda_y_devuelve_contrato_sin_resultados(self):
         bot = self.crear_bot()
         llamadas = []
@@ -347,6 +373,8 @@ class FrenoNavegacionTests(unittest.TestCase):
             "fas_id FASE ACTUAL",
             "FASE ACTUAL",
             "DIAS TRANSCURRIDOS",
+            "FECHA ULTIMA GESTION JUDICIAL",
+            "ESTADO ULTIMA GESTION JUDICIAL",
         ])
 
     def test_normaliza_timestamp_iso_a_fecha_del_reporte(self):
@@ -386,10 +414,15 @@ class FrenoNavegacionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporal:
             gestor.ruta_final = os.path.join(temporal, "reporte.xlsx")
             gestor.exportar_excel()
-            exportado = pd.read_excel(gestor.ruta_final, dtype=str)
+            exportado = pd.read_excel(
+                gestor.ruta_final,
+                sheet_name="Reporte",
+                header=GestorCasos.FILA_ENCABEZADO_REPORTE - 1,
+                dtype=str,
+            )
 
         self.assertEqual(
-            exportado.columns[-12:].tolist(),
+            exportado.columns[-len(GestorCasos.COLUMNAS_MOLDE_EXPORTACION):].tolist(),
             GestorCasos.COLUMNAS_MOLDE_EXPORTACION,
         )
         self.assertEqual(exportado.loc[0, "eta_id ETAPA ACTUAL"], "15")
@@ -421,7 +454,12 @@ class FrenoNavegacionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporal:
             gestor.ruta_final = os.path.join(temporal, "reporte.xlsx")
             gestor.exportar_excel()
-            exportado = pd.read_excel(gestor.ruta_final, dtype=str)
+            exportado = pd.read_excel(
+                gestor.ruta_final,
+                sheet_name="Reporte",
+                header=GestorCasos.FILA_ENCABEZADO_REPORTE - 1,
+                dtype=str,
+            )
 
         esperadas = [
             "2.1 CITACION",

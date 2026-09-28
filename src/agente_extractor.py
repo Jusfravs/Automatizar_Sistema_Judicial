@@ -2700,6 +2700,7 @@ class AgenteExtractor:
                     actuaciones.append({
                         "fecha": fecha_act,
                         "detalle": detalle_act.upper(),
+                        "titulo": detalle_act,
                         "TIENE_ADJUNTO": tiene_adjunto,
                     })
 
@@ -2734,14 +2735,19 @@ class AgenteExtractor:
                 fecha_act = m_f.group(1)
                 linea_limpia = re.sub(r'\d{2}/\d{2}/\d{4}(\s+\d{2}:\d{2})?', '', line).strip()
                 if len(linea_limpia) > 3:
-                    detalle_act = linea_limpia.upper()
+                    titulo_act = linea_limpia
                 elif (idx + 1) < len(lineas):
-                    detalle_act = lineas[idx + 1].upper()
+                    titulo_act = lineas[idx + 1]
                 else:
-                    detalle_act = ""
+                    titulo_act = ""
+                detalle_act = titulo_act.upper()
 
                 if not any(ign in detalle_act for ign in ["FECHA DE INGRESO", "BUSQUEDA", "CONSULTA"]):
-                    actuaciones.append({"fecha": fecha_act, "detalle": detalle_act})
+                    actuaciones.append({
+                        "fecha": fecha_act,
+                        "detalle": detalle_act,
+                        "titulo": titulo_act,
+                    })
 
         return actuaciones
 

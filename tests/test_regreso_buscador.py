@@ -418,6 +418,15 @@ class RetornoBuscadorTests(unittest.TestCase):
         self.assertEqual(seleccionar_casos(casos, ["--lote", "3"]), casos[:3])
         self.assertEqual(seleccionar_casos(casos, ["--lote", "10"]), casos[:10])
         self.assertEqual(seleccionar_casos(casos, ["--lote", "50"]), casos)
+        self.assertEqual(
+            seleccionar_casos(
+                ["A", "B", "B", "C", "D"],
+                ["--lote", "2", "--excluir", "B"],
+            ),
+            ["A", "C"],
+        )
+        with self.assertRaisesRegex(ValueError, "CAUSA_EXCLUIDA_NO_ENCONTRADA"):
+            seleccionar_casos(["A", "B"], ["--lote", "2", "--excluir", "Z"])
         with self.assertRaisesRegex(ValueError, "LOTE_FUERA_DE_RANGO"):
             seleccionar_casos(casos, ["--lote", "1"])
         with self.assertRaisesRegex(ValueError, "LOTE_FUERA_DE_RANGO"):

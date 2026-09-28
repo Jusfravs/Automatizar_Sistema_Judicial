@@ -14,6 +14,14 @@ from src.catalogo_procesal import (
     enriquecer_datos_procesales,
 )
 from src.logger_config import obtener_logger
+from src.ultima_gestion import (
+    MARCA_REVISION_ULTIMA_GESTION,
+    MOTIVO_REVISION_ULTIMA_GESTION,
+    CAMPO_ESTADO_ULTIMA_GESTION,
+    CAMPO_FECHA_ULTIMA_GESTION,
+    enriquecer_ultima_gestion_judicial,
+)
+from src.reporte_ia import preparar_vistas_ia, preparar_vistas_ia_postgres
 
 logger = obtener_logger("GestorCasos")
 
@@ -34,11 +42,15 @@ class GestorCasos:
         'fas_id FASE ACTUAL',
         'FASE ACTUAL',
         'DIAS TRANSCURRIDOS',
+        CAMPO_FECHA_ULTIMA_GESTION,
+        CAMPO_ESTADO_ULTIMA_GESTION,
     ]
     COLUMNAS_FECHA_PROCESAL = {
         'FECHA FIN ULTIMA FASE',
         'FECHA INICIO FASE ACTUAL',
+        CAMPO_FECHA_ULTIMA_GESTION,
     }
+    FILA_ENCABEZADO_REPORTE = 6
 
     @staticmethod
     def _parsear_fecha_reporte(valor):
@@ -67,6 +79,7 @@ class GestorCasos:
         return fecha.strftime("%d/%m/%Y") if fecha else valor
 
     def __init__(self, ruta_config="config.json"):
+        self.ruta_config = ruta_config
         with open(ruta_config, 'r', encoding='utf-8') as f:
             self.config = json.load(f)
 
@@ -106,6 +119,32 @@ class GestorCasos:
             self._inicializar_csv(forzar=True)
             self.df = pd.read_csv(self.ruta_csv, low_memory=False)
             self.df.columns = self.df.columns.astype(str).str.strip().str.upper()
+
+        self.df = self._unificar_columnas_id(self.df)
+
+    @staticmethod
+    def _unificar_columnas_id(df):
+        """Conserva un ID por campo; prioriza el valor no vacio mas reciente."""
+        for destino in CAMPOS_ID:
+            posiciones = []
+            for indice, nombre in enumerate(df.columns):
+                nombre = str(nombre).strip().upper()
+                partes = nombre.rsplit('.', 1)
+                if len(partes) == 2 and partes[1].isdigit():
+                    nombre = partes[0]
+                if nombre == destino.upper():
+                    posiciones.append(indice)
+            if not posiciones:
+                continue
+            valor = df.iloc[:, posiciones[0]].copy()
+            for indice in posiciones[1:]:
+                candidato = df.iloc[:, indice]
+                valido = candidato.notna() & candidato.astype(str).str.strip().ne('')
+                valor = candidato.where(valido, valor)
+            mantener = [i for i in range(len(df.columns)) if i not in posiciones]
+            df = df.iloc[:, mantener].copy()
+            df[destino] = valor
+        return df
 
     def _cargar_excel_robusto(self):
         """Carga el Excel usando una copia sombra para evitar bloqueos si está abierto en Excel, e infiere el header."""
@@ -218,6 +257,12 @@ class GestorCasos:
 
         casos = df_filtrado['NUMERO_JUICIO'].dropna().astype(str).str.strip().tolist()
 
+        revisiones = self.filtros.get('causas_revision_manual') or {}
+        if not isinstance(revisiones, dict):
+            raise ValueError('CAUSAS_REVISION_MANUAL_DEBE_SER_OBJETO')
+        excluidas = {str(c).replace('-', '').strip() for c in revisiones}
+        casos = [c for c in casos if c.replace('-', '').strip() not in excluidas]
+
         # Aplicar punto de partida si fue especificado
         inicio = self.filtros.get('inicio_desde_juicio')
         if inicio:
@@ -233,6 +278,7 @@ class GestorCasos:
         """UPDATE: Inyecta en la fila correspondiente los datos extraídos."""
         datos = dict(datos)
         enriquecer_datos_procesales(datos)
+        enriquecer_ultima_gestion_judicial(datos)
         numero_juicio_normalizado = str(numero_juicio).strip().upper()
         mask = (
             self.df['NUMERO_JUICIO'].astype(str).str.strip().str.upper()
@@ -422,8 +468,11 @@ class GestorCasos:
         for idx, fila in df_export.iterrows():
             datos = fila.to_dict()
             enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+            enriquecer_ultima_gestion_judicial(datos)
             for campo in (
                 'ULTIMA ETAPA', 'ULTIMA FASE', 'ETAPA ACTUAL', 'FASE ACTUAL',
+                CAMPO_FECHA_ULTIMA_GESTION,
+                CAMPO_ESTADO_ULTIMA_GESTION,
                 *CAMPOS_ID,
             ):
                 df_export.at[idx, campo] = datos.get(campo)
@@ -445,6 +494,7 @@ class GestorCasos:
             'ETAPA_PROCESAL (MIGRADO)', 'CODIGO_FASE',
             'FASE_PROCESAL (MIGRADO)', 'FECHA INICIAL FASE ACTUAL',
             'DIAS EN LA FASE ACTUAL', 'ETAPA_PROCESAL', 'FASE_PROCESAL', ' ',
+            'FECHA_ULTIMA_GESTION_JUDICIAL',
         ]
         df_export.drop(columns=columnas_obsoletas, inplace=True, errors='ignore')
 
@@ -465,47 +515,411 @@ class GestorCasos:
         ]
         df_export.loc[mascara_mal, campos_mal] = 'MAL INGRESADO'
         df_export.loc[mascara_mal, [*CAMPOS_ID, 'DIAS TRANSCURRIDOS']] = None
+        mascara_revision_titulo = df_export[CAMPO_ESTADO_ULTIMA_GESTION].eq(
+            MARCA_REVISION_ULTIMA_GESTION
+        )
+        for idx in df_export.index[mascara_revision_titulo]:
+            valor_comentario = df_export.at[idx, 'COMENTARIO_ULTIMO']
+            comentario = (
+                '' if pd.isna(valor_comentario) else str(valor_comentario).strip()
+            )
+            if MOTIVO_REVISION_ULTIMA_GESTION not in comentario:
+                marca = f'REVISION MANUAL: {MOTIVO_REVISION_ULTIMA_GESTION}'
+                df_export.at[idx, 'COMENTARIO_ULTIMO'] = (
+                    f'{comentario} | {marca}' if comentario else marca
+                )
         self._agregar_motivo_id_no_catalogado(df_export, mascara_mal)
 
         cols_base = [c for c in df_export.columns if c not in nuevas_cols]
         cols_finales = cols_base + nuevas_cols
         reporte = df_export[cols_finales]
-        para_carga = reporte.loc[~mascara_mal].copy()
+        para_carga = reporte.loc[~(mascara_mal | mascara_revision_titulo)].copy()
         return reporte, para_carga
 
     @staticmethod
-    def _formatear_errores_excel(ruta):
+    def _formatear_errores_excel(ruta, generado_en=None):
+        """Aplica el acabado profesional del libro sin modificar sus datos."""
         import openpyxl
-        from openpyxl.styles import Font, PatternFill
+        from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+        from openpyxl.worksheet.table import Table, TableStyleInfo
+        from openpyxl.utils import get_column_letter
 
         wb = openpyxl.load_workbook(ruta)
-        fill_rojo = PatternFill(
-            start_color="FFCCCC", end_color="FFCCCC", fill_type="solid"
-        )
-        font_rojo = Font(color="9C0006", bold=True)
-        for ws in wb.worksheets:
+        generado_en = generado_en or datetime.now()
+
+        colores = {
+            'azul': 'FF17365D',
+            'pizarra': 'FF34495E',
+            'dorado': 'FFC9A227',
+            'azul_claro': 'FFD9E2F3',
+            'gris': 'FFF3F5F7',
+            'borde': 'FFD9E0E7',
+            'rojo_fondo': 'FFFCE8E6',
+            'rojo_texto': 'FF9C0006',
+            'ambar_fondo': 'FFFFF4CC',
+            'ambar_texto': 'FF7F6000',
+            'verde_fondo': 'FFE8F3EC',
+            'verde_texto': 'FF1F6D42',
+            'blanco': 'FFFFFFFF',
+            'texto': 'FF1F2933',
+        }
+        fill = {
+            clave: PatternFill('solid', fgColor=valor)
+            for clave, valor in colores.items()
+            if clave not in {'borde', 'texto', 'rojo_texto', 'ambar_texto', 'verde_texto'}
+        }
+        borde_suave = Side(style='thin', color=colores['borde'])
+        borde_dorado = Side(style='medium', color=colores['dorado'])
+
+        anchos = {
+            'CODIGO_JUICIO': 15, 'SUCURSAL': 14, 'OFICINA': 16,
+            'ASESOR': 16, 'USUARIO': 14, 'CREDITO': 18,
+            'CEDULA_IDENTIDAD': 17, 'ESTADO': 13, 'SEGMENTO': 15,
+            'NOMBRES_CLIENTE': 28, 'NOMBRE': 28, 'SALDO_CAPITAL': 16,
+            'SALDO_TOTAL': 16, 'SALDO_CLIENTE_GRUPO': 20,
+            'PRODUCTO': 18, 'NUMERO_JUICIO': 24, 'JUZGADO': 32,
+            'CUANTIA': 16, 'DIAS_MORA': 12, 'CODIGO_ETAPA': 15,
+            'FECHA_INICIO': 17, 'FECHA_ULTIMA_GESTION_JUDICIAL': 24,
+            'FECHA_ULTIMO_COMPROMISO': 22, 'VALOR_ULTIMO_COMPROMISO': 22,
+            'RECUPERACION_ACTUAL': 20, 'RECUPERACION_MES_ANTERIOR': 24,
+            'SISTEMA': 14, 'COMENTARIO_ULTIMO': 38,
+            'HISTORIAL_ACTUACIONES': 45, 'FECHA INICIO JUICIO': 19,
+            'FECHA FIN ULTIMA FASE': 21, 'eta_id ULTIMA ETAPA': 19,
+            'ULTIMA ETAPA': 30, 'fas_id ULTIMA FASE': 18,
+            'ULTIMA FASE': 32, 'FECHA INICIO FASE ACTUAL': 23,
+            'eta_id ETAPA ACTUAL': 19, 'ETAPA ACTUAL': 30,
+            'fas_id FASE ACTUAL': 18, 'FASE ACTUAL': 32,
+            'DIAS TRANSCURRIDOS': 19,
+            CAMPO_FECHA_ULTIMA_GESTION: 24,
+            CAMPO_ESTADO_ULTIMA_GESTION: 38,
+            'ESTADO AUDITORIA IA': 22, 'FUENTE DECISION': 24,
+            'CONFIANZA IA': 17, 'REVISION PENDIENTE': 22,
+            'NUMERO_JUICIO': 24, 'ACTUACION_ID': 31, 'CARPETA': 22,
+            'CONDICION': 18, 'FUENTE': 18, 'VERSION': 22,
+            'EVIDENCIAS': 42, 'MOTIVO IA': 55,
+            'OBSERVACION HUMANA': 45,
+        }
+        columnas_moneda = {
+            'SALDO_CAPITAL', 'SALDO_TOTAL', 'SALDO_CLIENTE_GRUPO', 'CUANTIA',
+            'VALOR_ULTIMO_COMPROMISO', 'RECUPERACION_ACTUAL',
+            'RECUPERACION_MES_ANTERIOR',
+        }
+        columnas_identificador = {
+            'CODIGO_JUICIO', 'CREDITO', 'CEDULA_IDENTIDAD', 'NUMERO_JUICIO',
+        }
+        columnas_enteras = {
+            'DIAS_MORA', 'CODIGO_ETAPA', 'eta_id ULTIMA ETAPA',
+            'fas_id ULTIMA FASE', 'eta_id ETAPA ACTUAL',
+            'fas_id FASE ACTUAL', 'DIAS TRANSCURRIDOS',
+        }
+        columnas_fecha = {
+            'FECHA_INICIO', 'FECHA_ULTIMA_GESTION_JUDICIAL',
+            'FECHA_ULTIMO_COMPROMISO', 'FECHA INICIO JUICIO',
+            'FECHA FIN ULTIMA FASE', 'FECHA INICIO FASE ACTUAL',
+            CAMPO_FECHA_ULTIMA_GESTION,
+        }
+        columnas_envueltas = {
+            'NOMBRES_CLIENTE', 'NOMBRE', 'JUZGADO', 'COMENTARIO_ULTIMO',
+            'HISTORIAL_ACTUACIONES', 'ULTIMA ETAPA', 'ULTIMA FASE',
+            'ETAPA ACTUAL', 'FASE ACTUAL', CAMPO_ESTADO_ULTIMA_GESTION,
+            'EVIDENCIAS', 'MOTIVO IA', 'OBSERVACION HUMANA',
+        }
+
+        def es_error_visual(comentario, valores_estado):
+            return (
+                'ERROR:' in comentario
+                or 'ERROR_' in comentario
+                or 'FORMATO_CAUSA_INVALIDO' in comentario
+                or ('NO DEVOLVI' in comentario and 'RESULTAD' in comentario)
+                or 'MAL INGRESADO' in valores_estado
+                or 'EXCLUIDO_NO_CORRESPONDE' in valores_estado
+            )
+
+        def aplicar_marco_kpi(ws, columnas, etiqueta, valor, color_valor):
+            inicio, fin = columnas
+            rango_etiqueta = f'{inicio}3:{fin}3'
+            rango_valor = f'{inicio}4:{fin}4'
+            ws.merge_cells(rango_etiqueta)
+            ws.merge_cells(rango_valor)
+            ws[f'{inicio}3'] = etiqueta
+            ws[f'{inicio}4'] = valor
+            for fila in (3, 4):
+                for row in ws.iter_rows(
+                    min_row=fila, max_row=fila,
+                    min_col=ws[f'{inicio}{fila}'].column,
+                    max_col=ws[f'{fin}{fila}'].column,
+                ):
+                    for celda in row:
+                        celda.fill = fill['azul_claro'] if fila == 3 else PatternFill(
+                            'solid', fgColor=color_valor
+                        )
+                        celda.border = Border(
+                            left=borde_suave, right=borde_suave,
+                            top=borde_suave, bottom=borde_suave,
+                        )
+            ws[f'{inicio}3'].font = Font(
+                name='Arial', size=9, bold=True, color=colores['pizarra']
+            )
+            ws[f'{inicio}4'].font = Font(
+                name='Arial', size=14, bold=True, color=colores['texto']
+            )
+            ws[f'{inicio}3'].alignment = Alignment(horizontal='center', vertical='center')
+            ws[f'{inicio}4'].alignment = Alignment(horizontal='center', vertical='center')
+
+        def estilizar_hoja(ws, fila_encabezado, nombre_tabla, color_pestana):
             encabezados = {
-                str(celda.value).strip().upper(): celda.column
-                for celda in ws[1] if celda.value
+                str(celda.value).strip(): celda.column
+                for celda in ws[fila_encabezado] if celda.value is not None
             }
+            if not encabezados:
+                return
+
+            ultima_columna = max(encabezados.values())
+            ultima_fila = ws.max_row
+            letra_final = get_column_letter(ultima_columna)
+            primera_fila_datos = fila_encabezado + 1
+            inicio_procesal = encabezados.get('FECHA INICIO JUICIO', ultima_columna + 1)
+
+            ws.sheet_view.showGridLines = False
+            ws.sheet_view.zoomScale = 85
+            ws.sheet_properties.tabColor = color_pestana
+            ws.freeze_panes = f'A{primera_fila_datos}'
+            ws.sheet_format.defaultRowHeight = 18
+            ws.row_dimensions[fila_encabezado].height = 38
+
+            for col_idx in range(1, ultima_columna + 1):
+                celda = ws.cell(fila_encabezado, col_idx)
+                celda.fill = fill['azul'] if col_idx < inicio_procesal else fill['pizarra']
+                celda.font = Font(
+                    name='Arial', size=9, bold=True, color=colores['blanco']
+                )
+                celda.alignment = Alignment(
+                    horizontal='center', vertical='center', wrap_text=True
+                )
+                celda.border = Border(
+                    left=Side(style='thin', color=colores['blanco']),
+                    right=Side(style='thin', color=colores['blanco']),
+                    bottom=borde_dorado,
+                )
+                encabezado = str(celda.value).strip()
+                ancho = anchos.get(encabezado, min(max(len(encabezado) + 2, 12), 22))
+                ws.column_dimensions[get_column_letter(col_idx)].width = ancho
+
             col_comentario = encabezados.get('COMENTARIO_ULTIMO')
-            if not col_comentario:
-                continue
-            for row_idx in range(2, ws.max_row + 1):
-                valor = str(ws.cell(row_idx, col_comentario).value or '').upper()
-                if any(marca in valor for marca in (
-                    'ERROR:', 'NO DEVOLVI', 'MAL INGRESADO',
-                    'EXCLUIDO_NO_CORRESPONDE',
+            cols_estado = [
+                encabezados[c] for c in (
+                    'ETAPA ACTUAL', 'FASE ACTUAL', 'DIAS TRANSCURRIDOS'
+                ) if c in encabezados
+            ]
+            for row_idx in range(primera_fila_datos, ultima_fila + 1):
+                comentario = str(
+                    ws.cell(row_idx, col_comentario).value or ''
+                ).upper() if col_comentario else ''
+                valores_estado = ' '.join(
+                    str(ws.cell(row_idx, col).value or '').upper()
+                    for col in cols_estado
+                )
+                es_error = es_error_visual(comentario, valores_estado)
+                es_revision = any(marca in comentario for marca in (
+                    'REVISION MANUAL', 'ID_NO_CATALOGADO',
+                ))
+                contenido_largo = False
+
+                for col_idx in range(1, ultima_columna + 1):
+                    celda = ws.cell(row_idx, col_idx)
+                    encabezado = str(ws.cell(fila_encabezado, col_idx).value).strip()
+                    celda.font = Font(name='Arial', size=9.5, color=colores['texto'])
+                    celda.alignment = Alignment(
+                        horizontal='left', vertical='center',
+                        wrap_text=encabezado in columnas_envueltas,
+                    )
+                    if isinstance(celda.value, (int, float)) and encabezado not in columnas_identificador:
+                        celda.alignment = Alignment(horizontal='right', vertical='center')
+                    if encabezado in columnas_moneda:
+                        celda.number_format = '"$"#,##0.00'
+                    elif encabezado in columnas_identificador:
+                        celda.number_format = '0' if isinstance(celda.value, (int, float)) else '@'
+                    elif encabezado in columnas_enteras:
+                        celda.number_format = '#,##0'
+                    elif encabezado in columnas_fecha and isinstance(
+                        celda.value, (datetime, pd.Timestamp)
+                    ):
+                        celda.number_format = 'dd/mm/yyyy'
+                    if encabezado in columnas_envueltas and len(str(celda.value or '')) > 80:
+                        contenido_largo = True
+
+                if es_error:
+                    for col_idx in range(1, ultima_columna + 1):
+                        celda = ws.cell(row_idx, col_idx)
+                        celda.fill = fill['rojo_fondo']
+                        celda.font = Font(
+                            name='Arial', size=9.5, color=colores['rojo_texto'],
+                            bold=True,
+                        )
+                elif es_revision:
+                    columnas_alerta = set(cols_estado)
+                    if col_comentario:
+                        columnas_alerta.add(col_comentario)
+                    for col_idx in columnas_alerta:
+                        celda = ws.cell(row_idx, col_idx)
+                        celda.fill = fill['ambar_fondo']
+                        celda.font = Font(
+                            name='Arial', size=9.5, color=colores['ambar_texto'],
+                            bold=True,
+                        )
+                else:
+                    for col_idx in cols_estado:
+                        celda = ws.cell(row_idx, col_idx)
+                        celda.fill = fill['verde_fondo']
+                        celda.font = Font(
+                            name='Arial', size=9.5, color=colores['verde_texto'],
+                            bold=True,
+                        )
+                if contenido_largo:
+                    ws.row_dimensions[row_idx].height = 32
+
+            referencia = f'A{fila_encabezado}:{letra_final}{ultima_fila}'
+            tabla = Table(displayName=nombre_tabla, ref=referencia)
+            tabla.tableStyleInfo = TableStyleInfo(
+                name='TableStyleMedium2', showFirstColumn=False,
+                showLastColumn=False, showRowStripes=True,
+                showColumnStripes=False,
+            )
+            ws.add_table(tabla)
+
+            ws.sheet_properties.pageSetUpPr.fitToPage = True
+            ws.page_setup.orientation = 'landscape'
+            ws.page_setup.paperSize = ws.PAPERSIZE_LEGAL
+            ws.page_setup.fitToWidth = 2
+            ws.page_setup.fitToHeight = 0
+            ws.page_margins.left = 0.25
+            ws.page_margins.right = 0.25
+            ws.page_margins.top = 0.45
+            ws.page_margins.bottom = 0.45
+            ws.page_margins.header = 0.2
+            ws.page_margins.footer = 0.2
+            ws.print_title_rows = f'{fila_encabezado}:{fila_encabezado}'
+            ws.print_area = f'A1:{letra_final}{ultima_fila}'
+            ws.oddHeader.center.text = '&BReporte de gestión judicial'
+            ws.oddFooter.left.text = 'Sistema Judicial'
+            ws.oddFooter.center.text = 'Página &P de &N'
+            ws.oddFooter.right.text = generado_en.strftime('%d/%m/%Y')
+
+        ws_reporte = wb['Reporte']
+        ws_carga = wb['PARA CARGA']
+        fila_reporte = GestorCasos.FILA_ENCABEZADO_REPORTE
+
+        encabezados_reporte = {
+            str(celda.value).strip(): celda.column
+            for celda in ws_reporte[fila_reporte] if celda.value is not None
+        }
+        total = max(ws_reporte.max_row - fila_reporte, 0)
+        cargables = max(ws_carga.max_row - 1, 0)
+        observados = max(total - cargables, 0)
+        col_comentario = encabezados_reporte.get('COMENTARIO_ULTIMO')
+        cols_estado_reporte = [
+            encabezados_reporte[c] for c in ('ETAPA ACTUAL', 'FASE ACTUAL')
+            if c in encabezados_reporte
+        ]
+        revision = 0
+        if col_comentario:
+            for row_idx in range(fila_reporte + 1, ws_reporte.max_row + 1):
+                comentario = str(
+                    ws_reporte.cell(row_idx, col_comentario).value or ''
+                ).upper()
+                valores_estado = ' '.join(
+                    str(ws_reporte.cell(row_idx, col).value or '').upper()
+                    for col in cols_estado_reporte
+                )
+                es_error = es_error_visual(comentario, valores_estado)
+                if not es_error and any(marca in comentario for marca in (
+                    'REVISION MANUAL', 'ID_NO_CATALOGADO',
                 )):
-                    for col_idx in range(1, ws.max_column + 1):
-                        ws.cell(row_idx, col_idx).fill = fill_rojo
-                        ws.cell(row_idx, col_idx).font = font_rojo
+                    revision += 1
+
+        ultima_columna = max(encabezados_reporte.values())
+        letra_final = get_column_letter(ultima_columna)
+        ws_reporte.merge_cells(f'A1:{letra_final}1')
+        ws_reporte.merge_cells(f'A2:{letra_final}2')
+        ws_reporte['A1'] = 'REPORTE FINAL DE GESTIÓN JUDICIAL'
+        ws_reporte['A2'] = (
+            'Generado el ' + generado_en.strftime('%d/%m/%Y a las %H:%M')
+        )
+        for row in ws_reporte.iter_rows(min_row=1, max_row=2, min_col=1, max_col=ultima_columna):
+            for celda in row:
+                celda.fill = fill['azul']
+        ws_reporte['A1'].font = Font(
+            name='Arial', size=15, bold=True, color=colores['blanco']
+        )
+        ws_reporte['A2'].font = Font(
+            name='Arial', size=9.5, italic=True, color=colores['blanco']
+        )
+        ws_reporte['A1'].alignment = Alignment(horizontal='left', vertical='center')
+        ws_reporte['A2'].alignment = Alignment(horizontal='left', vertical='center')
+        ws_reporte.row_dimensions[1].height = 28
+        ws_reporte.row_dimensions[2].height = 20
+        ws_reporte.row_dimensions[3].height = 18
+        ws_reporte.row_dimensions[4].height = 25
+        ws_reporte.row_dimensions[5].height = 8
+
+        espacio_disponible = ultima_columna - 3
+        tamano_base, sobrantes = divmod(espacio_disponible, 4)
+        inicio = 1
+        tarjetas = (
+            ('Total de registros', total, colores['blanco']),
+            ('Listos para carga', cargables, colores['verde_fondo']),
+            ('Observados / no cargables', observados, colores['rojo_fondo']),
+            ('Revisión manual / ID pendiente', revision, colores['ambar_fondo']),
+        )
+        for indice, (etiqueta, valor, color_valor) in enumerate(tarjetas):
+            tamano = tamano_base + (1 if indice < sobrantes else 0)
+            fin = inicio + tamano - 1
+            aplicar_marco_kpi(
+                ws_reporte,
+                (get_column_letter(inicio), get_column_letter(fin)),
+                etiqueta,
+                valor,
+                color_valor,
+            )
+            inicio = fin + 2
+
+        estilizar_hoja(
+            ws_reporte, fila_reporte, 'TablaReporteJudicial', colores['azul']
+        )
+        estilizar_hoja(
+            ws_carga, 1, 'TablaParaCarga', colores['dorado']
+        )
+        if 'HISTORIAL HITOS' in wb:
+            estilizar_hoja(wb['HISTORIAL HITOS'], 1, 'TablaHitosIA', colores['pizarra'])
+        if 'REVISION IA' in wb:
+            estilizar_hoja(wb['REVISION IA'], 1, 'TablaRevisionIA', colores['dorado'])
+        wb.properties.title = 'Reporte final de gestión judicial'
+        wb.properties.subject = 'Seguimiento procesal y archivo para carga a Sistemas'
+        wb.properties.creator = 'Sistema Judicial ESPOIR'
         wb.save(ruta)
         wb.close()
 
     def exportar_excel(self, fecha_actual=None):
-        """Genera atómicamente las hojas ``Reporte`` y ``PARA CARGA``."""
+        """Genera el reporte, la hoja para Sistemas y las vistas de IA."""
         reporte, para_carga = self._preparar_exportacion(fecha_actual)
+        hitos = revisiones = None
+        configuracion = getattr(self, 'config', {})
+        if configuracion.get('inferencia_ia'):
+            try:
+                if configuracion.get('base_de_datos', {}).get('motor') == 'postgres':
+                    reporte, hitos, revisiones = preparar_vistas_ia_postgres(
+                        configuracion, reporte
+                    )
+                else:
+                    ruta_db = configuracion.get('rutas', {}).get('archivo_db')
+                    if ruta_db:
+                        if not os.path.isabs(ruta_db):
+                            ruta_db = os.path.join(
+                                os.path.dirname(os.path.abspath(getattr(self, 'ruta_config', 'config.json'))), ruta_db
+                            )
+                        reporte, hitos, revisiones = preparar_vistas_ia(ruta_db, reporte)
+            except Exception as exc:
+                logger.warning('No se pudieron preparar las vistas IA: %s', type(exc).__name__)
         ruta_objetivo = os.path.abspath(self.ruta_final)
         directorio = os.path.dirname(ruta_objetivo) or os.getcwd()
         os.makedirs(directorio, exist_ok=True)
@@ -517,8 +931,14 @@ class GestorCasos:
         os.close(descriptor)
         try:
             with pd.ExcelWriter(ruta_temporal, engine='openpyxl') as writer:
-                reporte.to_excel(writer, index=False, sheet_name='Reporte')
+                reporte.to_excel(
+                    writer, index=False, sheet_name='Reporte',
+                    startrow=self.FILA_ENCABEZADO_REPORTE - 1,
+                )
                 para_carga.to_excel(writer, index=False, sheet_name='PARA CARGA')
+                if hitos is not None:
+                    hitos.to_excel(writer, index=False, sheet_name='HISTORIAL HITOS')
+                    revisiones.to_excel(writer, index=False, sheet_name='REVISION IA')
             self._formatear_errores_excel(ruta_temporal)
             try:
                 os.replace(ruta_temporal, ruta_objetivo)

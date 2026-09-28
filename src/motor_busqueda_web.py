@@ -1,4 +1,5 @@
 # src/motor_busqueda_web.py
+import hashlib
 import os
 import re
 import json
@@ -2544,19 +2545,25 @@ class BotJudicialTransaccional(BotJudicial):
                 return
             if not isinstance(valor, dict):
                 return
-            detalle = (
-                valor.get("actuacion") or valor.get("detalle")
-                or valor.get("tipoActuacion") or valor.get("actividad")
-            )
+            campo_detalle = next((
+                campo for campo in (
+                    "actuacion", "detalle", "tipoActuacion", "actividad"
+                ) if valor.get(campo)
+            ), None)
+            detalle = valor.get(campo_detalle) if campo_detalle else None
             fecha = next((valor.get(campo) for campo in (
                 "fecha", "fechaActuacion", "fechaProvidencia", "fechaCrea",
                 "fechaCreacion", "fechaRegistro", "fechaIngreso"
             ) if valor.get(campo)), None)
             if detalle:
-                clave = (str(fecha) if fecha else None, str(detalle).strip().upper())
+                detalle_literal = str(detalle).strip()
+                clave = (str(fecha) if fecha else None, detalle_literal.upper())
                 if clave not in vistos:
                     vistos.add(clave)
-                    actuaciones.append({"fecha": clave[0], "detalle": clave[1]})
+                    actuacion = {"fecha": clave[0], "detalle": clave[1]}
+                    if campo_detalle in {"actuacion", "tipoActuacion", "actividad"}:
+                        actuacion["titulo"] = detalle_literal
+                    actuaciones.append(actuacion)
             for clave_hija, hijo in valor.items():
                 if clave_hija in {"actuaciones", "listaActuaciones"} or isinstance(hijo, (dict, list)):
                     recorrer(hijo)
@@ -2637,7 +2644,11 @@ class BotJudicialTransaccional(BotJudicial):
 
     def _guardar_artefactos_carpeta(self, causa, descriptor, paquetes, contenido, frames, resultado, diagnostico):
         intento = self._clave_archivo(self._intento_actual or "sin_intento")
-        clave = self._clave_archivo(descriptor["clave_carpeta"])
+        # El descriptor completo permanece en result.json; el nombre en disco debe
+        # ser corto para admitir rutas de ejecucion profundas en Windows.
+        clave = "c_" + hashlib.sha256(
+            str(descriptor["clave_carpeta"]).encode("utf-8")
+        ).hexdigest()[:16]
         directorio = os.path.join("data", "temp_htmls", causa, intento, clave)
         os.makedirs(directorio, exist_ok=True)
         rutas = {}
