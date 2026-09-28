@@ -6,6 +6,8 @@ from contextlib import contextmanager
 import pandas as pd
 from src.catalogo_procesal import enriquecer_datos_procesales
 from src.logger_config import obtener_logger
+from src.ultima_gestion import enriquecer_ultima_gestion_judicial
+from src.historial_ia import inicializar_esquema, registrar_historial
 
 logger = obtener_logger("GestorCola")
 
@@ -145,6 +147,7 @@ class GestorCola:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_resultados_causa ON resultados_expediente(numero_causa)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_eventos_causa ON eventos_extraccion(numero_causa)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_eventos_creado ON eventos_extraccion(creado_en)")
+            inicializar_esquema(conn)
             conn.commit()
 
     def poblar_cola(self, df_o_lista):
@@ -295,11 +298,13 @@ class GestorCola:
             if isinstance(resultado.get("datos"), dict):
                 datos = dict(resultado["datos"])
                 enriquecer_datos_procesales(datos, normalizar_etiquetas=True)
+                enriquecer_ultima_gestion_judicial(datos)
                 resultado["datos"] = datos
             else:
                 enriquecer_datos_procesales(
                     resultado, normalizar_etiquetas=True
                 )
+                enriquecer_ultima_gestion_judicial(resultado)
         datos_json = json.dumps(resultado, ensure_ascii=False)
         estados_validos = {
             "PROCESADO", "PARCIAL", "SIN_RESULTADOS", "ERROR",
@@ -354,6 +359,8 @@ class GestorCola:
             )
             if cursor.rowcount != 1:
                 raise LookupError("No existe una reserva para la causa '%s'." % causa_str)
+            if not conservar_evidencia_previa and isinstance(resultado, dict):
+                registrar_historial(conn, causa_str, resultado)
 
     @staticmethod
     def _resultado_tiene_evidencia(resultado):

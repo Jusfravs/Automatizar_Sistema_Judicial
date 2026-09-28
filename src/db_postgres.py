@@ -18,7 +18,7 @@ class GestorPostgres:
     def __init__(self, host=None, port=None, user=None, password=None, dbname=None):
         self.host = host or os.getenv("POSTGRES_HOST", "localhost")
         self.port = int(port or os.getenv("POSTGRES_PORT", 5432))
-        self.user = user or os.getenv("POSTGRES_USER", "postgres")
+        self.user = user or os.getenv("POSTGRES_USER", "judicial_app")
         self.password = password or os.getenv("POSTGRES_PASSWORD", "")
         self.dbname = dbname or os.getenv("POSTGRES_DB", "casos_judiciales")
 
