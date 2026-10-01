@@ -8,12 +8,17 @@ from src.gestor_casos import GestorCasos
 from src.gestor_cola import GestorCola
 from src.ejecucion import ConfiguracionConcurrencia, extraer_trabajadores
 from src.motor_busqueda_web import BotJudicial
+from src.seleccion_ejecucion import (
+    MAXIMO_LOTE,
+    TAMANO_BLOQUE_NAVEGADOR,
+    _causa_comparable,
+    dividir_en_bloques,
+    seleccionar_casos,
+)
 
 
 logger = obtener_logger("Main")
 RUTA_CASOS_FALLIDOS = os.path.join("data", "casos_fallidos.txt")
-TAMANO_BLOQUE_NAVEGADOR = 10
-MAXIMO_LOTE = 100
 
 def extraer_ruta_config(argumentos):
     """Extrae --config <ruta> sin alterar los modos de seleccion existentes."""
@@ -65,10 +70,6 @@ def actualizar_casos_fallidos_piloto(
     return resultado
 
 
-def _causa_comparable(valor):
-    return str(valor or "").replace("-", "").strip()
-
-
 def motivo_revision_manual_por_formato(causa):
     """Devuelve el motivo cuando una causa no tiene un formato SATJE reconocible."""
     texto = str(causa or "").strip()
@@ -77,88 +78,6 @@ def motivo_revision_manual_por_formato(causa):
     if re.fullmatch(r"\d{13,14}", texto):
         return None
     return "FORMATO_CAUSA_INVALIDO"
-
-
-def dividir_en_bloques(casos, tamano_bloque=TAMANO_BLOQUE_NAVEGADOR):
-    """Divide un lote largo en sesiones acotadas de navegador."""
-    if tamano_bloque < 1:
-        raise ValueError("TAMANO_BLOQUE_INVALIDO")
-    return [
-        list(casos[indice:indice + tamano_bloque])
-        for indice in range(0, len(casos), tamano_bloque)
-    ]
-
-
-def seleccionar_casos(casos, argumentos):
-    """Aplica modos acotados o el inicio legado sin ampliar silenciosamente el lote."""
-    argumentos = list(argumentos or [])
-    if not argumentos:
-        return list(casos)
-    if argumentos[0] == "--solo":
-        if len(argumentos) != 2 or not argumentos[1].strip():
-            raise ValueError("USO_INVALIDO: --solo <causa>")
-        objetivo = _causa_comparable(argumentos[1])
-        coincidencia = next(
-            (causa for causa in casos if _causa_comparable(causa) == objetivo), None
-        )
-        if coincidencia is None:
-            raise ValueError(f"CAUSA_SOLO_NO_ENCONTRADA:{argumentos[1]}")
-        return [coincidencia]
-    if argumentos[0] == "--pendientes":
-        if len(argumentos) != 1:
-            raise ValueError("USO_INVALIDO: --pendientes")
-        return list(casos)
-    if argumentos[0] == "--reprocesar-filtro":
-        if len(argumentos) != 1:
-            raise ValueError("USO_INVALIDO: --reprocesar-filtro")
-        resultado = []
-        vistos = set()
-        for causa in casos:
-            comparable = _causa_comparable(causa)
-            if comparable and comparable not in vistos:
-                vistos.add(comparable)
-                resultado.append(causa)
-        return resultado
-    if argumentos[0] == "--lote":
-        if len(argumentos) < 2:
-            raise ValueError("USO_INVALIDO: --lote <cantidad 2..100>")
-        try:
-            cantidad = int(argumentos[1])
-        except (TypeError, ValueError) as exc:
-            raise ValueError("USO_INVALIDO: --lote <cantidad 2..100>") from exc
-        if cantidad < 2 or cantidad > MAXIMO_LOTE:
-            raise ValueError("LOTE_FUERA_DE_RANGO:2..100")
-        if len(argumentos) == 2:
-            return list(casos)[:cantidad]
-        excluidas = set()
-        restantes = argumentos[2:]
-        while restantes:
-            if len(restantes) < 2 or restantes[0] != "--excluir":
-                raise ValueError("USO_INVALIDO: --lote <cantidad> [--excluir <causa> ...]")
-            causa = _causa_comparable(restantes[1])
-            if not causa:
-                raise ValueError("CAUSA_EXCLUIDA_INVALIDA")
-            excluidas.add(causa)
-            restantes = restantes[2:]
-        resultado = []
-        vistos = set()
-        for causa in casos:
-            comparable = _causa_comparable(causa)
-            if comparable and comparable not in vistos:
-                vistos.add(comparable)
-                if comparable not in excluidas:
-                    resultado.append(causa)
-        if not excluidas.issubset(vistos):
-            raise ValueError("CAUSA_EXCLUIDA_NO_ENCONTRADA")
-        return resultado[:cantidad]
-    if argumentos[0].startswith("--") or len(argumentos) != 1:
-        raise ValueError("ARGUMENTOS_INVALIDOS")
-    objetivo = _causa_comparable(argumentos[0])
-    indice = next(
-        (i for i, causa in enumerate(casos) if _causa_comparable(causa) == objetivo),
-        None,
-    )
-    return list(casos) if indice is None else list(casos[indice:])
 
 
 def guardar_csv_o_fallar(repo):
@@ -221,69 +140,17 @@ def _ejecutar_lote_postgres(
     trabajadores,
 ):
     """Prepara un lote y delega la ejecucion a la cola PostgreSQL."""
-    modo_limitado = argumentos[:1] in (
-        ["--solo"],
-        ["--lote"],
-        ["--pendientes"],
-        ["--reprocesar-filtro"],
-    )
-    if modo_limitado:
-        repo.filtros["inicio_desde_juicio"] = None
-    candidatos = repo.obtener_casos_pendientes()
-    if argumentos[:1] in (["--lote"], ["--pendientes"]) and "--omitir-procesados" in argumentos:
-        if argumentos.count("--omitir-procesados") != 1:
-            raise ValueError("OPCION_OMITIR_PROCESADOS_DUPLICADA")
-        from src.repositorio_postgres import RepositorioColaPostgres
+    from src.ejecucion_postgres import ejecutar_lote_postgres
 
-        repositorio_pg = RepositorioColaPostgres.desde_config(
-            repo.config["base_de_datos"]
-        )
-        procesadas = {
-            _causa_comparable(causa)
-            for causa in repositorio_pg.listar_causas_procesadas()
-        }
-        pendientes = []
-        vistos = set(procesadas)
-        for causa in candidatos:
-            comparable = _causa_comparable(causa)
-            if comparable and comparable not in vistos:
-                vistos.add(comparable)
-                pendientes.append(causa)
-        candidatos = pendientes
-        logger.info(
-            "[POSTGRES] Continuacion: %s causas unicas disponibles tras omitir procesadas.",
-            len(candidatos),
-        )
-        argumentos = [
-            argumento for argumento in argumentos
-            if argumento != "--omitir-procesados"
-        ]
-    casos = seleccionar_casos(candidatos, argumentos)
-    if not casos:
-        logger.info("[-] No existen juicios pendientes para procesar.")
-        guardar_casos_fallidos([], ruta_casos_fallidos)
-        return None
-
-    from src.coordinador_concurrente import CoordinadorConcurrente
-
-    logger.info(
-        "[POSTGRES] Preparando %s causas con %s trabajador(es).",
-        len(casos),
-        trabajadores,
-    )
-    coordinador = CoordinadorConcurrente(
+    return ejecutar_lote_postgres(
         repo,
+        argumentos,
         ruta_config,
-        trabajadores=trabajadores,
+        ruta_casos_fallidos,
+        trabajadores,
+        guardar_casos_fallidos=guardar_casos_fallidos,
+        logger=logger,
     )
-    resultado = coordinador.ejecutar(casos, ruta_casos_fallidos)
-    logger.info(
-        "[POSTGRES] Ejecucion %s finalizada como %s: %s",
-        resultado["ejecucion_id"],
-        resultado["estado"],
-        resultado["estadisticas"],
-    )
-    return resultado
 
 
 def _ejecutar_lote(repo, cola, argumentos, ruta_casos_fallidos):

@@ -1566,6 +1566,8 @@ class MotorInferenciaProcesal:
     def _es_citacion_exitosa(texto_normalizado):
         if MotorInferenciaProcesal._es_citacion_fallida_explicita(texto_normalizado):
             return False
+        if MotorInferenciaProcesal._es_boleta_citacion_pendiente(texto_normalizado):
+            return False
         if re.search(r"\b(?:SE\s+DISPONE|ORDENA|A\s+FIN\s+DE\s+QUE\s+SEA)\s+LEGALMENTE\s+CITAD[OA]\b", texto_normalizado):
             return False
         if any(k in texto_normalizado for k in ("NO SE ENCUENTRA CITADO", "NO HE PODIDO CITAR", "NO HA SIDO CITADO", "NO EXISTE LA DIRECCION", "DIRECCION INCORRECTA")):
@@ -1584,6 +1586,29 @@ class MotorInferenciaProcesal:
             or "CITADA EN PERSONA" in texto_normalizado
             or "BOLETA 3" in texto_normalizado
             or "TERCERA GESTION" in texto_normalizado
+        )
+
+    @staticmethod
+    def _es_boleta_citacion_pendiente(texto_normalizado):
+        """Una boleta emitida para el demandado no acredita su entrega."""
+        constancia = re.search(
+            r"\b(?:NOTIFICADA|REALIZADA|ENTREGADA|FIJADA)\b",
+            texto_normalizado,
+        )
+        constancia_negada = re.search(
+            r"\b(?:NO|SIN)\s+(?:(?:SE\s+)?(?:HA\s+SIDO|FUE)\s+)?"
+            r"(?:NOTIFICADA|REALIZADA|ENTREGADA|FIJADA)\b",
+            texto_normalizado,
+        )
+        return bool(
+            re.search(
+                r"\bBOLETA\s+DE\s+CITACION\s+(?:AL|A\s+LA)\s+DEMANDAD[OA]\b",
+                texto_normalizado,
+            )
+            and (not constancia or constancia_negada)
+            and not MotorInferenciaProcesal._es_citacion_fallida_explicita(
+                texto_normalizado
+            )
         )
 
     @staticmethod
@@ -2207,8 +2232,15 @@ class MotorInferenciaProcesal:
         citaciones_fallidas = [act for act, norm in actuaciones_normalizadas if cls._es_citacion_fallida_explicita(norm)]
         citaciones_pendientes = [
             act for act, norm in actuaciones_normalizadas
-            if "RAZON ENVIO A CITACIONES" in norm
+            if (
+                "RAZON ENVIO A CITACIONES" in norm
+                or cls._es_boleta_citacion_pendiente(norm)
+            )
             and not cls._es_citacion_fallida_explicita(norm)
+        ]
+        boletas_pendientes = [
+            act for act, norm in actuaciones_normalizadas
+            if cls._es_boleta_citacion_pendiente(norm)
         ]
         citaciones_exitosas = [act for act, norm in actuaciones_normalizadas if cls._es_citacion_exitosa(norm)]
         citaciones_prensa = [
@@ -2475,6 +2507,18 @@ class MotorInferenciaProcesal:
             regla_aplicada = "revision_documental_escrito_generico"
         else:
             etapa_actual, fase_actual = cls.calcular_siguiente_fase(ultima_fase)
+
+        if fase_actual == "2.1 CITACION (PERSONA/BOLETA)" and boletas_pendientes:
+            pendientes_posteriores = [
+                act for act in boletas_pendientes
+                if act.get("fecha")
+                and cls._fecha_ordenable(act.get("fecha")) >= cls._fecha_ordenable(fecha_fin)
+            ]
+            if pendientes_posteriores:
+                fecha_inicio_fase_actual = max(
+                    pendientes_posteriores,
+                    key=lambda act: cls._fecha_ordenable(act.get("fecha")),
+                )["fecha"]
 
         return ResultadoInferencia(
             ultima_etapa=ultima_etapa,

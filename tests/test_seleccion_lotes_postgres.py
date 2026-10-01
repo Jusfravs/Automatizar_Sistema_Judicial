@@ -10,6 +10,46 @@ from main import _ejecutar_lote_postgres, seleccionar_casos
 
 
 class SeleccionLotesPostgresTests(unittest.TestCase):
+    def test_hoja_seleccion_limita_causas_sin_alterar_csv(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "ESTADO": ["ACTIVO", "ACTIVO", "ACTIVO"],
+            "NUMERO_JUICIO": ["01-01", "02-02", "03-03"],
+        })
+        gestor.ruta_excel = "origen.xlsx"
+        gestor.filtros = {
+            "estado_judicial": "ACTIVO",
+            "hoja_seleccion_causas": "faltantes",
+        }
+        with patch("src.gestor_casos.pd.read_excel") as leer_hoja:
+            leer_hoja.return_value = pd.DataFrame({
+                "NUMERO_JUICIO": ["0101", "03-03"],
+            })
+            self.assertEqual(
+                gestor.obtener_casos_pendientes(), ["01-01", "03-03"]
+            )
+            leer_hoja.assert_called_once_with(
+                "origen.xlsx", sheet_name="faltantes", dtype=str,
+            )
+        self.assertEqual(len(gestor.df), 3)
+
+    def test_exportacion_contiene_solo_causas_de_hoja_seleccion(self):
+        gestor = GestorCasos.__new__(GestorCasos)
+        gestor.df = pd.DataFrame({
+            "CODIGO_JUICIO": [1, 2, 3],
+            "NUMERO_JUICIO": ["01-01", "02-02", "03-03"],
+        })
+        gestor.ruta_excel = "origen.xlsx"
+        gestor.filtros = {"hoja_seleccion_causas": "faltantes"}
+        with patch("src.gestor_casos.pd.read_excel") as leer_hoja:
+            leer_hoja.return_value = pd.DataFrame({
+                "NUMERO_JUICIO": ["0101", "03-03"],
+            })
+            reporte, para_carga = gestor._preparar_exportacion()
+        self.assertEqual(reporte["NUMERO_JUICIO"].tolist(), ["01-01", "03-03"])
+        self.assertEqual(para_carga["NUMERO_JUICIO"].tolist(), ["01-01", "03-03"])
+        self.assertEqual(len(gestor.df), 3)
+
     def test_pendientes_sin_limite_omite_completadas(self):
         gestor = SimpleNamespace(
             filtros={}, config={"base_de_datos": {"motor": "postgres"}},
