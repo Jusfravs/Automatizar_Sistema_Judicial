@@ -78,10 +78,13 @@ class GestorCasos:
         fecha = cls._parsear_fecha_reporte(valor)
         return fecha.strftime("%d/%m/%Y") if fecha else valor
 
-    def __init__(self, ruta_config="config.json"):
+    def __init__(self, ruta_config="config.json", *, config_efectiva=None):
         self.ruta_config = ruta_config
-        with open(ruta_config, 'r', encoding='utf-8') as f:
-            self.config = json.load(f)
+        if config_efectiva is None:
+            with open(ruta_config, 'r', encoding='utf-8') as f:
+                self.config = json.load(f)
+        else:
+            self.config = config_efectiva
 
         rutas = self.config.get('rutas', {})
         self.ruta_csv = rutas.get('archivo_csv', 'data/reporte_trabajo.csv')

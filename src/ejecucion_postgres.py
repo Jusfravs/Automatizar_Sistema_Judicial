@@ -31,9 +31,14 @@ def ejecutar_lote_postgres(
         repositorio_pg = RepositorioColaPostgres.desde_config(
             repo.config["base_de_datos"]
         )
+        perfil = repo.config.get("perfil")
+        causas_procesadas = (
+            repositorio_pg.listar_causas_procesadas(perfil=perfil)
+            if perfil else repositorio_pg.listar_causas_procesadas()
+        )
         procesadas = {
             _causa_comparable(causa)
-            for causa in repositorio_pg.listar_causas_procesadas()
+            for causa in causas_procesadas
         }
         pendientes = []
         vistos = set(procesadas)

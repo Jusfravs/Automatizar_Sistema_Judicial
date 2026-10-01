@@ -85,7 +85,7 @@ def guardar_csv_o_fallar(repo):
         raise RuntimeError("PERSISTENCIA_ERROR:CSV")
 
 
-def main(argv=None):
+def main(argv=None, *, config_efectiva=None):
     configurar_logging()
     argumentos = list(sys.argv[1:] if argv is None else argv)
     ruta_config, argumentos = extraer_ruta_config(argumentos)
@@ -93,7 +93,8 @@ def main(argv=None):
     logger.info("[RPA JUDICATURA] - SISTEMA ASISTIDO DE CONSULTA MASIVA")
     logger.info("=" * 60)
 
-    repo = GestorCasos(ruta_config)
+    repo = (GestorCasos(ruta_config) if config_efectiva is None
+            else GestorCasos(ruta_config, config_efectiva=config_efectiva))
     config_db = repo.config.get("base_de_datos") or {}
     motor_db = str(config_db.get("motor", "sqlite")).lower()
     config_concurrencia = ConfiguracionConcurrencia.desde_config(

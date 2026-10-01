@@ -24,9 +24,9 @@
     "semantic_hash": ""
   },
   "main.py": {
-    "mtime": 1790864048.3450143,
-    "seen": 1790864106.1570854,
-    "ast_hash": "79e3f86060f0a22a80dbe28b05344983",
+    "mtime": 1790872314.287695,
+    "seen": 1790884102.5095308,
+    "ast_hash": "f64cb8884dd5b6fb9318bd6547a267ce",
     "semantic_hash": ""
   },
   "migracion_db.py": {
@@ -54,9 +54,9 @@
     "semantic_hash": "cdb4431059242c3c2681bc14f70f8a7e"
   },
   "scripts/inicializar_postgres.py": {
-    "mtime": 1790100882.3257189,
-    "seen": 1790177081.2099147,
-    "ast_hash": "96d4decf86f779c74e5f56541658d96e",
+    "mtime": 1790866589.68356,
+    "seen": 1790866618.6387975,
+    "ast_hash": "62c528b790d19c8f72430dde587c0c79",
     "semantic_hash": ""
   },
   "scripts/migrar_sqlite_a_postgres.py": {
@@ -144,15 +144,15 @@
     "semantic_hash": "0ffd95d8083cca87040cede878e612cc"
   },
   "src/db_postgres.py": {
-    "mtime": 1790101488.338633,
-    "seen": 1790177081.2099147,
-    "ast_hash": "35f03e2f66f23d9297c5817743484ddf",
+    "mtime": 1790866364.4426048,
+    "seen": 1790866618.6429613,
+    "ast_hash": "77bf7e4077ce82beb066f1ba00dd9a37",
     "semantic_hash": ""
   },
   "src/gestor_casos.py": {
-    "mtime": 1790784916.6666963,
-    "seen": 1790787488.5630953,
-    "ast_hash": "06b9f22dd114b3051ded0b03904d83e6",
+    "mtime": 1790872314.2741256,
+    "seen": 1790884102.5150652,
+    "ast_hash": "1a2228363381fe5a4ccabd942a2e5053",
     "semantic_hash": ""
   },
   "src/gestor_cola.py": {
@@ -450,9 +450,9 @@
     "semantic_hash": "2b92ad2c0dec28ede39aeed371ad27f1"
   },
   "DOCUMENTACION/INDICE.md": {
-    "mtime": 1790346203.0327258,
-    "seen": 1790353267.3168988,
-    "ast_hash": "6a2cb35bc501a6dfe11aa8d71ed754da",
+    "mtime": 1790866754.607697,
+    "seen": 1790866790.5914114,
+    "ast_hash": "fe9aff21bece8f14395bc523e9505634",
     "semantic_hash": ""
   },
   "Prompt_correcion_Filtro.txt": {
@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "src/coordinador_concurrente.py": {
-    "mtime": 1790372403.6367376,
-    "seen": 1790372738.3672693,
-    "ast_hash": "c123bf6e1021d8ddf050cea92b9cab71",
+    "mtime": 1790872480.3654516,
+    "seen": 1790884102.5150652,
+    "ast_hash": "64f4cf59e999f0955e2f17eb0f4f50c3",
     "semantic_hash": ""
   },
   "src/ejecucion.py": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "src/repositorio_postgres.py": {
-    "mtime": 1790372838.816536,
-    "seen": 1790372871.8647432,
-    "ast_hash": "3c0bdbe82384e93175c952b3a6bd1ec4",
+    "mtime": 1790872469.4816518,
+    "seen": 1790884102.5206661,
+    "ast_hash": "ea350992af530cd8024a1441fc313a6b",
     "semantic_hash": ""
   },
   "src/repositorio_sqlite.py": {
@@ -678,9 +678,9 @@
     "semantic_hash": ""
   },
   "DOCUMENTACION/03_PLANES/ESTADO_PAUSA_DEPURACION_20260930.md": {
-    "mtime": 1790863795.136618,
-    "seen": 1790864106.1721835,
-    "ast_hash": "13063515bfc57a1080b8ef6f65f4c005",
+    "mtime": 1790864720.3389578,
+    "seen": 1790866618.6429613,
+    "ast_hash": "3df9b8c0560041c7360be107b5200e7f",
     "semantic_hash": ""
   },
   "DOCUMENTACION/03_PLANES/PLAN_DEPURACION_MODULAR_MULTIAGENTE.md": {
@@ -708,15 +708,63 @@
     "semantic_hash": ""
   },
   "src/ejecucion_postgres.py": {
-    "mtime": 1790864048.3450143,
-    "seen": 1790864106.1721835,
-    "ast_hash": "f43e45d2460fa3805fb166268caf1018",
+    "mtime": 1790866527.641886,
+    "seen": 1790866618.6429613,
+    "ast_hash": "b2bf5885784d08ed6683e8731f4885a0",
     "semantic_hash": ""
   },
   "tests/test_despacho_postgres_main.py": {
     "mtime": 1790864216.803823,
     "seen": 1790864244.5648026,
     "ast_hash": "14a733df3f7097b8b69b0e7aaa8cabc0",
+    "semantic_hash": ""
+  },
+  "consola.py": {
+    "mtime": 1790873282.766047,
+    "seen": 1790884102.5095308,
+    "ast_hash": "2050c7f3a7bba5620160f510aa21e028",
+    "semantic_hash": ""
+  },
+  "src/normalizacion_excel.py": {
+    "mtime": 1790866311.3047194,
+    "seen": 1790866618.6429613,
+    "ast_hash": "8f1a70d7a0cf1a3ea2f1b06eee5c6071",
+    "semantic_hash": ""
+  },
+  "tests/test_consola_excel.py": {
+    "mtime": 1790873216.9458106,
+    "seen": 1790884102.5206661,
+    "ast_hash": "cd755ad549f42db2e5010d80c44400cd",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/01_GENERAL/CONSOLA_EXCEL.md": {
+    "mtime": 1790873154.7432199,
+    "seen": 1790884102.5206661,
+    "ast_hash": "7aa4905573cd438cf4bea2f6c3d40eac",
+    "semantic_hash": ""
+  },
+  "src/interfaz_cmd.py": {
+    "mtime": 1790873268.9395475,
+    "seen": 1790884102.5150652,
+    "ast_hash": "0912303e2edba1f9253505352bbe0e08",
+    "semantic_hash": ""
+  },
+  "tests/test_interfaz_cmd.py": {
+    "mtime": 1790873058.9285746,
+    "seen": 1790884102.5206661,
+    "ast_hash": "388b723370d37ee490411f7f1ade2fb0",
+    "semantic_hash": ""
+  },
+  "config_consola.json": {
+    "mtime": 1790872694.3406198,
+    "seen": 1790884102.5095308,
+    "ast_hash": "aa15edce78da19927771ddf6f0304c54",
+    "semantic_hash": ""
+  },
+  "src/configuracion_lotes.py": {
+    "mtime": 1790883969.8983967,
+    "seen": 1790884102.5150652,
+    "ast_hash": "1253f158c9abb8226486cf6ffc7d5b82",
     "semantic_hash": ""
   }
 }

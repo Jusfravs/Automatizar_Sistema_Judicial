@@ -12,6 +12,7 @@ pueden haber sido sustituidos.
 
 - [README](01_GENERAL/README.md): arquitectura y componentes.
 - [Manual de uso](01_GENERAL/MANUAL_DE_USO.md): consola, claves, comandos y pilotos vigentes.
+- [Consola para nuevos Excel](01_GENERAL/CONSOLA_EXCEL.md): validación, preparación de lotes y revisión de errores.
 - [Contexto de reanudación](01_GENERAL/CONTEXTO_REANUDACION.md): estado comprobado y siguiente paso.
 - [Visión del proyecto](01_GENERAL/Vision_Proyecto.md): objetivos y alcance.
 
