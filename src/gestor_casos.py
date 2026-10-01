@@ -78,10 +78,13 @@ class GestorCasos:
         fecha = cls._parsear_fecha_reporte(valor)
         return fecha.strftime("%d/%m/%Y") if fecha else valor
 
-    def __init__(self, ruta_config="config.json"):
+    def __init__(self, ruta_config="config.json", *, config_efectiva=None):
         self.ruta_config = ruta_config
-        with open(ruta_config, 'r', encoding='utf-8') as f:
-            self.config = json.load(f)
+        if config_efectiva is None:
+            with open(ruta_config, 'r', encoding='utf-8') as f:
+                self.config = json.load(f)
+        else:
+            self.config = config_efectiva
 
         rutas = self.config.get('rutas', {})
         self.ruta_csv = rutas.get('archivo_csv', 'data/reporte_trabajo.csv')
@@ -212,6 +215,23 @@ class GestorCasos:
 
         df_excel.to_csv(self.ruta_csv, index=False, encoding='utf-8-sig')
 
+    def _causas_hoja_seleccion(self):
+        hoja = str(self.filtros.get('hoja_seleccion_causas') or '').strip()
+        if not hoja:
+            return None
+        seleccion = pd.read_excel(self.ruta_excel, sheet_name=hoja, dtype=str)
+        seleccion.columns = seleccion.columns.astype(str).str.strip().str.upper()
+        if 'NUMERO_JUICIO' not in seleccion.columns:
+            raise ValueError('HOJA_SELECCION_SIN_NUMERO_JUICIO')
+        objetivos = {
+            numero.replace('-', '').strip()
+            for numero in seleccion['NUMERO_JUICIO'].dropna().astype(str)
+            if numero.strip()
+        }
+        if not objetivos:
+            raise ValueError('HOJA_SELECCION_SIN_CAUSAS')
+        return objetivos
+
     def obtener_casos_pendientes(self):
         """READ: Obtiene la lista de números de juicio que cumplen con los filtros."""
         logger.debug("Columnas disponibles: %s", self.df.columns.tolist())
@@ -257,11 +277,26 @@ class GestorCasos:
 
         casos = df_filtrado['NUMERO_JUICIO'].dropna().astype(str).str.strip().tolist()
 
+        objetivos = self._causas_hoja_seleccion()
+        if objetivos is not None:
+            disponibles = {caso.replace('-', '').strip() for caso in casos}
+            if not objetivos.issubset(disponibles):
+                raise ValueError(
+                    'CAUSAS_SELECCION_NO_DISPONIBLES:%s'
+                    % len(objetivos - disponibles)
+                )
+            casos = [
+                caso for caso in casos
+                if caso.replace('-', '').strip() in objetivos
+            ]
+
         revisiones = self.filtros.get('causas_revision_manual') or {}
         if not isinstance(revisiones, dict):
             raise ValueError('CAUSAS_REVISION_MANUAL_DEBE_SER_OBJETO')
         excluidas = {str(c).replace('-', '').strip() for c in revisiones}
         casos = [c for c in casos if c.replace('-', '').strip() not in excluidas]
+        if objetivos is not None and len({c.replace('-', '').strip() for c in casos}) != len(objetivos):
+            raise ValueError('CAUSAS_SELECCION_EXCLUIDAS_REVISION_MANUAL')
 
         # Aplicar punto de partida si fue especificado
         inicio = self.filtros.get('inicio_desde_juicio')
@@ -453,6 +488,16 @@ class GestorCasos:
     def _preparar_exportacion(self, fecha_actual=None):
         self.calcular_dias_transcurridos(fecha_actual)
         df_export = self.df.copy()
+        if getattr(self, 'filtros', None):
+            objetivos = self._causas_hoja_seleccion()
+            if objetivos is not None:
+                numeros = df_export['NUMERO_JUICIO'].astype(str).str.replace(
+                    '-', '', regex=False,
+                ).str.strip()
+                df_export = df_export.loc[numeros.isin(objetivos)].copy()
+                encontrados = set(numeros.loc[df_export.index])
+                if encontrados != objetivos or len(df_export) != len(objetivos):
+                    raise ValueError('EXPORTACION_SELECCION_INCOMPLETA_O_DUPLICADA')
         nuevas_cols = list(self.COLUMNAS_MOLDE_EXPORTACION)
         for columna in nuevas_cols:
             if columna not in df_export.columns:

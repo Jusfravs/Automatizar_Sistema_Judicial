@@ -1,12 +1,13 @@
-# Autonomia limitada a este repositorio confiable.
-# Permite leer, crear, modificar, eliminar y ejecutar dentro del workspace
-# sin solicitar elevaciones; cualquier acceso fuera del sandbox se rechaza.
-approval_policy = "never"
+# Permite cambios dentro del workspace y solicita aprobación cuando corresponda.
+approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
 [sandbox_workspace_write]
-writable_roots = ["C:\\Users\\HP\\OneDrive\\Desktop\\Casos Judiciales"]
 network_access = true
 
 [windows]
 sandbox = "elevated"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3

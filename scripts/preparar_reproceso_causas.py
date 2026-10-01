@@ -20,6 +20,7 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from src.gestor_casos import GestorCasos
+from src.catalogo_procesal import CAMPOS_ID
 
 
 CAUSAS_QUITO_AUDITADAS = (
@@ -42,6 +43,8 @@ CAMPOS_LIMPIAR = (
     "FECHA FIN ULTIMA FASE", "ULTIMA ETAPA", "ULTIMA FASE",
     "FECHA INICIO FASE ACTUAL", "ETAPA ACTUAL", "FASE ACTUAL",
     "DIAS TRANSCURRIDOS",
+    "FECHA ULTIMA GESTION JUDICIAL", "ESTADO ULTIMA GESTION JUDICIAL",
+    *CAMPOS_ID,
     # Salida legada que puede subsistir en el CSV de trabajo.
     "ETAPA_PROCESAL", "FASE_PROCESAL", "FECHA INICIAL FASE ACTUAL",
 )
@@ -147,11 +150,20 @@ def _conectar_postgres(config):
 
 
 def _respaldar_postgres(conexion, causas, destino):
-    """Guarda un respaldo JSON de las filas que se van a retirar."""
+    """Bloquea trabajos de las causas y respalda su fotografía y auditoría."""
     if conexion is None:
         return None
     respaldo = {}
     with conexion.cursor() as cursor:
+        cursor.execute(
+            "SELECT numero_causa, estado FROM cola_trabajo "
+            "WHERE numero_causa = ANY(%s) FOR UPDATE",
+            (list(causas),),
+        )
+        en_proceso = [causa for causa, estado in cursor.fetchall()
+                      if estado == "EN_PROCESO"]
+        if en_proceso:
+            raise RuntimeError(f"CAUSAS_EN_PROCESO_POSTGRES:{en_proceso}")
         for tabla in ("expedientes", "actuaciones", "eventos_auditoria"):
             cursor.execute(
                 f"SELECT * FROM {tabla} WHERE numero_causa = ANY(%s)", (list(causas),)
@@ -168,24 +180,41 @@ def _respaldar_postgres(conexion, causas, destino):
 
 
 def _limpiar_postgres(conexion, causas):
-    """Elimina los resultados, actuaciones y eventos anteriores del tramo."""
+    """Reinicia la fotografía vigente sin borrar el expediente ni su auditoría."""
     if conexion is None:
         return {"habilitado": False, "expedientes": 0, "actuaciones": 0, "eventos": 0}
     try:
         with conexion.cursor() as cursor:
             cursor.execute(
+                "SELECT numero_causa FROM expedientes "
+                "WHERE numero_causa = ANY(%s) FOR UPDATE",
+                (list(causas),),
+            )
+            expedientes_presentes = len(cursor.fetchall())
+            cursor.execute(
                 "DELETE FROM actuaciones WHERE numero_causa = ANY(%s)", (list(causas),)
             )
             actuaciones = cursor.rowcount
             cursor.execute(
-                "DELETE FROM eventos_auditoria WHERE numero_causa = ANY(%s)",
+                "UPDATE expedientes SET estado='PENDIENTE', reintentos=0, "
+            "ruta_html=NULL, actor=NULL, demandado=NULL, tipo_accion=NULL, "
+            "fecha_inicio_juicio=NULL, eta_id_ultima_etapa=NULL, ultima_etapa=NULL, "
+                "fas_id_ultima_fase=NULL, ultima_fase=NULL, "
+                "fecha_fin_ultima_fase=NULL, eta_id_etapa_actual=NULL, "
+                "etapa_actual=NULL, fas_id_fase_actual=NULL, fase_actual=NULL, "
+                "fecha_inicio_fase_actual=NULL, mensaje_especial=NULL, "
+                "total_actuaciones=0, datos_json=NULL, actualizado_en=CURRENT_TIMESTAMP "
+                "WHERE expedientes.numero_causa = ANY(%s) "
+                "AND expedientes.estado IS DISTINCT FROM 'EN_PROCESO' "
+                "AND NOT EXISTS ("
+                "SELECT 1 FROM cola_trabajo AS cola "
+                "WHERE cola.numero_causa = expedientes.numero_causa "
+                "AND cola.estado = 'EN_PROCESO')",
                 (list(causas),),
             )
-            eventos = cursor.rowcount
-            cursor.execute(
-                "DELETE FROM expedientes WHERE numero_causa = ANY(%s)", (list(causas),)
-            )
             expedientes = cursor.rowcount
+            if expedientes != expedientes_presentes:
+                raise RuntimeError("CAUSAS_EN_PROCESO_POSTGRES")
         conexion.commit()
     except Exception:
         conexion.rollback()
@@ -194,7 +223,7 @@ def _limpiar_postgres(conexion, causas):
         "habilitado": True,
         "expedientes": expedientes,
         "actuaciones": actuaciones,
-        "eventos": eventos,
+        "eventos": 0,
     }
 
 
@@ -252,8 +281,11 @@ def limpiar(config_path, causas):
     verificar_archivos_libres((ruta_csv, ruta_excel, ruta_fallidos))
 
     conexion = sqlite3.connect(ruta_db, timeout=30.0)
-    conexion_pg = _conectar_postgres(repo.config)
+    conexion_pg = None
+    sqlite_confirmado = False
+    postgres_confirmado = False
     try:
+        conexion_pg = _conectar_postgres(repo.config)
         placeholders = ",".join("?" for _ in causas)
         filas = conexion.execute(
             f"SELECT numero_causa, estado FROM juicios WHERE numero_causa IN ({placeholders})",
@@ -272,8 +304,11 @@ def limpiar(config_path, causas):
         if respaldo_fallidos:
             respaldos.append(respaldo_fallidos)
         respaldo_db = directorio / f"{ruta_db.stem}_antes_reproceso_{marca}.db"
-        with sqlite3.connect(respaldo_db) as copia:
+        copia = sqlite3.connect(respaldo_db)
+        try:
             conexion.backup(copia)
+        finally:
+            copia.close()
         respaldos.append(respaldo_db)
         respaldo_pg = _respaldar_postgres(
             conexion_pg,
@@ -320,19 +355,27 @@ def limpiar(config_path, causas):
             raise RuntimeError("PERSISTENCIA_ERROR:CSV")
         repo.exportar_excel()
         conexion.commit()
+        sqlite_confirmado = True
         postgres = _limpiar_postgres(conexion_pg, causas)
+        postgres_confirmado = True
         evidencias_eliminadas, evidencias_bloqueadas = _eliminar_evidencias(
             repo, causas_norm
         )
         fallidos_retirados = _limpiar_lista_fallidos(ruta_fallidos, causas_norm)
     except Exception:
         conexion.rollback()
-        # Restaurar los reportes si la escritura de formatos falla antes del
-        # commit SQLite; los respaldos siguen disponibles para auditoria.
-        for respaldo in locals().get("respaldos", []):
-            if respaldo.suffix.lower() in {".csv", ".xlsx"}:
-                destino = ruta_csv if respaldo.suffix.lower() == ".csv" else ruta_excel
-                shutil.copy2(respaldo, destino)
+        if not postgres_confirmado:
+            if sqlite_confirmado:
+                respaldo_origen = sqlite3.connect(respaldo_db)
+                try:
+                    respaldo_origen.backup(conexion)
+                finally:
+                    respaldo_origen.close()
+            # Restaurar los formatos solo si PostgreSQL no confirmó el cambio.
+            for respaldo in locals().get("respaldos", []):
+                if respaldo.suffix.lower() in {".csv", ".xlsx"}:
+                    destino = ruta_csv if respaldo.suffix.lower() == ".csv" else ruta_excel
+                    shutil.copy2(respaldo, destino)
         raise
     finally:
         conexion.close()

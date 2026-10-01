@@ -1296,18 +1296,19 @@ class BotJudicial:
                             etapa_api = res_api.get("ULTIMA_ETAPA")
                             fase_api = res_api.get("ULTIMA_FASE")
                             fecha_api = res_api.get("FECHA_FIN_ULTIMA_FASE")
+                            fecha_fase_actual = res_api.get("FECHA_INICIO_FASE_ACTUAL")
                             
                             etapa_operativa = res_api.get("ETAPA_ACTUAL") or etapa_api
                             fase_operativa = res_api.get("FASE_ACTUAL") or fase_api
                             datos["ETAPA_PROCESAL"] = etapa_operativa
                             datos["FASE_PROCESAL"] = fase_operativa
-                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_api
+                            datos["FECHA INICIAL FASE ACTUAL"] = fecha_fase_actual
                             datos["ULTIMA ETAPA"] = etapa_api
                             datos["ULTIMA FASE"] = fase_api
                             datos["FECHA FIN ULTIMA FASE"] = fecha_api
                             datos["ETAPA ACTUAL"] = etapa_operativa
                             datos["FASE ACTUAL"] = fase_operativa
-                            datos["FECHA INICIO FASE ACTUAL"] = fecha_api
+                            datos["FECHA INICIO FASE ACTUAL"] = fecha_fase_actual
                             enriquecer_datos_procesales(datos)
                             if res_api.get("MENSAJE_ESPECIAL"):
                                 datos["COMENTARIO_ULTIMO"] = res_api.get("MENSAJE_ESPECIAL")

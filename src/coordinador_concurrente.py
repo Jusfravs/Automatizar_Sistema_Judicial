@@ -274,11 +274,14 @@ class CoordinadorConcurrente:
     def ejecutar(self, casos, ruta_casos_fallidos):
         self._validar_precondiciones()
         causas = list(casos)
-        perfil = os.path.basename(self.ruta_config)
+        perfil = self.config.get("perfil") or os.path.basename(self.ruta_config)
+        opciones_auditoria = ({"config_sha256": self.config["_config_sha256"]}
+                              if self.config.get("_config_sha256") else {})
         ejecucion_id = self.repositorio.crear_ejecucion(
             perfil,
             len(causas),
             self.trabajadores,
+            **opciones_auditoria,
         )
         insertados = self.repositorio.poblar_trabajos(ejecucion_id, causas)
         if insertados != len(dict.fromkeys(causas)):

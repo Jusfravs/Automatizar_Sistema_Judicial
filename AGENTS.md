@@ -22,7 +22,7 @@ second command may safely run regardless of the first. Use `Get-Content
 -LiteralPath <path>` for reading files and quote paths containing spaces.
 
 Open this repository with `ABRIR_CODEX_CASOS_JUDICIALES.cmd` so the CLI starts
-at the project root with the `omniroute-strong` profile, project-scoped
+at the project root with the active Codex model/provider, project-scoped
 write access, approval prompts for operations outside the project, and web
 search enabled.
 
@@ -44,3 +44,16 @@ search enabled.
   completado el plan ni listo el sistema para producción.
 - Para cambios solicitados, inspecciona primero los archivos pertinentes,
   modifica solo lo necesario y ejecuta comprobaciones proporcionadas al cambio.
+
+## Equipo de agentes de desarrollo
+
+- Los perfiles del proyecto están en `.codex/agents/`; su contrato y flujo de
+  trabajo están en `DOCUMENTACION/01_GENERAL/EQUIPO_AGENTES.md`.
+- Delega solo tareas independientes con objetivo, evidencia, archivos editables,
+  criterio de aceptación y acciones externas autorizadas. El coordinador
+  conserva la integración y la comunicación final.
+- `desarrollador` modifica producción; `qa_automatizado` modifica pruebas
+  asignadas; los otros perfiles investigan o revisan en lectura. Serializa
+  cualquier edición del mismo archivo y pide revisión independiente del diff.
+- No invoques los siete perfiles por rutina: elige los necesarios para el riesgo
+  real de la tarea y respeta el límite de tres subagentes activos.

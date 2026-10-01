@@ -1,0 +1,172 @@
+diff --git a/src/agente_extractor.py b/src/agente_extractor.py
+index 345a6b4..bbaec48 100644
+--- a/src/agente_extractor.py
++++ b/src/agente_extractor.py
+@@ -1573,6 +1573,11 @@ class MotorInferenciaProcesal:
+         return bool(
+             re.search(r"\bCITACION\W*REALIZADA\b", texto_normalizado)
+             or "BOLETA DE CITACION NOTIFICADA" in texto_normalizado
++            or bool(re.search(
++                r"\bBOLETA\s+DE\s+CITACION\s+(?:AL|A\s+LA)\s+"
++                r"(?:PARTE\s+)?DEMANDAD[OA]\b",
++                texto_normalizado,
++            ))
+             or bool(re.search(
+                 r"\bBOLETA\s+DE\s+CITACION\b.{0,160}\bNOTIFICAD[OA]\b",
+                 texto_normalizado,
+@@ -2581,8 +2586,11 @@ class AgenteExtractor:
+                 fase_operativa = res_inf.get("FASE_ACTUAL") or fase_inferida
+ 
+                 nav_arbol.bajar_nivel(f"Inferencia Autónoma exitosa -> '{fase_inferida}' en fecha {fecha_inferida}")
+-                resultado["ETAPA_PROCESAL"] = etapa_operativa
+-                resultado["FASE_PROCESAL"] = fase_operativa
++                # Los campos historicos *_PROCESAL describen el ultimo hito
++                # acreditado. La siguiente fase operativa permanece separada
++                # en ETAPA ACTUAL / FASE ACTUAL.
++                resultado["ETAPA_PROCESAL"] = etapa_inferida
++                resultado["FASE_PROCESAL"] = fase_inferida
+                 resultado["FECHA INICIAL FASE ACTUAL"] = fecha_fase_actual
+ 
+                 # Campos enriquecidos para nuevas columnas MOLDE
+diff --git a/src/motor_busqueda_web.py b/src/motor_busqueda_web.py
+index 6d350cb..320abfc 100644
+--- a/src/motor_busqueda_web.py
++++ b/src/motor_busqueda_web.py
+@@ -965,8 +965,11 @@ class BotJudicial:
+ 
+         etapa_operativa = inferencia.get("ETAPA_ACTUAL") or inferencia.get("ULTIMA_ETAPA")
+         fase_operativa = inferencia.get("FASE_ACTUAL") or inferencia.get("ULTIMA_FASE")
+-        datos["ETAPA_PROCESAL"] = etapa_operativa
+-        datos["FASE_PROCESAL"] = fase_operativa
++        # Los campos historicos *_PROCESAL representan el ultimo hito
++        # acreditado. ETAPA ACTUAL / FASE ACTUAL conservan el siguiente paso
++        # operativo calculado por el motor.
++        datos["ETAPA_PROCESAL"] = inferencia.get("ULTIMA_ETAPA")
++        datos["FASE_PROCESAL"] = inferencia.get("ULTIMA_FASE")
+         datos["FECHA INICIAL FASE ACTUAL"] = inferencia.get("FECHA_INICIO_FASE_ACTUAL")
+         datos["ULTIMA ETAPA"] = inferencia.get("ULTIMA_ETAPA")
+         datos["ULTIMA FASE"] = inferencia.get("ULTIMA_FASE")
+diff --git a/tests/test_extraccion_api.py b/tests/test_extraccion_api.py
+index c35cd18..c63bb78 100644
+--- a/tests/test_extraccion_api.py
++++ b/tests/test_extraccion_api.py
+@@ -27,9 +27,10 @@ class TestExtraccionAPI(unittest.TestCase):
+ 
+         self.assertIsNotNone(datos)
+         self.assertIsNotNone(datos.get("FASE_PROCESAL"))
+-        # FASE_PROCESAL es el destino operativo; el mandamiento permanece
+-        # auditado en ULTIMA FASE y abre la fase de embargo.
+-        self.assertIn("EMBARGO", datos.get("FASE_PROCESAL").upper())
++        self.assertEqual(
++            datos.get("FASE_PROCESAL"),
++            "6.2 MANDAMIENTO DE EJECUCION",
++        )
+         self.assertIsNotNone(datos.get("ETAPA_PROCESAL"))
+         self.assertIn("LIQUIDACION", datos.get("ETAPA_PROCESAL").upper())
+ 
+diff --git a/tests/test_extraccion_integration.py b/tests/test_extraccion_integration.py
+index 00c22a8..c259086 100644
+--- a/tests/test_extraccion_integration.py
++++ b/tests/test_extraccion_integration.py
+@@ -1,4 +1,5 @@
+ import json
++import unittest
+ from pathlib import Path
+ 
+ from src.motor_busqueda_web import BotJudicial
+@@ -20,7 +21,7 @@ def load_html(name):
+     return p.read_text(encoding="utf-8")
+ 
+ 
+-def test_api_mandamiento_detection():
++def _case_api_mandamiento_detection():
+     bot = BotJudicial(url_portal="https://example.local")
+     data = load_json("training_case_api.json")
+ 
+@@ -39,7 +40,7 @@ def test_api_mandamiento_detection():
+ 
+ 
+ 
+-def test_api_usa_fecha_de_la_actuacion_detectada():
++def _case_api_usa_fecha_de_la_actuacion_detectada():
+     """La fecha de la fase debe provenir de su actuacion, no del inicio del juicio."""
+     bot = BotJudicial(url_portal="https://example.local")
+     api_payload = [{
+@@ -56,7 +57,7 @@ def test_api_usa_fecha_de_la_actuacion_detectada():
+     assert datos["FECHA INICIAL FASE ACTUAL"] == "15/01/2022"
+     assert datos["FECHA FIN ULTIMA FASE"] == "15/01/2022"
+ 
+-def test_dom_extractor_detects_mandamiento():
++def _case_dom_extractor_detects_mandamiento():
+     extractor = AgenteExtractor()
+     html = load_html("training_case.html")
+ 
+@@ -68,7 +69,7 @@ def test_dom_extractor_detects_mandamiento():
+ 
+ 
+ 
+-def test_caso_referencia_conserva_fecha_de_calificacion():
++def _case_caso_referencia_conserva_fecha_de_calificacion():
+     extractor = AgenteExtractor()
+     resultado = extractor.procesar_html_string(load_html("23331-2022-04191.html"))
+ 
+@@ -77,7 +78,7 @@ def test_caso_referencia_conserva_fecha_de_calificacion():
+     for campo in ("FECHA FIN ULTIMA FASE", "FECHA INICIAL FASE ACTUAL", "FECHA INICIO FASE ACTUAL"):
+         assert resultado[campo] == "16/12/2022", f"{campo} incorrecta: {resultado[campo]}"
+ 
+-def test_variant_1_dom_multiple_actuaciones():
++def _case_variant_1_dom_multiple_actuaciones():
+     """Test caso variante 1: Mandamiento en tabla de actuaciones."""
+     extractor = AgenteExtractor()
+     html = load_html("case_variant_1.html")
+@@ -90,7 +91,7 @@ def test_variant_1_dom_multiple_actuaciones():
+     assert len(resultado.get("HISTORIAL_ACTUACIONES", [])) > 0, "No se extrajeron actuaciones"
+ 
+ 
+-def test_variant_2_api_ejecutivo_type():
++def _case_variant_2_api_ejecutivo_type():
+     """Test caso variante 2: nombreTipoAccion='EJECUTIVO' con actuaciones de CITACION no debe deducir mandamiento."""
+     bot = BotJudicial(url_portal="https://example.local")
+     data = load_json("case_variant_2_api.json")
+@@ -110,3 +111,12 @@ def test_variant_2_api_ejecutivo_type():
+     assert "CITACION" in datos.get("FASE_PROCESAL").upper(), f"Se esperaba CITACION pero se obtuvo: {datos.get('FASE_PROCESAL')}"
+     assert "MANDAMIENTO" not in datos.get("FASE_PROCESAL").upper(), "Falso positivo: se dedujo MANDAMIENTO solo por tipo de acción EJECUTIVO"
+     assert datos.get("FECHA INICIAL FASE ACTUAL") is not None, "No se estableció fecha"
++
++
++class TestExtraccionIntegration(unittest.TestCase):
++    test_api_mandamiento_detection = staticmethod(_case_api_mandamiento_detection)
++    test_api_usa_fecha_de_la_actuacion_detectada = staticmethod(_case_api_usa_fecha_de_la_actuacion_detectada)
++    test_dom_extractor_detects_mandamiento = staticmethod(_case_dom_extractor_detects_mandamiento)
++    test_caso_referencia_conserva_fecha_de_calificacion = staticmethod(_case_caso_referencia_conserva_fecha_de_calificacion)
++    test_variant_1_dom_multiple_actuaciones = staticmethod(_case_variant_1_dom_multiple_actuaciones)
++    test_variant_2_api_ejecutivo_type = staticmethod(_case_variant_2_api_ejecutivo_type)
+diff --git a/tests/test_trazabilidad_decision_final.py b/tests/test_trazabilidad_decision_final.py
+index 735b6e4..bbec807 100644
+--- a/tests/test_trazabilidad_decision_final.py
++++ b/tests/test_trazabilidad_decision_final.py
+@@ -1,12 +1,13 @@
+ """Pruebas de trazabilidad para evitar confundir inferencias DOM con finales."""
+ 
+ import json
++import unittest
+ from unittest.mock import patch
+ 
+ from src.motor_busqueda_web import BotJudicial
+ 
+ 
+-def test_inferencia_consolidada_registra_decision_final_de_causa():
++def _case_inferencia_consolidada_registra_decision_final_de_causa():
+     bot = BotJudicial(url_portal="https://example.local")
+     datos = {
+         "ORIGEN_DATA": "API+DOM",
+@@ -34,3 +35,9 @@ def test_inferencia_consolidada_registra_decision_final_de_causa():
+     assert payload["causa"] == "07333201900278"
+     assert payload["fase_deducida"] == datos["ULTIMA FASE"]
+     assert payload["fecha_final"] == datos["FECHA FIN ULTIMA FASE"]
++
++
++class TestTrazabilidadDecisionFinal(unittest.TestCase):
++    test_inferencia_consolidada_registra_decision_final_de_causa = staticmethod(
++        _case_inferencia_consolidada_registra_decision_final_de_causa
++    )

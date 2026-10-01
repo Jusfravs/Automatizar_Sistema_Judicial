@@ -26,13 +26,16 @@ logger = logging.getLogger("RepositorioPostgres")
 class RepositorioColaPostgres:
     """Fuente de verdad para ejecuciones con uno o mas trabajadores."""
 
-    def __init__(self, host, port, user, password, dbname, connect_timeout=10):
+    def __init__(self, host, port, user, password, dbname, connect_timeout=10,
+                 sslmode=None, sslrootcert=None):
         self.host = host or "localhost"
         self.port = int(port or 5432)
         self.user = user or "judicial_app"
         self.password = password or ""
         self.dbname = dbname or "casos_judiciales"
         self.connect_timeout = int(connect_timeout)
+        self.sslmode = sslmode
+        self.sslrootcert = sslrootcert
 
     @classmethod
     def desde_config(cls, config: Mapping[str, Any] | None):
@@ -45,9 +48,16 @@ class RepositorioColaPostgres:
             password=os.getenv(variable_password, ""),
             dbname=valores.get("nombre_db", os.getenv("POSTGRES_DB", "casos_judiciales")),
             connect_timeout=valores.get("connect_timeout", 10),
+            sslmode=valores.get("sslmode", os.getenv("POSTGRES_SSLMODE")),
+            sslrootcert=valores.get("sslrootcert", os.getenv("POSTGRES_SSLROOTCERT")),
         )
 
     def _get_connection(self):
+        opciones_tls = {}
+        if self.sslmode:
+            opciones_tls["sslmode"] = self.sslmode
+        if self.sslrootcert:
+            opciones_tls["sslrootcert"] = self.sslrootcert
         return psycopg2.connect(
             host=self.host,
             port=self.port,
@@ -56,6 +66,7 @@ class RepositorioColaPostgres:
             dbname=self.dbname,
             connect_timeout=self.connect_timeout,
             application_name="sistema_judicial",
+            **opciones_tls,
         )
 
     @contextmanager
@@ -106,18 +117,36 @@ class RepositorioColaPostgres:
             logger.error("Esquema PostgreSQL incompleto: %s", sorted(faltantes))
         return not faltantes
 
-    def crear_ejecucion(self, perfil, total_esperado, trabajadores):
-        ejecucion_id = str(uuid.uuid4())
+    def verificar_auditoria_config(self):
         with self._connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    """
-                    INSERT INTO ejecuciones (
-                        id, perfil, estado, trabajadores_configurados, total_esperado
-                    ) VALUES (%s, %s, 'PREPARADA', %s, %s)
-                    """,
-                    (ejecucion_id, str(perfil), int(trabajadores), int(total_esperado)),
+                    """SELECT EXISTS (
+                         SELECT 1 FROM information_schema.columns
+                         WHERE table_schema = 'public' AND table_name = 'ejecuciones'
+                           AND column_name = 'config_sha256'
+                       )"""
                 )
+                return bool(cur.fetchone()[0])
+
+    def crear_ejecucion(self, perfil, total_esperado, trabajadores, config_sha256=None):
+        ejecucion_id = str(uuid.uuid4())
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                if config_sha256 is None:
+                    cur.execute(
+                        """INSERT INTO ejecuciones
+                           (id, perfil, estado, trabajadores_configurados, total_esperado)
+                           VALUES (%s, %s, 'PREPARADA', %s, %s)""",
+                        (ejecucion_id, str(perfil), int(trabajadores), int(total_esperado)),
+                    )
+                else:
+                    cur.execute(
+                        """INSERT INTO ejecuciones
+                           (id, perfil, estado, trabajadores_configurados, total_esperado, config_sha256)
+                           VALUES (%s, %s, 'PREPARADA', %s, %s, %s)""",
+                        (ejecucion_id, str(perfil), int(trabajadores), int(total_esperado), config_sha256),
+                    )
         return ejecucion_id
 
     def poblar_trabajos(self, ejecucion_id, causas: Iterable[str]):
@@ -592,7 +621,7 @@ class RepositorioColaPostgres:
                 )
                 return {estado: total for estado, total in cur.fetchall()}
 
-    def listar_causas_procesadas(self):
+    def listar_causas_procesadas(self, perfil=None):
         """Causas terminadas en ejecuciones completas de esta base PostgreSQL."""
         with self._connection() as conn:
             with conn.cursor() as cur:
@@ -603,7 +632,9 @@ class RepositorioColaPostgres:
                     JOIN ejecuciones AS e ON e.id = c.ejecucion_id
                     WHERE c.estado = 'PROCESADO'
                       AND e.estado = 'COMPLETADA'
-                    """
+                      AND (%s IS NULL OR e.perfil = %s)
+                    """,
+                    (perfil, perfil),
                 )
                 return [fila[0] for fila in cur.fetchall()]
 

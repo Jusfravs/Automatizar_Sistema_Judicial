@@ -23,13 +23,19 @@ class GestorPostgres:
         self.dbname = dbname or os.getenv("POSTGRES_DB", "casos_judiciales")
 
     def _get_connection(self):
+        opciones_tls = {}
+        if os.getenv("POSTGRES_SSLMODE"):
+            opciones_tls["sslmode"] = os.environ["POSTGRES_SSLMODE"]
+        if os.getenv("POSTGRES_SSLROOTCERT"):
+            opciones_tls["sslrootcert"] = os.environ["POSTGRES_SSLROOTCERT"]
         return psycopg2.connect(
             host=self.host,
             port=self.port,
             user=self.user,
             password=self.password,
             dbname=self.dbname,
-            connect_timeout=10
+            connect_timeout=10,
+            **opciones_tls,
         )
 
     @contextmanager

@@ -27,6 +27,8 @@ def obtener_config_postgres(dbname=None):
         "app_user": os.getenv("POSTGRES_USER", "judicial_app"),
         "app_password": password_app,
         "dbname": dbname or os.getenv("POSTGRES_DB", "casos_judiciales"),
+        "sslmode": os.getenv("POSTGRES_SSLMODE"),
+        "sslrootcert": os.getenv("POSTGRES_SSLROOTCERT"),
     }
     if not config["admin_password"]:
         raise RuntimeError("POSTGRES_ADMIN_PASSWORD_AUSENTE")
@@ -43,6 +45,7 @@ def crear_rol_y_base(config):
         password=config["admin_password"],
         dbname="postgres",
         connect_timeout=10,
+        **{k: config[k] for k in ("sslmode", "sslrootcert") if config.get(k)},
     )
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     try:
@@ -91,6 +94,7 @@ def ejecutar_migraciones(config):
         password=config["admin_password"],
         dbname=config["dbname"],
         connect_timeout=10,
+        **{k: config[k] for k in ("sslmode", "sslrootcert") if config.get(k)},
     )
     try:
         with conn.cursor() as cur:
