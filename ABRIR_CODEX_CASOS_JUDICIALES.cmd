@@ -60,15 +60,15 @@ if /I "%~1"=="--comprobar" (
     exit /b %ERRORLEVEL%
 )
 
-rem Abre una sesion nueva de Codex CLI en este proyecto.
-rem Usa --reanudar para elegir una sesion previa; selecciona una creada con OmniRoute.
-rem El perfil enruta por OmniRoute; el sandbox permite cambios en este proyecto,
+rem Abre una sesion nueva de Codex CLI en este proyecto sin daemon.
+rem Usa --reanudar para elegir una sesion previa.
+rem Usa el modelo y proveedor configurados en Codex; el sandbox permite cambios en este proyecto,
 rem la busqueda web queda disponible y las acciones fuera del proyecto preguntan.
 title Codex CLI - Casos Judiciales
 if /I "%~1"=="--reanudar" (
-    "%CODEX_EJECUTABLE_PROYECTO%" --profile omniroute-strong --cd "%PROYECTO%" --sandbox workspace-write --ask-for-approval on-request --search resume
+    "%CODEX_EJECUTABLE_PROYECTO%" --no-daemon --cd "%PROYECTO%" --sandbox workspace-write --ask-for-approval on-request --search resume
 ) else (
-    "%CODEX_EJECUTABLE_PROYECTO%" --profile omniroute-strong --cd "%PROYECTO%" --sandbox workspace-write --ask-for-approval on-request --search
+    "%CODEX_EJECUTABLE_PROYECTO%" --no-daemon --cd "%PROYECTO%" --sandbox workspace-write --ask-for-approval on-request --search
 )
 
 set "CODIGO_SALIDA=%ERRORLEVEL%"
