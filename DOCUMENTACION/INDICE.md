@@ -2,7 +2,7 @@
 
 Actualizado: 25 de septiembre de 2026.
 
-Para ejecutar el sistema use el [Manual de uso](01_GENERAL/MANUAL_DE_USO.md).
+Para usar el menú interactivo, empieza por el [Manual de la consola CMD](01_GENERAL/MANUAL_CONSOLA_CMD.md). Para los flujos avanzados, consulta el [Manual de uso](01_GENERAL/MANUAL_DE_USO.md).
 Para el modo concurrente consulte la [Guía PostgreSQL](03_BASE_DE_DATOS/GUIA_PGADMIN_POSTGRES.md)
 y el [Contexto de reanudación](01_GENERAL/CONTEXTO_REANUDACION.md).
 Los planes, avances y diagnósticos conservan hechos de su fecha; sus comandos
@@ -10,6 +10,7 @@ pueden haber sido sustituidos.
 
 ## 01_GENERAL
 
+- [Manual de la consola CMD](01_GENERAL/MANUAL_CONSOLA_CMD.md): recorrido del menú, Excel, ejecución y revisión de errores.
 - [README](01_GENERAL/README.md): arquitectura y componentes.
 - [Manual de uso](01_GENERAL/MANUAL_DE_USO.md): consola, claves, comandos y pilotos vigentes.
 - [Consola para nuevos Excel](01_GENERAL/CONSOLA_EXCEL.md): validación, preparación de lotes y revisión de errores.
