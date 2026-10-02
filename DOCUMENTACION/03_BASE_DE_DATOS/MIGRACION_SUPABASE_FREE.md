@@ -30,6 +30,9 @@ seguridad PostgreSQL anterior a la migración está en
    El programa pedirá ambas credenciales sin mostrarlas. Primero sube y
    verifica los 65 objetos; después crea las tablas e importa las filas.
    También acepta `--solo-subir` y `--solo-importar` para reanudar por etapas.
+   Si los archivos ya se subieron y falló el guardado de credenciales, ejecuta
+   `python scripts/migrar_supabase_gratis.py --solo-importar`. Este modo
+   verifica lo subido y continúa sin repetir la carga.
 4. Al terminar, comprobar el mensaje `Migración confirmada y filas verificadas`.
    El programa cambia únicamente `base_de_datos` en el `config_consola.json`
    común y guarda las claves en el Administrador de credenciales de Windows

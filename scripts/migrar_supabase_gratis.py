@@ -30,7 +30,11 @@ from psycopg2 import sql
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from src.credenciales_supabase import guardar as guardar_credencial, obtener as obtener_credencial
+from src.credenciales_supabase import (
+    comprobar_almacen,
+    guardar as guardar_credencial,
+    obtener as obtener_credencial,
+)
 
 DEFAULT_ARCHIVE = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "SistemaJudicial" / "supabase_historico_20261002"
 PROJECT_REF = "kwofqyuyzqooepjiuiae"
@@ -350,6 +354,7 @@ def main() -> int:
             _, counts = prepare_copy(args.archivo, manifest, args.prefijo, Path(temporary))
             print(f"COPY preparado y comprobado: {sum(counts.values()):,} filas", flush=True)
             return 0
+        comprobar_almacen()
         password = None
         if not args.solo_subir:
             password = secret("SUPABASE_DB_PASSWORD", "Contraseña de la base de Supabase: ")

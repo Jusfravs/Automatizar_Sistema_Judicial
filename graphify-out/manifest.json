@@ -768,9 +768,9 @@
     "semantic_hash": ""
   },
   "scripts/migrar_supabase_gratis.py": {
-    "mtime": 1790953380.440441,
-    "seen": 1790953436.142871,
-    "ast_hash": "46ad0dda60ad5c5004185462482d7f0b",
+    "mtime": 1790954213.696005,
+    "seen": 1790954268.6439285,
+    "ast_hash": "4d27841ac05bf01834e157782cfd8c35",
     "semantic_hash": ""
   },
   "scripts/preparar_archivo_supabase.py": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "src/credenciales_supabase.py": {
-    "mtime": 1790952799.2752626,
-    "seen": 1790952862.8942325,
-    "ast_hash": "d620559a2b640361ccd62302ad38309c",
+    "mtime": 1790954213.6916275,
+    "seen": 1790954268.6439285,
+    "ast_hash": "e2244614191ee955d7bb40fa7d1b1e82",
     "semantic_hash": ""
   },
   "tests/test_archivo_supabase.py": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "DOCUMENTACION/03_BASE_DE_DATOS/MIGRACION_SUPABASE_FREE.md": {
-    "mtime": 1790952799.3043566,
-    "seen": 1790952862.9180005,
-    "ast_hash": "e5077936b9faaf1af999c68a44dcb3b0",
+    "mtime": 1790954213.6984375,
+    "seen": 1790954268.660747,
+    "ast_hash": "e63fd5c0f9cc3841e955fd8424b88b94",
     "semantic_hash": ""
   }
 }

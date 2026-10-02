@@ -3,8 +3,21 @@
 from __future__ import annotations
 
 import os
+import sys
 
 SERVICE = "SistemaJudicial-Supabase"
+
+
+def comprobar_almacen() -> None:
+    try:
+        import keyring
+    except ImportError as exc:
+        raise RuntimeError(
+            f"Falta keyring en {sys.executable}. Instálalo con "
+            f"'{sys.executable} -m pip install keyring==25.7.0' "
+            "antes de ejecutar la migración"
+        ) from exc
+    keyring.get_keyring()
 
 
 def obtener(nombre: str) -> str:
@@ -23,8 +36,6 @@ def guardar(nombre: str, valor: str) -> None:
         raise ValueError("Credencial no permitida")
     if not valor:
         raise ValueError("No se guarda una credencial vacía")
-    try:
-        import keyring
-    except ImportError as exc:
-        raise RuntimeError("Instala las dependencias del proyecto para usar el almacén seguro") from exc
+    comprobar_almacen()
+    import keyring
     keyring.set_password(SERVICE, nombre, valor)
