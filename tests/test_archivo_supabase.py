@@ -7,8 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+from urllib.error import HTTPError
 
-from scripts.migrar_supabase_gratis import prepare_copy
+from scripts.migrar_supabase_gratis import missing_storage_object, prepare_copy, storage_error
 from src.archivo_historico_supabase import _load_segment, recuperar_fila
 
 
@@ -85,6 +86,13 @@ class ArchivoSupabaseTests(unittest.TestCase):
             headers = opener.call_args.args[0].headers
             self.assertEqual(headers["Apikey"], "sb_secret_prueba")
             self.assertNotIn("Authorization", headers)
+
+    def test_storage_400_solo_se_acepta_para_objeto_ausente(self):
+        error = HTTPError("https://example.test", 400, "Bad Request", {},
+                          io.BytesIO(b'{"code":"NoSuchKey","message":"Object not found"}'))
+        code, message = storage_error(error)
+        self.assertTrue(missing_storage_object(400, code, message))
+        self.assertFalse(missing_storage_object(400, "InvalidJWT", "Invalid JWT"))
 
 
 if __name__ == "__main__":

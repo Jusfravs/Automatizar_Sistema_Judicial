@@ -91,14 +91,34 @@ def storage_request(name: str, key: str, *, data: bytes | None = None) -> bytes:
         return response.read()
 
 
+def storage_error(exc: HTTPError) -> tuple[str, str]:
+    try:
+        payload = json.loads(exc.read(4096))
+    except (ValueError, UnicodeDecodeError):
+        return "", ""
+    if not isinstance(payload, dict):
+        return "", ""
+    code = str(payload.get("code") or payload.get("error") or "")
+    message = str(payload.get("message") or "")
+    return code[:80], message[:180]
+
+
+def missing_storage_object(status: int, code: str, message: str) -> bool:
+    if status not in (400, 404):
+        return False
+    return (code.lower() in {"nosuchkey", "not_found", "objectnotfound"}
+            or "object not found" in message.lower())
+
+
 def upload_archive(directory: Path, manifest: dict, prefix: str, key: str) -> None:
     for index, entry in enumerate(manifest["objetos"], 1):
         name = object_name(prefix, entry["archivo"])
         try:
             remote = storage_request(name, key)
         except HTTPError as exc:
-            if exc.code != 404:
-                raise RuntimeError(f"Storage GET {name}: HTTP {exc.code}") from exc
+            code, message = storage_error(exc)
+            if not missing_storage_object(exc.code, code, message):
+                raise RuntimeError(f"Storage GET {name}: HTTP {exc.code}; {code}: {message}") from exc
         else:
             if hashlib.sha256(remote).hexdigest() == entry["sha256"]:
                 print(f"[{index}/{len(manifest['objetos'])}] Ya verificado: {name}", flush=True)

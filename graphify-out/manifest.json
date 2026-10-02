@@ -768,9 +768,9 @@
     "semantic_hash": ""
   },
   "scripts/migrar_supabase_gratis.py": {
-    "mtime": 1790952799.3023546,
-    "seen": 1790952862.8882341,
-    "ast_hash": "50daf570ab0ee6a329c89290b98b0c3e",
+    "mtime": 1790953031.2001584,
+    "seen": 1790953046.9018598,
+    "ast_hash": "8142d17731d8d5cea048ce5a4a1dbee2",
     "semantic_hash": ""
   },
   "scripts/preparar_archivo_supabase.py": {
@@ -792,9 +792,9 @@
     "semantic_hash": ""
   },
   "tests/test_archivo_supabase.py": {
-    "mtime": 1790952822.373631,
-    "seen": 1790952862.9032414,
-    "ast_hash": "780a2b5109cadd60f4acf00f62ca3855",
+    "mtime": 1790953006.0802217,
+    "seen": 1790953046.9175408,
+    "ast_hash": "705280f867a0934b76b262aaecd6890f",
     "semantic_hash": ""
   },
   "DOCUMENTACION/01_GENERAL/MANUAL_CONSOLA_CMD.md": {
