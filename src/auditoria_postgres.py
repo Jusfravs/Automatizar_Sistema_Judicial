@@ -12,6 +12,7 @@ from src.proveedor_nvidia import (
     ErrorAuditoriaIA, VERSION_PROMPT, auditar_nvidia, construir_contexto,
 )
 from src.repositorio_postgres import RepositorioColaPostgres
+from src.archivo_historico_supabase import recuperar_fila
 
 
 def ejecutar_postgres(config: dict, limite: int) -> dict:
@@ -32,15 +33,27 @@ def ejecutar_postgres(config: dict, limite: int) -> dict:
         while True:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    SELECT numero_causa, datos_json FROM expedientes
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_schema = 'public' AND table_name = 'expedientes'
+                      AND column_name = 'archivo_segmento'
+                """)
+                campo_archivo = ("archivo_segmento" if cursor.fetchone()
+                                 else "NULL::text AS archivo_segmento")
+                cursor.execute(f"""
+                    SELECT numero_causa, datos_json, {campo_archivo}
+                    FROM expedientes
                     WHERE numero_causa > %s ORDER BY numero_causa LIMIT 20
                 """, (ultima_causa,))
                 filas = cursor.fetchall()
             if not filas:
                 break
-            for numero_causa, payload in filas:
+            for numero_causa, payload, archivo_segmento in filas:
                 ultima_causa = numero_causa
                 resumen["vistos"] += 1
+                if archivo_segmento and payload is None:
+                    payload = recuperar_fila(
+                        conn, "expedientes", numero_causa, archivo_segmento
+                    )["datos_json"]
                 if not isinstance(payload, dict):
                     resumen["omitidos"] += 1
                     continue

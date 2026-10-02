@@ -450,9 +450,9 @@
     "semantic_hash": "2b92ad2c0dec28ede39aeed371ad27f1"
   },
   "DOCUMENTACION/INDICE.md": {
-    "mtime": 1790866754.607697,
-    "seen": 1790866790.5914114,
-    "ast_hash": "fe9aff21bece8f14395bc523e9505634",
+    "mtime": 1790885278.004474,
+    "seen": 1790952464.4820497,
+    "ast_hash": "0c51794356d47d2465d6727b9c2abe1d",
     "semantic_hash": ""
   },
   "Prompt_correcion_Filtro.txt": {
@@ -468,10 +468,10 @@
     "semantic_hash": "8730502d9ab9f64bb13e8a55c9e44c8c"
   },
   "requirements.txt": {
-    "mtime": 1787681109.403089,
-    "seen": 1789484428.1414294,
-    "ast_hash": "280fcd906babf7b5144c7756c816eac6",
-    "semantic_hash": "280fcd906babf7b5144c7756c816eac6"
+    "mtime": 1790952276.1699076,
+    "seen": 1790952464.4894743,
+    "ast_hash": "ce8be7fa9cb448a53276a19e880ac7c7",
+    "semantic_hash": ""
   },
   "graphify-out/memory/query_20260915_152723_54f39a7c_estas_preguntas_sugeridas_son_errores_que_el_grafo.md": {
     "mtime": 1789486043.9584267,
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "src/repositorio_postgres.py": {
-    "mtime": 1790872469.4816518,
-    "seen": 1790884102.5206661,
-    "ast_hash": "ea350992af530cd8024a1441fc313a6b",
+    "mtime": 1790952595.936074,
+    "seen": 1790952640.4578,
+    "ast_hash": "7a237d614a4f99b29fbcd1007a344282",
     "semantic_hash": ""
   },
   "src/repositorio_sqlite.py": {
@@ -642,9 +642,9 @@
     "semantic_hash": ""
   },
   "src/auditoria_postgres.py": {
-    "mtime": 1790260153.3114772,
-    "seen": 1790260289.309702,
-    "ast_hash": "1d8798c3b7f8740bd4829b517249ec51",
+    "mtime": 1790952595.9414985,
+    "seen": 1790952640.454684,
+    "ast_hash": "6faa09361283187e962066552e0e3f00",
     "semantic_hash": ""
   },
   "src/motor_temporal.py": {
@@ -756,15 +756,57 @@
     "semantic_hash": ""
   },
   "config_consola.json": {
-    "mtime": 1790872694.3406198,
-    "seen": 1790884102.5095308,
-    "ast_hash": "aa15edce78da19927771ddf6f0304c54",
+    "mtime": 1790885158.2315855,
+    "seen": 1790952464.4493563,
+    "ast_hash": "4ee41af5a961d9085595e5172c383c82",
     "semantic_hash": ""
   },
   "src/configuracion_lotes.py": {
     "mtime": 1790883969.8983967,
     "seen": 1790884102.5150652,
     "ast_hash": "1253f158c9abb8226486cf6ffc7d5b82",
+    "semantic_hash": ""
+  },
+  "scripts/migrar_supabase_gratis.py": {
+    "mtime": 1790952799.3023546,
+    "seen": 1790952862.8882341,
+    "ast_hash": "50daf570ab0ee6a329c89290b98b0c3e",
+    "semantic_hash": ""
+  },
+  "scripts/preparar_archivo_supabase.py": {
+    "mtime": 1790950491.524401,
+    "seen": 1790952464.4635794,
+    "ast_hash": "5639257e8bc8a62ffb1088a224fbe561",
+    "semantic_hash": ""
+  },
+  "src/archivo_historico_supabase.py": {
+    "mtime": 1790952799.2982428,
+    "seen": 1790952862.8932343,
+    "ast_hash": "857d01a6fbb3e4c984a87f5f97ab8262",
+    "semantic_hash": ""
+  },
+  "src/credenciales_supabase.py": {
+    "mtime": 1790952799.2752626,
+    "seen": 1790952862.8942325,
+    "ast_hash": "d620559a2b640361ccd62302ad38309c",
+    "semantic_hash": ""
+  },
+  "tests/test_archivo_supabase.py": {
+    "mtime": 1790952822.373631,
+    "seen": 1790952862.9032414,
+    "ast_hash": "780a2b5109cadd60f4acf00f62ca3855",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/01_GENERAL/MANUAL_CONSOLA_CMD.md": {
+    "mtime": 1790885311.0324574,
+    "seen": 1790952464.4820497,
+    "ast_hash": "7f61f28be9ce640ee81e8cfbaffeeb1c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/03_BASE_DE_DATOS/MIGRACION_SUPABASE_FREE.md": {
+    "mtime": 1790952799.3043566,
+    "seen": 1790952862.9180005,
+    "ast_hash": "e5077936b9faaf1af999c68a44dcb3b0",
     "semantic_hash": ""
   }
 }

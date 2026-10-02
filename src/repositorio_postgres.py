@@ -11,6 +11,8 @@ from typing import Any, Iterable, Mapping
 
 import psycopg2
 from psycopg2.extras import Json, RealDictCursor, execute_values
+from src.archivo_historico_supabase import recuperar_fila
+from src.credenciales_supabase import obtener as obtener_credencial_supabase
 
 from src.catalogo_procesal import enriquecer_datos_procesales
 from src.ejecucion import ESTADOS_TERMINALES, TrabajoCola
@@ -45,7 +47,9 @@ class RepositorioColaPostgres:
             host=valores.get("host", os.getenv("POSTGRES_HOST", "localhost")),
             port=valores.get("puerto", os.getenv("POSTGRES_PORT", 5432)),
             user=valores.get("usuario", os.getenv("POSTGRES_USER", "judicial_app")),
-            password=os.getenv(variable_password, ""),
+            password=(obtener_credencial_supabase(variable_password)
+                      if variable_password == "SUPABASE_DB_PASSWORD"
+                      else os.getenv(variable_password, "")),
             dbname=valores.get("nombre_db", os.getenv("POSTGRES_DB", "casos_judiciales")),
             connect_timeout=valores.get("connect_timeout", 10),
             sslmode=valores.get("sslmode", os.getenv("POSTGRES_SSLMODE")),
@@ -656,17 +660,30 @@ class RepositorioColaPostgres:
     def listar_resultados(self, ejecucion_id, despues_de=0):
         with self._connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_schema = 'public' AND table_name = 'resultados_ejecucion'
+                      AND column_name = 'archivo_segmento'
+                """)
+                campo_archivo = ("archivo_segmento" if cur.fetchone()
+                                 else "NULL::text AS archivo_segmento")
                 cur.execute(
-                    """
+                    f"""
                     SELECT id, numero_causa, estado, origen, worker_id, ciudad,
-                           datos_json, creado_en
+                           datos_json, creado_en, {campo_archivo}
                     FROM resultados_ejecucion
                     WHERE ejecucion_id = %s AND id > %s
                     ORDER BY id
                     """,
                     (ejecucion_id, int(despues_de)),
                 )
-                return [dict(fila) for fila in cur.fetchall()]
+                filas = [dict(fila) for fila in cur.fetchall()]
+            for fila in filas:
+                segmento = fila.pop("archivo_segmento")
+                if segmento:
+                    original = recuperar_fila(conn, "resultados_ejecucion", fila["id"], segmento)
+                    fila["datos_json"] = original["datos_json"]
+            return filas
 
     def listar_fallidos(self, ejecucion_id):
         with self._connection() as conn:
