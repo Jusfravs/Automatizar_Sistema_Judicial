@@ -3,13 +3,14 @@ import hashlib
 import io
 import json
 import os
+import base64
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
 
-from scripts.migrar_supabase_gratis import missing_storage_object, prepare_copy, storage_error
+from scripts.migrar_supabase_gratis import missing_storage_object, prepare_copy, storage_error, validate_storage_key
 from src.archivo_historico_supabase import _load_segment, recuperar_fila
 
 
@@ -93,6 +94,16 @@ class ArchivoSupabaseTests(unittest.TestCase):
         code, message = storage_error(error)
         self.assertTrue(missing_storage_object(400, code, message))
         self.assertFalse(missing_storage_object(400, "InvalidJWT", "Invalid JWT"))
+
+    def test_clave_jwt_debe_ser_completa_y_service_role(self):
+        encoded = lambda data: base64.urlsafe_b64encode(json.dumps(data).encode()).decode().rstrip("=")
+        header = encoded({"alg": "HS256"})
+        service = f"{header}.{encoded({'role': 'service_role'})}.firma"
+        self.assertEqual(validate_storage_key(service), service)
+        with self.assertRaisesRegex(ValueError, "incompleta"):
+            validate_storage_key(service + '"')
+        with self.assertRaisesRegex(ValueError, "no es service_role"):
+            validate_storage_key(f"{header}.{encoded({'role': 'anon'})}.firma")
 
 
 if __name__ == "__main__":

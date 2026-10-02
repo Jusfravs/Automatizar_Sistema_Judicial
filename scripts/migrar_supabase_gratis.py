@@ -7,11 +7,13 @@ La base de origen no se modifica. Se puede reanudar la carga de Storage.
 from __future__ import annotations
 
 import argparse
+import base64
 import getpass
 import gzip
 import hashlib
 import json
 import os
+import re
 import sys
 import tempfile
 import time
@@ -52,6 +54,32 @@ def secret(name: str, prompt: str) -> str:
     if not value:
         raise ValueError(f"Falta {name}")
     return value
+
+
+def validate_storage_key(value: str) -> str:
+    key = value.strip()
+    if key.startswith("sb_secret_"):
+        if any(character.isspace() for character in key):
+            raise ValueError("La Secret API key contiene espacios; cópiala de nuevo")
+        print("Formato de clave verificado: Secret API key", flush=True)
+        return key
+    parts = key.split(".")
+    if len(parts) != 3 or any(not re.fullmatch(r"[A-Za-z0-9_-]+", part) for part in parts):
+        raise ValueError("La clave service_role está incompleta; cópiala completa desde API Keys")
+    try:
+        payload = json.loads(base64.urlsafe_b64decode(parts[1] + "=" * (-len(parts[1]) % 4)))
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise ValueError("La clave service_role no tiene un JWT válido; cópiala de nuevo") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("La clave service_role no tiene un JWT válido; cópiala de nuevo")
+    if payload.get("role") != "service_role":
+        raise ValueError("La clave JWT no es service_role; selecciona la clave correcta en API Keys")
+    if payload.get("exp") and int(payload["exp"]) <= time.time():
+        raise ValueError("La clave service_role está vencida")
+    if any(character.isspace() for character in key):
+        raise ValueError("La clave service_role contiene espacios; cópiala de nuevo")
+    print("Formato de clave verificado: service_role JWT", flush=True)
+    return key
 
 
 def read_manifest(directory: Path) -> dict:
@@ -326,11 +354,11 @@ def main() -> int:
         if not args.solo_subir:
             password = secret("SUPABASE_DB_PASSWORD", "Contraseña de la base de Supabase: ")
             preflight_target(password, args.ca)
-        key = (obtener_credencial("SUPABASE_SECRET_KEY")
-               or obtener_credencial("SUPABASE_SERVICE_ROLE_KEY")
-               or getpass.getpass("Clave Secret API (o service_role) de Supabase: "))
-        if not key:
-            raise ValueError("Falta la clave de Supabase Storage")
+        key = validate_storage_key(
+            obtener_credencial("SUPABASE_SECRET_KEY")
+            or obtener_credencial("SUPABASE_SERVICE_ROLE_KEY")
+            or getpass.getpass("Clave Secret API (o service_role) de Supabase: ")
+        )
         if not args.solo_importar:
             upload_archive(args.archivo, manifest, args.prefijo, key)
             guardar_credencial("SUPABASE_SECRET_KEY", key)
